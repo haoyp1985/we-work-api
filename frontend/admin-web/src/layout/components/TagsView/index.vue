@@ -68,6 +68,7 @@ const isActive = (tag: TagView) => {
 // 添加标签
 const addTag = () => {
   const { name, path, fullPath, params, query, meta } = route
+  
   if (name && path !== '/login') {
     const tag: TagView = {
       name,
@@ -79,11 +80,16 @@ const addTag = () => {
       title: (meta?.title as string) || 'Unknown'
     }
     
-    // 检查是否已存在
+    // 检查是否已存在（使用path作为唯一标识）
     const existingIndex = visitedViews.value.findIndex(v => v.path === path)
+    
     if (existingIndex !== -1) {
-      // 更新现有标签
-      visitedViews.value[existingIndex] = { ...visitedViews.value[existingIndex], ...tag }
+      // 更新现有标签，保持affix属性
+      visitedViews.value[existingIndex] = { 
+        ...visitedViews.value[existingIndex], 
+        ...tag,
+        meta: { ...visitedViews.value[existingIndex].meta, ...tag.meta }
+      }
     } else {
       // 添加新标签
       visitedViews.value.push(tag)
@@ -181,13 +187,8 @@ const moveToCurrentTag = () => {
 
 // 初始化固定标签
 const initTags = () => {
-  // 添加首页作为固定标签
-  visitedViews.value.push({
-    path: '/dashboard',
-    name: 'Dashboard',
-    title: '首页',
-    meta: { affix: true }
-  })
+  // 首页标签将通过路由系统自动添加，不需要手动添加
+  // 这里预留给其他可能需要的固定标签
 }
 
 // 监听路由变化
@@ -206,6 +207,8 @@ watch(contextMenuVisible, (visible) => {
 })
 
 onMounted(() => {
+  // 组件挂载时只需要添加当前路由标签
+  // initTags() 现在为空，但保留以备将来需要添加其他固定标签
   initTags()
   addTag()
 })
