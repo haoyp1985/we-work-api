@@ -1,0 +1,318 @@
+// ===========================
+// 过渡动画样式
+// ===========================
+
+// 淡入淡出
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity $transition-duration-base $transition-timing-function;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+// 滑动淡入淡出
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all $transition-duration-base $transition-timing-function;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+// 缩放淡入淡出
+.fade-scale-enter-active,
+.fade-scale-leave-active {
+  transition: all $transition-duration-base $transition-timing-function;
+}
+
+.fade-scale-enter-from,
+.fade-scale-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+// 向上滑动
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all $transition-duration-base $transition-timing-function;
+}
+
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+
+// 向下滑动
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all $transition-duration-base $transition-timing-function;
+}
+
+.slide-down-enter-from {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+// 左右滑动
+.slide-left-enter-active,
+.slide-left-leave-active {
+  transition: all $transition-duration-base $transition-timing-function;
+}
+
+.slide-left-enter-from {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.slide-left-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: all $transition-duration-base $transition-timing-function;
+}
+
+.slide-right-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.slide-right-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+// 弹性动画
+.bounce-enter-active {
+  animation: bounce-in $transition-duration-slow ease;
+}
+
+.bounce-leave-active {
+  animation: bounce-out $transition-duration-slow ease;
+}
+
+@keyframes bounce-in {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce-out {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(0);
+  }
+}
+
+// 旋转动画
+.rotate-enter-active,
+.rotate-leave-active {
+  transition: all $transition-duration-base $transition-timing-function;
+}
+
+.rotate-enter-from,
+.rotate-leave-to {
+  opacity: 0;
+  transform: rotate(180deg);
+}
+
+// 翻转动画
+.flip-enter-active,
+.flip-leave-active {
+  transition: all $transition-duration-base $transition-timing-function;
+}
+
+.flip-enter-from,
+.flip-leave-to {
+  opacity: 0;
+  transform: rotateY(90deg);
+}
+
+// 列表动画
+.list-enter-active,
+.list-leave-active {
+  transition: all $transition-duration-base $transition-timing-function;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.list-move {
+  transition: transform $transition-duration-base $transition-timing-function;
+}
+
+// 展开收起动画
+.expand-enter-active,
+.expand-leave-active {
+  transition: all $transition-duration-base $transition-timing-function;
+  overflow: hidden;
+}
+
+.expand-enter-from,
+.expand-leave-to {
+  height: 0;
+  opacity: 0;
+}
+
+// 页面切换动画
+.page-enter-active,
+.page-leave-active {
+  transition: all $transition-duration-base $transition-timing-function;
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateX(50px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateX(-50px);
+}
+
+// 模态框动画
+.modal-enter-active {
+  transition: all $transition-duration-base $transition-timing-function;
+}
+
+.modal-leave-active {
+  transition: all $transition-duration-base $transition-timing-function;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from .modal-content,
+.modal-leave-to .modal-content {
+  transform: scale(0.8);
+}
+
+// 侧边栏动画
+.sidebar-enter-active,
+.sidebar-leave-active {
+  transition: all $transition-duration-base $transition-timing-function;
+}
+
+.sidebar-enter-from,
+.sidebar-leave-to {
+  transform: translateX(-100%);
+}
+
+// 加载动画
+.loading-enter-active,
+.loading-leave-active {
+  transition: all $transition-duration-fast $transition-timing-function;
+}
+
+.loading-enter-from,
+.loading-leave-to {
+  opacity: 0;
+}
+
+// 通用动画类
+.animate-pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: none;
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+// 摇摆动画
+.animate-wiggle {
+  animation: wiggle 1s ease-in-out infinite;
+}
+
+@keyframes wiggle {
+  0%, 100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
+
+// 呼吸动画
+.animate-breathing {
+  animation: breathing 2s ease-in-out infinite;
+}
+
+@keyframes breathing {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}

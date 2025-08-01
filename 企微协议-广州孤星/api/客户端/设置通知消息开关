@@ -1,0 +1,141 @@
+# 设置通知消息开关
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /client/set_notify_msg_flag:
+    post:
+      summary: 设置通知消息开关
+      deprecated: false
+      description: ''
+      operationId: decorator_client_set_notify_msg_flag_post
+      tags:
+        - 客户端
+        - Client
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetNotifyMsgFlagModel'
+            example:
+              guid: string
+              self_msg: true
+              contact_msg: true
+              self_room_msg: true
+              contact_room_msg: true
+              room_white_list: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+          headers: {}
+          x-apifox-name: Successful Response
+        '422':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          headers: {}
+          x-apifox-name: Validation Error
+      security: []
+      x-apifox-folder: 客户端
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-155209551-run
+components:
+  schemas:
+    SetNotifyMsgFlagModel:
+      title: SetNotifyMsgFlagModel
+      required:
+        - guid
+        - self_msg
+        - contact_msg
+        - self_room_msg
+        - contact_room_msg
+      type: object
+      properties:
+        guid:
+          title: Guid
+          type: string
+        self_msg:
+          title: Self Msg
+          type: boolean
+        contact_msg:
+          title: Contact Msg
+          type: boolean
+        self_room_msg:
+          title: Self Room Msg
+          type: boolean
+        contact_room_msg:
+          title: Contact Room Msg
+          type: boolean
+        room_white_list:
+          title: Room White List
+          type: array
+          items:
+            type: string
+          default: []
+      x-apifox-orders:
+        - guid
+        - self_msg
+        - contact_msg
+        - self_room_msg
+        - contact_room_msg
+        - room_white_list
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      x-apifox-orders:
+        - detail
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      x-apifox-orders:
+        - loc
+        - msg
+        - type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+  securitySchemes: {}
+servers: []
+security: []
+
+```

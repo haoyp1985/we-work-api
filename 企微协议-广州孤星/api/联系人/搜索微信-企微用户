@@ -1,0 +1,138 @@
+# 搜索微信/企微用户
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /contact/search_contact:
+    post:
+      summary: 搜索微信/企微用户
+      deprecated: false
+      description: 'type: 1 => 手机号， 2 => 邮箱， 3 => 微信号'
+      operationId: decorator_contact_search_contact_post
+      tags:
+        - 联系人
+        - Contact
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchContactModel'
+            example: ''
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+              example:
+                error_code: 0
+                error_message: ok
+                data:
+                  contact_info:
+                    name: ''
+                    realname: ''
+                  corpinfo:
+                    corpid: '0'
+                  search_status: SEARCH_OK
+                  relation: NO_RALATION
+                  datalist:
+                    - contact_info_wx:
+                        uin: '7881303217905494'
+                        name: Hanson
+                        gender: 1
+                        iconurl: >-
+                          http://wx.qlogo.cn/mmhead/SIbzjUOSCh4Kn4y7ubbugEnYXbOGazrBH7Ba4nfBWbWlPHNHLvYw2Sd2h6RoaTVYZ67CP31IQAs/0
+                      openid: orFrbsgM_AzyFnkWjYrod06i7Cpo
+                      item_type: 1
+          headers: {}
+          x-apifox-name: Successful Response
+        '422':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          headers: {}
+          x-apifox-name: Validation Error
+      security: []
+      x-apifox-folder: 联系人
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-77530632-run
+components:
+  schemas:
+    SearchContactModel:
+      title: SearchContactModel
+      required:
+        - guid
+      type: object
+      properties:
+        guid:
+          title: Guid
+          type: string
+        keyword:
+          title: Keyword
+          type: string
+          default: ''
+        type:
+          title: Type
+          type: integer
+          default: 1
+      x-apifox-orders:
+        - guid
+        - keyword
+        - type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      x-apifox-orders:
+        - detail
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      x-apifox-orders:
+        - loc
+        - msg
+        - type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+  securitySchemes: {}
+servers: []
+security: []
+
+```

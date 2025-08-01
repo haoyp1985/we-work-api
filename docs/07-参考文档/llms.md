@@ -1,0 +1,183 @@
+# 企微协议
+
+## Docs
+- [首页](https://wecom.apifox.cn/doc-3815216.md): 
+- [必读文档（问问题前先看完这里）](https://wecom.apifox.cn/doc-2473143.md): 
+- [枚举类](https://wecom.apifox.cn/doc-3479911.md): 
+- [更新日志](https://wecom.apifox.cn/doc-3575329.md): 
+- [回调](https://wecom.apifox.cn/doc-4006277.md): 
+- 开放平台打通 [开放平台说明](https://wecom.apifox.cn/doc-4360434.md): 
+
+## API Docs
+- 客户端 [获取所有实例列表](https://wecom.apifox.cn/api-81436057.md): 
+- 客户端 [创建新的实例](https://wecom.apifox.cn/api-77530558.md): 代理支持http、socks4和socks5的url格式: 如 http://127.0.0.1:10807, socks5://user:pass@10.10.1.10:3128, 不使用代理请留空
+- 客户端 [升级实例](https://wecom.apifox.cn/api-165450616.md): 当出现低版本不能登录时，可以调用此接口进行升级，先停止实例再调用此接口。只能升级，不能降级，否则会封号。
+- 客户端 [删除实例](https://wecom.apifox.cn/api-82524206.md): 
+- 客户端 [恢复实例](https://wecom.apifox.cn/api-77530559.md): 代理支持http、socks4和socks5的url格式: 如 http://127.0.0.1:10807, socks5://user:pass@10.10.1.10:3128, 不使用代理请留空
+- 客户端 [停止实例](https://wecom.apifox.cn/api-77530560.md): 停止实例相当于退出登录，但不能继续调用实例的接口，否则会唤起实例的登录
+- 客户端 [设置实例通知地址](https://wecom.apifox.cn/api-77530562.md): 
+- 客户端 [设置实例本地代理 ID](https://wecom.apifox.cn/api-77530561.md): 
+- 客户端 [设置实例代理](https://wecom.apifox.cn/api-138059912.md): 
+- 客户端 [设置通知消息开关](https://wecom.apifox.cn/api-155209551.md): 
+- 客户端 [获取实例状态](https://wecom.apifox.cn/api-168429117.md): 0: 停止, 1: 运行, 2: 在线
+- 客户端 [获取实例版本](https://wecom.apifox.cn/api-168429271.md): 
+- 客户端 [获取登录实例列表](https://wecom.apifox.cn/api-80388278.md): 
+- 客户端 [获取所有实例info](https://wecom.apifox.cn/api-261852395.md): 
+- 客户端 [更新实例info](https://wecom.apifox.cn/api-266260771.md): 
+- 全局 [通知回调地址](https://wecom.apifox.cn/api-77530599.md): 
+- 登录 [获取登录二维码](https://wecom.apifox.cn/api-77530579.md): 
+- 登录 [检查登录二维码](https://wecom.apifox.cn/api-77530580.md): 
+- 登录 [推送手机确认登录通知](https://wecom.apifox.cn/api-138629757.md): 
+- 登录 [登录验证码](https://wecom.apifox.cn/api-128292200.md): 当二维码回调 status == QRCODE_REQUIRE_VERIFY(10) 时， 也就是需要登录验证了，在业务前端让用户输入验证码
+- 登录 [自动登录](https://wecom.apifox.cn/api-136447855.md): 模拟退出企微，重新打开自动登录的场景
+- 登录 [扫码登录[无需调用]](https://wecom.apifox.cn/api-77530581.md): 
+- 登录 [保持登录[无需调用]](https://wecom.apifox.cn/api-82524222.md): 
+- 用户 [获取当前帐号信息](https://wecom.apifox.cn/api-77530550.md): 
+- 用户 [获取当前帐号公司信息](https://wecom.apifox.cn/api-77530551.md): 
+- 用户 [登出](https://wecom.apifox.cn/api-83927175.md): 
+- 用户 [获取二维码名片 (新)](https://wecom.apifox.cn/api-141290080.md): 
+- 用户 [获取二维码名片](https://wecom.apifox.cn/api-136447029.md): 
+- 用户 [获取绑定的微信信息](https://wecom.apifox.cn/api-268813945.md): 
+- 用户 [修改姓名](https://wecom.apifox.cn/api-280727671.md): 
+- 用户 [修改别名](https://wecom.apifox.cn/api-280727672.md): 
+- 用户 [修改头像](https://wecom.apifox.cn/api-280727673.md): 
+- 消息 > 群发助手 [极速群发](https://wecom.apifox.cn/api-95465038.md): 此接口等同于 工作台-群发助手，一个客户一天只能收到一次，发送无需员工手动确认
+- 消息 > 群发助手 [查询管理员下发的群发消息](https://wecom.apifox.cn/api-236868960.md): 
+- 消息 > 群发助手 [查询群发确认的消息的状态](https://wecom.apifox.cn/api-236868983.md): 
+- 消息 > 群发助手 [确认群发消息](https://wecom.apifox.cn/api-236869023.md): 
+- 消息 > 群发助手 [获取群发任务详情](https://wecom.apifox.cn/api-252443258.md): 
+- 消息 > 群发助手 [获取群发任务要发送的群列表](https://wecom.apifox.cn/api-252443259.md): 
+- 消息 > 群发助手 [检查是否可以极速群发](https://wecom.apifox.cn/api-219035183.md): 
+- 消息 [发送文本消息](https://wecom.apifox.cn/api-77530582.md): 
+- 消息 [发送群@消息](https://wecom.apifox.cn/api-77530583.md): at_list传[0],是@全部人
+- 消息 [发送语音消息](https://wecom.apifox.cn/api-77530584.md): 
+- 消息 [发送位置消息](https://wecom.apifox.cn/api-77530585.md): 
+- 消息 [发送图片消息](https://wecom.apifox.cn/api-77530586.md): 
+- 消息 [发送文件消息](https://wecom.apifox.cn/api-77530587.md): 大于20M的文件需要用 big cdn 上传，再调用此接口，此时 aes_key 留空
+- 消息 [发送视频消息](https://wecom.apifox.cn/api-77530588.md): 当视频文件大于20M需要使用/msg/send_big_video发送
+- 消息 [发送大视频消息](https://wecom.apifox.cn/api-204445025.md): 
+- 消息 [发送Gif消息](https://wecom.apifox.cn/api-77530589.md): 
+- 消息 [发送Gif消息](https://wecom.apifox.cn/api-141290078.md): url用/cloud/add_image上传
+- 消息 [发送名片](https://wecom.apifox.cn/api-77530590.md): 
+- 消息 [发送链接](https://wecom.apifox.cn/api-77530591.md): 
+- 消息 [发送小程序](https://wecom.apifox.cn/api-77530592.md): 
+- 消息 [发送视频号](https://wecom.apifox.cn/api-77530593.md): 
+- 消息 [获取语音消息翻译id](https://wecom.apifox.cn/api-77530594.md): 
+- 消息 [获取语音消息翻译结果](https://wecom.apifox.cn/api-77530595.md): 
+- 消息 [确认企微内部消息已读](https://wecom.apifox.cn/api-77530596.md): 
+- 消息 [撤回消息](https://wecom.apifox.cn/api-77530597.md): 
+- 消息 [标记会话已读](https://wecom.apifox.cn/api-77530598.md): 
+- 消息 [发送聊天合集（合并转发）](https://wecom.apifox.cn/api-141290079.md):  
+- 消息 [发送视频号直播](https://wecom.apifox.cn/api-155210232.md): 
+- 消息 [发送引用消息](https://wecom.apifox.cn/api-185607973.md): ### 发送引用消息
+- 消息 [发送微信小店商品信息](https://wecom.apifox.cn/api-227551525.md): ### 发送引用消息
+- 联系人 [同步联系人](https://wecom.apifox.cn/api-77530627.md): 
+- 联系人 [同步申请好友列表](https://wecom.apifox.cn/api-77530628.md): 返回的 flag 为 3，是删除好友的状态，不必调用同意好友
+- 联系人 [批量获取用户信息](https://wecom.apifox.cn/api-77530629.md): 
+- 联系人 [批量获取公司信息](https://wecom.apifox.cn/api-78358250.md): 
+- 联系人 [更新联系人](https://wecom.apifox.cn/api-77530630.md): 
+- 联系人 [搜索微信/企微用户](https://wecom.apifox.cn/api-77530632.md): type: 1 => 手机号， 2 => 邮箱， 3 => 微信号
+- 联系人 [添加搜索的微信用户](https://wecom.apifox.cn/api-77530631.md): 
+- 联系人 [添加搜索的企微用户](https://wecom.apifox.cn/api-77530633.md): 
+- 联系人 [添加名片为联系人](https://wecom.apifox.cn/api-77530634.md): 
+- 联系人 [通过二维码名片添加微信用户](https://wecom.apifox.cn/api-252443260.md): 
+- 联系人 [添加被对方的删除联系人](https://wecom.apifox.cn/api-77530635.md): 
+- 联系人 [同意联系人申请](https://wecom.apifox.cn/api-77530636.md): 
+- 联系人 [删除联系人](https://wecom.apifox.cn/api-77530637.md): 
+- 联系人 [通过二维码获取联系人](https://wecom.apifox.cn/api-173238736.md): 
+- 联系人 [操作黑名单](https://wecom.apifox.cn/api-198863081.md): 
+- 群聊 > 入群欢迎语 [获取入群欢迎语](https://wecom.apifox.cn/api-77530618.md): welcome_type: 0 => 企业， 10 => 个人
+- 群聊 > 入群欢迎语 [添加入群欢迎语](https://wecom.apifox.cn/api-77530619.md): 
+- 群聊 > 入群欢迎语 [编辑入群欢迎语](https://wecom.apifox.cn/api-138507800.md): 
+- 群聊 > 客户群黑名单 [设置客户群黑名单](https://wecom.apifox.cn/api-77530623.md): 
+- 群聊 > 客户群黑名单 [设置客户群白名单](https://wecom.apifox.cn/api-77530625.md): 
+- 群聊 > 客户群黑名单 [获取客户群黑名单](https://wecom.apifox.cn/api-77530624.md): 
+- 群聊 > 群置顶消息 [获取群置顶消息](https://wecom.apifox.cn/api-141290090.md): 
+- 群聊 > 群置顶消息 [设置群置顶消息](https://wecom.apifox.cn/api-141290091.md): 
+- 群聊 > 群置顶消息 [移除群置顶消息](https://wecom.apifox.cn/api-141290092.md): 
+- 群聊 > 防骚扰规则 [获取群防骚扰规则](https://wecom.apifox.cn/api-77530620.md): 
+- 群聊 > 防骚扰规则 [设置群防骚扰规则](https://wecom.apifox.cn/api-77530621.md): 
+- 群聊 > 群模板 [获取群模板](https://wecom.apifox.cn/api-268813946.md): 
+- 群聊 > 群模板 [应用群模板](https://wecom.apifox.cn/api-268813947.md): 
+- 群聊 [获取客户群列表](https://wecom.apifox.cn/api-77530600.md): 
+- 群聊 [批量获取群详细信息](https://wecom.apifox.cn/api-77530601.md): 
+- 群聊 [批量获取群成员详细信息](https://wecom.apifox.cn/api-77530602.md): 
+- 群聊 [增量同步群信息](https://wecom.apifox.cn/api-138509384.md): 
+- 群聊 [创建外部群](https://wecom.apifox.cn/api-77530603.md): 
+- 群聊 [创建内部群](https://wecom.apifox.cn/api-77530604.md): 
+- 群聊 [创建空的外部群](https://wecom.apifox.cn/api-77530605.md): 
+- 群聊 [修改群名称](https://wecom.apifox.cn/api-77530606.md): 
+- 群聊 [邀请/添加群成员](https://wecom.apifox.cn/api-77530607.md): 
+- 群聊 [移除群成员](https://wecom.apifox.cn/api-77530608.md): 
+- 群聊 [修改群公告](https://wecom.apifox.cn/api-77530610.md): 
+- 群聊 [转让群主](https://wecom.apifox.cn/api-77530611.md): 
+- 群聊 [添加群管理员](https://wecom.apifox.cn/api-77530612.md): 
+- 群聊 [移除群管理员](https://wecom.apifox.cn/api-77530613.md): 
+- 群聊 [开启/关闭群邀请确认](https://wecom.apifox.cn/api-77530614.md): 
+- 群聊 [开启/关闭禁止修改群名](https://wecom.apifox.cn/api-77530615.md): v2.4.0 开始废弃
+- 群聊 [退出群](https://wecom.apifox.cn/api-77530616.md): 
+- 群聊 [解散群](https://wecom.apifox.cn/api-77530617.md): 
+- 群聊 [添加群联系人](https://wecom.apifox.cn/api-77530622.md): 
+- 群聊 [通过群邀请链接进群](https://wecom.apifox.cn/api-77530626.md): 
+- 群聊 [修改群内昵称](https://wecom.apifox.cn/api-141290088.md): 
+- 群聊 [修改群备注](https://wecom.apifox.cn/api-141290089.md): 
+- 群聊 [获取群二维码](https://wecom.apifox.cn/api-77530609.md): 
+- 群聊 [开启/关闭禁止互相添加为联系人、禁止修改群名接口](https://wecom.apifox.cn/api-219035267.md): 
+- 群聊 [设置群自动回复](https://wecom.apifox.cn/api-227550346.md): 
+- 企业架构 [同步公司架构](https://wecom.apifox.cn/api-77530563.md): 
+- 企业架构 [获取公司架构节点数据](https://wecom.apifox.cn/api-77530564.md): 
+- 企业架构 [同步同事信息](https://wecom.apifox.cn/api-155209833.md): 
+- 企业架构 [修改同事信息(备注和描述)](https://wecom.apifox.cn/api-141288107.md): 
+- 会话 [获取会话列表](https://wecom.apifox.cn/api-136448311.md): 
+- 会话 [设置会话命令](https://wecom.apifox.cn/api-136448336.md): cmd 免打扰: shield, 取消免打扰: unshield, 置顶会话: top, 取消置顶: down, 群保存到通讯录: collect, 群移除通讯录: uncollect, 群折叠: fold, 群取消折叠: unfold
+- 会话 [获取会话配置](https://wecom.apifox.cn/api-228349463.md): 
+- 开放平台打通 [Open AppInfo](https://wecom.apifox.cn/api-132668148.md): 
+- 开放平台打通 [获取侧边栏信息](https://wecom.apifox.cn/api-136448427.md): 聊天工具栏管理，对应页面 https://work.weixin.qq.com/wework_admin/frame#/customer/chatMenu
+- 开放平台打通 [获取应用](https://wecom.apifox.cn/api-138232368.md): 
+- 开放平台打通 [企业微信 788 ID 转 external_userid](https://wecom.apifox.cn/api-77530575.md): 788 ID 转自建应用的外部联系人ID
+- 开放平台打通 [企业微信VID转ExternalUserID](https://wecom.apifox.cn/api-173238734.md): 
+- 开放平台打通 [企业微信自建应用ID转 788 ID](https://wecom.apifox.cn/api-77530576.md): 自建应用的外部联系人ID转 788 ID
+- 开放平台打通 [群ID 转 开放平台 ID](https://wecom.apifox.cn/api-77530577.md): 
+- 开放平台打通 [开放平台 ID 转 群ID](https://wecom.apifox.cn/api-77530578.md): 
+- 开放平台打通 [获取个人侧边栏信息](https://wecom.apifox.cn/api-173238735.md): 
+- 云存储 [更新CDN信息](https://wecom.apifox.cn/api-141306734.md): 建议每6小时调用一次
+- 云存储 [C2C CDN上传](https://wecom.apifox.cn/api-77530553.md): 如遇到错误码 -5103011，请调用更新CDN信息
+- 云存储 [C2C CDN下载](https://wecom.apifox.cn/api-77530554.md): 语音为 silk 格式， 转化mp3可以看这个 https://github.com/kn007/silk-v3-decoder
+- 云存储 [Big CDN上传](https://wecom.apifox.cn/api-77530555.md): 
+- 云存储 [Big CDN下载](https://wecom.apifox.cn/api-77530556.md): 
+- 云存储 [微信CDN下载](https://wecom.apifox.cn/api-77530557.md): 
+- 云存储 [极速群发图片上传](https://wecom.apifox.cn/api-95464082.md): 
+- 云存储 [上传视频预览图](https://wecom.apifox.cn/api-204445021.md): 
+- CDN [获取CDN信息](https://wecom.apifox.cn/api-324318922.md): 
+- CDN [更新CDN信息](https://wecom.apifox.cn/api-77530565.md): 
+- CDN [C2C CDN上传](https://wecom.apifox.cn/api-77530566.md): 参数 file_type: 图片=>1, 视频=>4, 文件&GIF=>5
+- CDN [下载图片、视频或文件](https://wecom.apifox.cn/api-77530567.md): 参数 file_type: 原图=>1, 中图=>2, 缩略图=>3, 视频=>4, 文件&GIF=>5
+- CDN [Big CDN上传](https://wecom.apifox.cn/api-77530568.md): 
+- CDN [Big CDN下载](https://wecom.apifox.cn/api-77530569.md): 
+- CDN [微信CDN下载](https://wecom.apifox.cn/api-77530570.md): 
+- 标签 [同步获取标签列表](https://wecom.apifox.cn/api-77530571.md): 
+- 标签 [创建标签](https://wecom.apifox.cn/api-77530572.md): 
+- 标签 [批量为成员添加标签](https://wecom.apifox.cn/api-77530573.md): 
+- 标签 [删除标签](https://wecom.apifox.cn/api-77530574.md): 
+- 标签 [修改标签](https://wecom.apifox.cn/api-141290087.md): 
+- 标签 [为成员添加多个标签](https://wecom.apifox.cn/api-154751478.md): 
+- 聊天标签 [同步聊天标签列表](https://wecom.apifox.cn/api-141290081.md): 
+- 聊天标签 [创建聊天标签](https://wecom.apifox.cn/api-141290082.md): 
+- 聊天标签 [修改聊天标签](https://wecom.apifox.cn/api-141290083.md): 
+- 聊天标签 [删除聊天标签](https://wecom.apifox.cn/api-141290084.md): 
+- 聊天标签 [同步会话所属标签列表](https://wecom.apifox.cn/api-141290085.md): 返回的 msgtype 中 1是群聊，0是单聊
+- 聊天标签 [修改会话所属标签](https://wecom.apifox.cn/api-141290086.md): 
+- 朋友圈 [获取发布的朋友圈记录](https://wecom.apifox.cn/api-77530638.md): 
+- 朋友圈 [设置朋友圈封面](https://wecom.apifox.cn/api-77530639.md): 
+- 朋友圈 [设置朋友圈签名](https://wecom.apifox.cn/api-77530640.md): 
+- 朋友圈 [发布朋友圈](https://wecom.apifox.cn/api-77530641.md): ## 说明
+- 朋友圈 [删除朋友圈](https://wecom.apifox.cn/api-138232135.md): 
+- 朋友圈 [点赞](https://wecom.apifox.cn/api-138232172.md): 
+- 朋友圈 [评论](https://wecom.apifox.cn/api-138232174.md): 
+- 朋友圈 [获取指定朋友圈详情](https://wecom.apifox.cn/api-138232305.md): 
+- 朋友圈 [删除评论](https://wecom.apifox.cn/api-138232328.md): 
+- 同步 [推送同步消息](https://wecom.apifox.cn/api-155209841.md): 
+- 同步 [同步联系人数据](https://wecom.apifox.cn/api-77530549.md): 
+- 同步 [同步消息](https://wecom.apifox.cn/api-77530552.md): sync_key 不要传0或不传，可以发一条消息，根据新消息seq减去一定的数字（例:1000）来获取。
+- 运维 [备份实例](https://wecom.apifox.cn/api-155210250.md): 
+- 运维 [恢复备份实例](https://wecom.apifox.cn/api-155210252.md): 

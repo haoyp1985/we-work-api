@@ -1,0 +1,175 @@
+# 发送视频号直播
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /msg/send_feed_live:
+    post:
+      summary: 发送视频号直播
+      deprecated: false
+      description: ''
+      operationId: decorator_msg_send_feed_live_post
+      tags:
+        - 消息
+        - Msg
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendFeedLiveModel'
+            example:
+              guid: string
+              conversation_id: ''
+              feed_type: 0
+              cover_url: ''
+              thumb_url: ''
+              avatar: ''
+              nickname: ''
+              desc: ''
+              url: ''
+              extras: ''
+              object_id: ''
+              object_nonce_id: ''
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+          headers: {}
+          x-apifox-name: Successful Response
+        '422':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          headers: {}
+          x-apifox-name: Validation Error
+      security: []
+      x-apifox-folder: 消息
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-155210232-run
+components:
+  schemas:
+    SendFeedLiveModel:
+      title: SendFeedLiveModel
+      required:
+        - guid
+      type: object
+      properties:
+        guid:
+          title: Guid
+          type: string
+        conversation_id:
+          title: Conversation Id
+          type: string
+          default: ''
+        feed_type:
+          title: Feed Type
+          type: integer
+          default: 0
+        cover_url:
+          title: Cover Url
+          type: string
+          default: ''
+        thumb_url:
+          title: Thumb Url
+          type: string
+          default: ''
+        avatar:
+          title: Avatar
+          type: string
+          default: ''
+        nickname:
+          title: Nickname
+          type: string
+          default: ''
+        desc:
+          title: Desc
+          type: string
+          default: ''
+        url:
+          title: Url
+          type: string
+          default: ''
+        extras:
+          title: Extras
+          type: string
+          default: ''
+        object_id:
+          title: Object Id
+          type: string
+          default: ''
+        object_nonce_id:
+          title: Object Nonce Id
+          type: string
+          default: ''
+      x-apifox-orders:
+        - guid
+        - conversation_id
+        - feed_type
+        - cover_url
+        - thumb_url
+        - avatar
+        - nickname
+        - desc
+        - url
+        - extras
+        - object_id
+        - object_nonce_id
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      x-apifox-orders:
+        - detail
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      x-apifox-orders:
+        - loc
+        - msg
+        - type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+  securitySchemes: {}
+servers: []
+security: []
+
+```

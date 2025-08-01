@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="WeWork Platform 企业微信管理平台" />
+    <meta name="keywords" content="企业微信,管理平台,API网关" />
+    <title>WeWork Platform - 管理后台</title>
+    
+    <!-- Preload fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Loading styles -->
+    <style>
+      #loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #409eff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .loading-text {
+        margin-left: 12px;
+        color: #666;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading animation -->
+    <div id="loading">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">加载中...</div>
+    </div>
+    
+    <!-- Vue app root -->
+    <div id="app"></div>
+    
+    <!-- Remove loading when app is ready -->
+    <script>
+      window.addEventListener('load', function() {
+        const loading = document.getElementById('loading');
+        if (loading) {
+          setTimeout(() => {
+            loading.style.opacity = '0';
+            setTimeout(() => {
+              loading.remove();
+            }, 300);
+          }, 500);
+        }
+      });
+    </script>
+    
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

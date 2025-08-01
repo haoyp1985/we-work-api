@@ -1,0 +1,173 @@
+# ======================
+# 操作系统生成的文件
+# ======================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ======================
+# IDE和编辑器文件
+# ======================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ======================
+# 日志文件
+# ======================
+*.log
+logs/
+log/
+
+# ======================
+# 临时文件
+# ======================
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# ======================
+# 后端相关
+# ======================
+
+# Maven
+backend/target/
+backend/*/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/.mvn/wrapper/maven-wrapper.properties
+backend/mvnw
+backend/mvnw.cmd
+
+# Java编译文件
+backend/**/*.class
+backend/**/*.jar
+backend/**/*.war
+backend/**/*.nar
+backend/**/*.ear
+backend/**/*.zip
+backend/**/*.tar.gz
+backend/**/*.rar
+
+# Spring Boot
+backend/**/*.pid
+backend/**/application-*.yml
+backend/**/application-*.properties
+
+# IDE特定文件
+backend/**/.idea/
+backend/**/.settings/
+backend/**/.project
+backend/**/.classpath
+backend/**/bin/
+
+# ======================
+# 前端相关
+# ======================
+
+# Dependencies
+frontend/*/node_modules/
+frontend/*/npm-debug.log*
+frontend/*/yarn-debug.log*
+frontend/*/yarn-error.log*
+frontend/*/pnpm-debug.log*
+
+# Build outputs
+frontend/*/dist/
+frontend/*/build/
+frontend/*/out/
+
+# Cache and temp files
+frontend/*/.vite/
+frontend/*/.cache/
+frontend/*/.temp/
+frontend/**/.nuxt/
+frontend/**/.next/
+frontend/**/.turbo/
+
+# Environment files
+frontend/**/.env.local
+frontend/**/.env.development.local
+frontend/**/.env.test.local
+frontend/**/.env.production.local
+
+# Package manager files
+frontend/**/package-lock.json
+frontend/**/yarn.lock
+frontend/**/pnpm-lock.yaml
+
+# IDE files
+frontend/**/.vscode/
+frontend/**/.idea/
+
+# ======================
+# 配置和部署相关
+# ======================
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Kubernetes
+k8s/secrets/
+k8s/configmaps/
+
+# 环境配置文件
+.env
+.env.local
+.env.*.local
+
+# SSL证书
+*.pem
+*.key
+*.crt
+*.csr
+
+# ======================
+# 数据和缓存
+# ======================
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+
+# Redis数据
+dump.rdb
+
+# 文档和媒体文件
+uploads/
+media/
+static/uploads/
+
+# ======================
+# 脚本和工具
+# ======================
+
+# 备份文件
+*.backup
+backup/
+
+# 测试覆盖率报告
+coverage/
+*.lcov
+.nyc_output/
+
+# ======================
+# 特定项目文件
+# ======================
+
+# Nacos配置备份
+nacos-configs/*.backup
+
+# 脚本日志
+scripts/*.log
+
+# 监控数据
+monitoring/data/

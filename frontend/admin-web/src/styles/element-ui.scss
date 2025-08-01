@@ -1,0 +1,318 @@
+// ===========================
+// Element Plus 样式定制
+// ===========================
+
+// 表格样式定制
+.el-table {
+  .el-table__header {
+    th {
+      background-color: #fafafa;
+      color: var(--text-color-primary);
+      font-weight: $font-weight-medium;
+    }
+  }
+  
+  .el-table__row {
+    &:hover {
+      background-color: rgba(64, 158, 255, 0.05);
+    }
+  }
+  
+  // 表格操作列
+  .table-actions {
+    .el-button {
+      margin-right: 8px;
+      
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+}
+
+// 分页样式
+.el-pagination {
+  margin-top: 20px;
+  text-align: right;
+  
+  &.is-background {
+    .el-pager li {
+      background-color: var(--bg-color);
+      border: 1px solid var(--border-color-base);
+      margin: 0 2px;
+    }
+  }
+}
+
+// 表单样式定制
+.el-form {
+  .el-form-item {
+    margin-bottom: 22px;
+    
+    .el-form-item__label {
+      font-weight: $font-weight-medium;
+      color: var(--text-color-primary);
+    }
+    
+    .el-form-item__error {
+      position: static;
+      margin-top: 4px;
+    }
+  }
+  
+  // 表单操作按钮
+  .form-actions {
+    text-align: center;
+    margin-top: 30px;
+    
+    .el-button {
+      margin: 0 8px;
+    }
+  }
+}
+
+// 对话框样式
+.el-dialog {
+  .el-dialog__header {
+    border-bottom: 1px solid var(--border-color-base);
+    padding: 20px 20px 15px;
+    
+    .el-dialog__title {
+      font-weight: $font-weight-medium;
+      font-size: $font-size-medium;
+    }
+  }
+  
+  .el-dialog__body {
+    padding: 20px;
+  }
+  
+  .el-dialog__footer {
+    border-top: 1px solid var(--border-color-base);
+    padding: 15px 20px 20px;
+    text-align: right;
+    
+    .el-button {
+      margin-left: 12px;
+    }
+  }
+}
+
+// 抽屉样式
+.el-drawer {
+  .el-drawer__header {
+    border-bottom: 1px solid var(--border-color-base);
+    margin-bottom: 0;
+    padding-bottom: 15px;
+    
+    .el-drawer__title {
+      font-weight: $font-weight-medium;
+      font-size: $font-size-medium;
+    }
+  }
+  
+  .el-drawer__body {
+    padding: 20px;
+  }
+}
+
+// 卡片样式
+.el-card {
+  border: 1px solid var(--border-color-light);
+  @include box-shadow($box-shadow-light);
+  
+  .el-card__header {
+    background-color: rgba(0, 0, 0, 0.02);
+    border-bottom: 1px solid var(--border-color-light);
+    
+    .card-header-content {
+      @include flex(row, center, space-between);
+      
+      .card-title {
+        font-weight: $font-weight-medium;
+        color: var(--text-color-primary);
+        margin: 0;
+      }
+    }
+  }
+}
+
+// 标签页样式
+.el-tabs {
+  .el-tabs__header {
+    margin: 0 0 20px 0;
+    
+    .el-tabs__nav-wrap {
+      &::after {
+        background-color: var(--border-color-base);
+      }
+    }
+    
+    .el-tabs__item {
+      color: var(--text-color-regular);
+      font-weight: $font-weight-normal;
+      
+      &.is-active {
+        color: $primary-color;
+        font-weight: $font-weight-medium;
+      }
+    }
+  }
+}
+
+// 菜单样式
+.el-menu {
+  border-right: none;
+  
+  .el-menu-item,
+  .el-submenu__title {
+    height: 50px;
+    line-height: 50px;
+    
+    &:hover {
+      background-color: rgba(64, 158, 255, 0.1);
+    }
+  }
+  
+  .el-menu-item.is-active {
+    background-color: rgba(64, 158, 255, 0.15);
+    color: $primary-color;
+    font-weight: $font-weight-medium;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background-color: $primary-color;
+    }
+  }
+}
+
+// 消息提示样式
+.el-message {
+  min-width: 300px;
+  @include box-shadow($box-shadow-light);
+}
+
+.el-notification {
+  @include box-shadow($box-shadow-light);
+}
+
+// 按钮样式增强
+.el-button {
+  font-weight: $font-weight-normal;
+  
+  &.el-button--primary {
+    background-color: $primary-color;
+    border-color: $primary-color;
+    
+    &:hover {
+      background-color: lighten($primary-color, 10%);
+      border-color: lighten($primary-color, 10%);
+    }
+  }
+  
+  &.el-button--success {
+    background-color: $success-color;
+    border-color: $success-color;
+  }
+  
+  &.el-button--warning {
+    background-color: $warning-color;
+    border-color: $warning-color;
+  }
+  
+  &.el-button--danger {
+    background-color: $danger-color;
+    border-color: $danger-color;
+  }
+}
+
+// 输入框样式增强
+.el-input {
+  .el-input__inner {
+    border-color: var(--border-color-base);
+    
+    &:focus {
+      border-color: $primary-color;
+    }
+  }
+}
+
+// 选择器样式
+.el-select {
+  width: 100%;
+}
+
+// 日期选择器样式
+.el-date-picker {
+  width: 100%;
+}
+
+// 时间选择器样式
+.el-time-picker {
+  width: 100%;
+}
+
+// 上传组件样式
+.el-upload {
+  .el-upload-dragger {
+    border: 2px dashed var(--border-color-base);
+    border-radius: $border-radius-base;
+    
+    &:hover {
+      border-color: $primary-color;
+    }
+  }
+}
+
+// 树形控件样式
+.el-tree {
+  .el-tree-node__content {
+    height: 40px;
+    
+    &:hover {
+      background-color: rgba(64, 158, 255, 0.05);
+    }
+  }
+  
+  .el-tree-node.is-current > .el-tree-node__content {
+    background-color: rgba(64, 158, 255, 0.1);
+    color: $primary-color;
+  }
+}
+
+// 步骤条样式
+.el-steps {
+  .el-step__title {
+    font-weight: $font-weight-medium;
+  }
+}
+
+// 描述列表样式
+.el-descriptions {
+  .el-descriptions__label {
+    font-weight: $font-weight-medium;
+    color: var(--text-color-primary);
+  }
+}
+
+// 标签样式
+.el-tag {
+  margin-right: 8px;
+  margin-bottom: 8px;
+  
+  &:last-child {
+    margin-right: 0;
+  }
+}
+
+// 进度条样式
+.el-progress {
+  .el-progress__text {
+    color: var(--text-color-primary);
+  }
+}

@@ -1,0 +1,69 @@
+# 查询群发确认的消息的状态
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /msg/sync_group_msg_send_status:
+    post:
+      summary: 查询群发确认的消息的状态
+      deprecated: false
+      description: ''
+      tags:
+        - 消息/群发助手
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                guid:
+                  type: string
+                msgid:
+                  type: string
+                seq:
+                  type: integer
+                send_type:
+                  type: integer
+              required:
+                - guid
+                - msgid
+                - seq
+                - send_type
+              x-apifox-orders:
+                - guid
+                - msgid
+                - seq
+                - send_type
+            example:
+              guid: string
+              msgid: string
+              seq: 0
+              send_type: 0
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+          x-apifox-name: 成功
+      security: []
+      x-apifox-folder: 消息/群发助手
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-236868983-run
+components:
+  schemas: {}
+  securitySchemes: {}
+servers: []
+security: []
+
+```

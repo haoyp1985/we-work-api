@@ -1,0 +1,108 @@
+# 获取绑定的微信信息
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /user/get_bind_wxinfo:
+    post:
+      summary: 获取绑定的微信信息
+      deprecated: false
+      description: ''
+      operationId: decorator_user_get_bind_wxinfo_post
+      tags:
+        - 用户
+        - User
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetBindWxInfo'
+            example: ''
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: string
+          headers: {}
+          x-apifox-name: 成功
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          headers: {}
+          x-apifox-name: 参数错误
+      security: []
+      x-apifox-folder: 用户
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-268813945-run
+components:
+  schemas:
+    GetBindWxInfo:
+      title: GetBindWxInfo
+      required:
+        - guid
+      type: object
+      properties:
+        guid:
+          title: Guid
+          type: string
+      x-apifox-orders:
+        - guid
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      x-apifox-orders:
+        - detail
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      x-apifox-orders:
+        - loc
+        - msg
+        - type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+  securitySchemes: {}
+servers: []
+security: []
+
+```

@@ -1,0 +1,118 @@
+# 获取客户群列表
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /room/get_room_list:
+    post:
+      summary: 获取客户群列表
+      deprecated: false
+      description: ''
+      operationId: decorator_room_get_room_list_post
+      tags:
+        - 群聊
+        - Room
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetRoomListModel'
+            example: ''
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+          headers: {}
+          x-apifox-name: Successful Response
+        '422':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          headers: {}
+          x-apifox-name: Validation Error
+      security: []
+      x-apifox-folder: 群聊
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-77530600-run
+components:
+  schemas:
+    GetRoomListModel:
+      title: GetRoomListModel
+      required:
+        - guid
+      type: object
+      properties:
+        guid:
+          title: Guid
+          type: string
+        start_index:
+          title: Start Index
+          type: integer
+          default: 0
+        limit:
+          title: Limit
+          type: integer
+          default: 10
+      x-apifox-orders:
+        - guid
+        - start_index
+        - limit
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      x-apifox-orders:
+        - detail
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      x-apifox-orders:
+        - loc
+        - msg
+        - type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+  securitySchemes: {}
+servers: []
+security: []
+
+```

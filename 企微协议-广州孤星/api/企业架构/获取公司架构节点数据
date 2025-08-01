@@ -1,0 +1,120 @@
+# 获取公司架构节点数据
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /arch/get_arch_node_data:
+    post:
+      summary: 获取公司架构节点数据
+      deprecated: false
+      description: ''
+      operationId: decorator_arch_get_arch_node_data_post
+      tags:
+        - 企业架构
+        - Arch
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetArchNodeDataModel'
+            example: ''
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+          headers: {}
+          x-apifox-name: Successful Response
+        '422':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          headers: {}
+          x-apifox-name: Validation Error
+      security: []
+      x-apifox-folder: 企业架构
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-77530564-run
+components:
+  schemas:
+    GetArchNodeDataModel:
+      title: GetArchNodeDataModel
+      required:
+        - guid
+        - node_list
+      type: object
+      properties:
+        guid:
+          title: Guid
+          type: string
+        node_list:
+          title: Node List
+          type: array
+          items:
+            type: object
+            x-apifox-orders: []
+            properties: {}
+            x-apifox-ignore-properties: []
+          default: []
+          description: 同步公司架构的返回值
+      x-apifox-orders:
+        - guid
+        - node_list
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      x-apifox-orders:
+        - detail
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      x-apifox-orders:
+        - loc
+        - msg
+        - type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+  securitySchemes: {}
+servers: []
+security: []
+
+```

@@ -1,0 +1,52 @@
+# 获取CDN信息
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /cdn/get_cdn_info:
+    post:
+      summary: 获取CDN信息
+      deprecated: false
+      description: ''
+      tags:
+        - CDN
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                guid:
+                  type: string
+              x-apifox-orders:
+                - guid
+              required:
+                - guid
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+          x-apifox-name: 成功
+      security: []
+      x-apifox-folder: CDN
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-324318922-run
+components:
+  schemas: {}
+  securitySchemes: {}
+servers: []
+security: []
+
+```

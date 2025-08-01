@@ -1,0 +1,25 @@
+# WeWork Platform Gateway Service Configuration  
+# 企微平台网关服务配置 - 从Nacos获取配置
+
+spring:
+  application:
+    name: gateway-service
+  config:
+    import:
+      - optional:nacos:basic-config-dev.yml
+      - optional:nacos:gateway-service-dev.yml
+  cloud:
+    nacos:
+      config:
+        server-addr: localhost:28848
+        group: wework-platform
+        file-extension: yml
+        username: nacos
+        password: nacos
+      discovery:
+        server-addr: localhost:28848
+        username: nacos
+        password: nacos
+    # 暂时禁用Sentinel，避免依赖问题
+    sentinel:
+      enabled: false

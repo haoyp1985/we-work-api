@@ -1,0 +1,115 @@
+# =================================================================
+# WeWork Platform - 网关服务配置 (开发环境)
+# Data ID: gateway-service-dev.yml
+# Group: wework-platform
+# =================================================================
+
+server:
+  port: 18080
+
+spring:
+  cloud:
+    nacos:
+      discovery:
+        # 增加超时配置，解决gRPC连接超时问题
+        server-addr: localhost:28848
+        username: nacos
+        password: nacos
+        timeout: 10000  # 连接超时时间（毫秒）
+        fail-fast: false  # 启动失败时不快速失败
+        retry:
+          max-attempts: 5  # 最大重试次数
+          initial-interval: 1000  # 初始重试间隔（毫秒）
+          multiplier: 2  # 重试间隔倍数
+          max-interval: 10000  # 最大重试间隔（毫秒）
+      config:
+        timeout: 10000  # 配置获取超时时间
+        retry:
+          max-attempts: 5
+          initial-interval: 1000
+          multiplier: 2
+          max-interval: 10000
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        # 网关健康检查路由 (优先级最高)
+        - id: gateway-health
+          uri: http://localhost:18080
+          predicates:
+            - Path=/api/health
+          filters:
+            - RewritePath=/api/health, /actuator/health
+            
+        # 账号管理服务路由
+        - id: account-service
+          uri: lb://account-service
+          predicates:
+            - Path=/api/accounts/**
+          filters:
+            - StripPrefix=1
+            
+        # 认证服务路由 (指向账号管理服务)
+        - id: auth-service
+          uri: lb://account-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=1
+            
+        # 消息服务路由
+        - id: message-service
+          uri: lb://message-service
+          predicates:
+            - Path=/api/messages/**
+          filters:
+            - StripPrefix=1
+            
+        # 提供商服务路由  
+        - id: provider-service
+          uri: lb://message-service
+          predicates:
+            - Path=/api/providers/**
+          filters:
+            - StripPrefix=1
+            
+        # 监控服务路由 (暂时指向Gateway自身)
+        - id: monitor-service
+          uri: lb://gateway-service
+          predicates:
+            - Path=/api/monitor/**
+          filters:
+            - StripPrefix=1
+
+# API文档配置
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    urls:
+      - name: 网关服务
+        url: /v3/api-docs
+      - name: 账号管理服务
+        url: /v3/api/account/api-docs
+      - name: 消息服务
+        url: /v3/api/message/api-docs
+
+# 日志配置
+logging:
+  level:
+    com.wework.platform: debug
+    org.springframework.cloud.gateway: debug
+  pattern:
+    console: "[%d{yyyy-MM-dd HH:mm:ss}] [%thread] %-5level %logger{36} - %msg%n"
+
+# 监控端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

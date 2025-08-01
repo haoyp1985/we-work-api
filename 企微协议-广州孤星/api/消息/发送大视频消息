@@ -1,0 +1,163 @@
+# 发送大视频消息
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /msg/send_big_video:
+    post:
+      summary: 发送大视频消息
+      deprecated: false
+      description: |-
+
+        使用/cloud/cdn_big_upload上传视频
+
+        使用/cloud/upload_video_preview 上传预览图
+      operationId: decorator_msg_send_video_post
+      tags:
+        - 消息
+        - Msg
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                guid:
+                  type: string
+                conversation_id:
+                  type: string
+                file_id:
+                  type: string
+                size:
+                  type: integer
+                file_name:
+                  type: string
+                md5:
+                  type: string
+                video_duration:
+                  type: integer
+                preview_image_url:
+                  type: string
+                preview_image_width:
+                  type: integer
+                preview_image_height:
+                  type: integer
+                preview_image_size:
+                  type: integer
+                preview_image_md5:
+                  type: string
+              required:
+                - guid
+                - conversation_id
+                - file_id
+                - size
+                - file_name
+                - md5
+                - video_duration
+                - preview_image_url
+                - preview_image_width
+                - preview_image_height
+                - preview_image_size
+                - preview_image_md5
+              x-apifox-orders:
+                - guid
+                - conversation_id
+                - file_id
+                - size
+                - file_name
+                - md5
+                - video_duration
+                - preview_image_url
+                - preview_image_width
+                - preview_image_height
+                - preview_image_size
+                - preview_image_md5
+              x-apifox-ignore-properties: []
+            example:
+              guid: string
+              conversation_id: string
+              file_id: string
+              size: 0
+              file_name: string
+              md5: string
+              video_duration: 0
+              preview_image_url: string
+              preview_image_width: 0
+              preview_image_height: 0
+              preview_image_size: 0
+              preview_image_md5: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+          headers: {}
+          x-apifox-name: Successful Response
+        '422':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          headers: {}
+          x-apifox-name: Validation Error
+      security: []
+      x-apifox-folder: 消息
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-204445025-run
+components:
+  schemas:
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      x-apifox-orders:
+        - detail
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      x-apifox-orders:
+        - loc
+        - msg
+        - type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+  securitySchemes: {}
+servers: []
+security: []
+
+```

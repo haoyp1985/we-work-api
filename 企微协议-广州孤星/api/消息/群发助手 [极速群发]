@@ -1,0 +1,303 @@
+# 极速群发
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /msg/send_group_msg:
+    post:
+      summary: 极速群发
+      deprecated: false
+      description: |-
+        此接口等同于 工作台-群发助手，一个客户一天只能收到一次，发送无需员工手动确认
+
+        需要传入 user_list 或 room_list ， 两者仅能传一个并且最多200条，多的需要分批处理
+      operationId: decorator_msg_send_group_msg_post
+      tags:
+        - 消息/群发助手
+        - Msg
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                guid:
+                  type: string
+                user_list:
+                  type: array
+                  items:
+                    type: string
+                room_list:
+                  type: array
+                  items:
+                    type: string
+                content:
+                  type: string
+                image_msg_list:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      image_url:
+                        type: string
+                      size:
+                        type: integer
+                      thumb_width:
+                        type: integer
+                      thumb_height:
+                        type: integer
+                    x-apifox-orders:
+                      - image_url
+                      - size
+                      - thumb_width
+                      - thumb_height
+                    x-apifox-ignore-properties: []
+                video_msg_list:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      file_id:
+                        type: string
+                      size:
+                        type: integer
+                      file_name:
+                        type: string
+                      aes_key:
+                        type: string
+                      md5:
+                        type: string
+                      video_duration:
+                        type: integer
+                      video_width:
+                        type: integer
+                      video_height:
+                        type: integer
+                    x-apifox-orders:
+                      - file_id
+                      - size
+                      - file_name
+                      - aes_key
+                      - md5
+                      - video_duration
+                      - video_width
+                      - video_height
+                    x-apifox-ignore-properties: []
+                weapp_msg_list:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                      appid:
+                        type: string
+                      appname:
+                        type: string
+                      appicon:
+                        type: string
+                      title:
+                        type: string
+                      page_path:
+                        type: string
+                      file_id:
+                        type: string
+                      size:
+                        type: integer
+                      aes_key:
+                        type: string
+                      md5:
+                        type: string
+                    x-apifox-orders:
+                      - username
+                      - appid
+                      - appname
+                      - appicon
+                      - title
+                      - page_path
+                      - file_id
+                      - size
+                      - aes_key
+                      - md5
+                    x-apifox-ignore-properties: []
+                link_msg_list:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      title:
+                        type: string
+                      description:
+                        type: string
+                      url:
+                        type: string
+                      image_url:
+                        type: string
+                    x-apifox-orders:
+                      - title
+                      - description
+                      - url
+                      - image_url
+                    x-apifox-ignore-properties: []
+                file_msg_list:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      file_id:
+                        type: string
+                      size:
+                        type: integer
+                      file_name:
+                        type: string
+                      aes_key:
+                        type: string
+                      md5:
+                        type: string
+                    x-apifox-orders:
+                      - file_id
+                      - size
+                      - file_name
+                      - aes_key
+                      - md5
+                    x-apifox-ignore-properties: []
+              required:
+                - guid
+                - user_list
+                - room_list
+                - content
+                - image_msg_list
+                - video_msg_list
+                - weapp_msg_list
+                - link_msg_list
+                - file_msg_list
+              x-apifox-orders:
+                - guid
+                - user_list
+                - room_list
+                - content
+                - image_msg_list
+                - video_msg_list
+                - weapp_msg_list
+                - link_msg_list
+                - file_msg_list
+              x-apifox-ignore-properties: []
+            example:
+              guid: 087c16d6-050e-3eda-8e04-68de09780291
+              user_list:
+                - 7881301xxxxxxx
+              room_list:
+                - 10779xxxxxxxx
+              content: 你好
+              image_msg_list:
+                - image_url: >-
+                    https://wework.qpic.cn/wwpic/816939_13XbcgvqQimlLzs_1688522339/0
+                  size: 10000
+                  thumb_width: 300
+                  thumb_height: 240
+              video_msg_list:
+                - file_id: ''
+                  size: 0
+                  file_name: ''
+                  aes_key: ''
+                  md5: ''
+                  video_duration: 15
+                  video_width: 300
+                  video_height: 240
+              weapp_msg_list:
+                - username: ''
+                  appid: ''
+                  appname: ''
+                  appicon: ''
+                  title: ''
+                  page_path: ''
+                  file_id: ''
+                  size: 0
+                  aes_key: ''
+                  md5: ''
+              link_msg_list:
+                - title: ''
+                  description: ''
+                  url: ''
+                  image_url: ''
+              file_msg_list:
+                - file_id: ''
+                  size: 1024
+                  file_name: xxxx
+                  aes_key: ''
+                  md5: ''
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+          headers: {}
+          x-apifox-name: Successful Response
+        '422':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          headers: {}
+          x-apifox-name: Validation Error
+      security: []
+      x-apifox-folder: 消息/群发助手
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-95465038-run
+components:
+  schemas:
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      x-apifox-orders:
+        - detail
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      x-apifox-orders:
+        - loc
+        - msg
+        - type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+  securitySchemes: {}
+servers: []
+security: []
+
+```

@@ -1,0 +1,148 @@
+# 创建新的实例
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /client/create_client:
+    post:
+      summary: 创建新的实例
+      deprecated: false
+      description: >-
+        代理支持http、socks4和socks5的url格式: 如 http://127.0.0.1:10807,
+        socks5://user:pass@10.10.1.10:3128, 不使用代理请留空
+
+
+        client_type 建议使用最新版本
+      operationId: decorator_client_create_client_post
+      tags:
+        - 客户端
+        - Client
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClientModel'
+            example: ''
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+          headers: {}
+          x-apifox-name: Successful Response
+        '422':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          headers: {}
+          x-apifox-name: Validation Error
+      security: []
+      x-apifox-folder: 客户端
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-77530558-run
+components:
+  schemas:
+    CreateClientModel:
+      title: CreateClientModel
+      type: object
+      properties:
+        client_type:
+          title: Client Type
+          type: integer
+          default: 244
+        proxy:
+          title: Proxy
+          type: string
+          default: ''
+        bridge:
+          title: Bridge
+          type: string
+          default: ''
+        auto_start:
+          title: Auto Start
+          type: boolean
+          default: false
+      x-apifox-orders:
+        - client_type
+        - proxy
+        - bridge
+        - auto_start
+      description: |2-
+           - 241: Windows 3.1.0.41
+           - 242: Windows 3.4.0.38
+           - 243: iPad 8.0.41
+           - 244: iPad 8.0.42
+           - 245: iPad 8.0.43
+           - 246: iPad 8.0.44
+           - 247: iPad 8.0.45
+           - 248: iPad 8.0.46
+           - 249: iPad 8.0.47
+           - 250: iPad 8.0.48 
+           - 251: iPad 8.0.49
+           - 252: iPad 8.0.50
+           - 253: iPad 8.0.51
+           - 254: iPad 8.0.52
+           - 255: iPad 8.0.53
+           - 256: iPad 8.0.54
+           - 257: iPad 8.0.55
+           - 497：Windows 3.9.10.19
+           - 753：Mac 3.8.7
+           - 754：Mac 3.8.8
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      x-apifox-orders:
+        - detail
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      x-apifox-orders:
+        - loc
+        - msg
+        - type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+  securitySchemes: {}
+servers: []
+security: []
+
+```

@@ -1,0 +1,117 @@
+# C2C CDN上传
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /cdn/c2c_upload:
+    post:
+      summary: C2C CDN上传
+      deprecated: false
+      description: '参数 file_type: 图片=>1, 视频=>4, 文件&GIF=>5'
+      operationId: decorator_cdn_c2c_upload_post
+      tags:
+        - CDN
+        - CDN
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/pywemodels__cdn__C2CUploadModel'
+            example: ''
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+          headers: {}
+          x-apifox-name: Successful Response
+        '422':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          headers: {}
+          x-apifox-name: Validation Error
+      security: []
+      x-apifox-folder: CDN
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-77530566-run
+components:
+  schemas:
+    pywemodels__cdn__C2CUploadModel:
+      title: C2CUploadModel
+      type: object
+      properties:
+        guid:
+          title: Guid
+          type: string
+          default: ''
+        file_type:
+          title: File Type
+          type: integer
+          default: 0
+        file_path:
+          title: File Path
+          type: string
+          default: ''
+      x-apifox-orders:
+        - guid
+        - file_type
+        - file_path
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      x-apifox-orders:
+        - detail
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      x-apifox-orders:
+        - loc
+        - msg
+        - type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+  securitySchemes: {}
+servers: []
+security: []
+
+```

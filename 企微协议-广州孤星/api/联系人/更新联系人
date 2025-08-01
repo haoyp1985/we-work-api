@@ -1,0 +1,150 @@
+# 更新联系人
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /contact/update_contact:
+    post:
+      summary: 更新联系人
+      deprecated: false
+      description: ''
+      operationId: decorator_contact_update_contact_post
+      tags:
+        - 联系人
+        - Contact
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateContactModel'
+            example: ''
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+          headers: {}
+          x-apifox-name: Successful Response
+        '422':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          headers: {}
+          x-apifox-name: Validation Error
+      security: []
+      x-apifox-folder: 联系人
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-77530630-run
+components:
+  schemas:
+    UpdateContactModel:
+      title: UpdateContactModel
+      required:
+        - guid
+      type: object
+      properties:
+        guid:
+          title: Guid
+          type: string
+        user_id:
+          title: User Id
+          type: string
+          default: ''
+        desc:
+          title: Desc
+          type: string
+          default: ''
+        remark:
+          title: Remark
+          type: string
+          default: ''
+        remark_url:
+          title: Remark Url
+          type: string
+          default: ''
+        company_remark:
+          title: Company Remark
+          type: string
+          default: ''
+        phone_list:
+          title: Phone List
+          type: array
+          items:
+            type: string
+          default: []
+        label_info_list:
+          title: Label Info List
+          type: array
+          items:
+            type: object
+            x-apifox-orders: []
+            properties: {}
+            x-apifox-ignore-properties: []
+          default: []
+      x-apifox-orders:
+        - guid
+        - user_id
+        - desc
+        - remark
+        - remark_url
+        - company_remark
+        - phone_list
+        - label_info_list
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      x-apifox-orders:
+        - detail
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      x-apifox-orders:
+        - loc
+        - msg
+        - type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+  securitySchemes: {}
+servers: []
+security: []
+
+```

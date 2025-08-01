@@ -1,0 +1,133 @@
+# 标记会话已读
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /msg/report_unread:
+    post:
+      summary: 标记会话已读
+      deprecated: false
+      description: ''
+      operationId: decorator_msg_report_unread_post
+      tags:
+        - 消息
+        - Msg
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportUnReadModel'
+            example: ''
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+              example:
+                error_code: 0
+                error_message: ok
+                data:
+                  msg_data:
+                    id: '1067192'
+                    seq: '7272648'
+                    messagetype: 0
+                    sender: '1688856814580613'
+                    receiver: '7881303217905494'
+                    roomid: '0'
+                    contenttype: 2001
+                    content: CAAQAA==
+                    sendtime: 1711649476
+                    flag: 0
+                    devinfo: '0'
+                    appinfo: Q0FVUXhPV1dzQVlZeVBUeXJwYUV3T0FYSUtuVHZSWT0=
+                    sendername: 5bCP5Yqp5omL
+                    asid: '0'
+                  is_svr_fail: false
+          headers: {}
+          x-apifox-name: Successful Response
+        '422':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          headers: {}
+          x-apifox-name: Validation Error
+      security: []
+      x-apifox-folder: 消息
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-77530598-run
+components:
+  schemas:
+    ReportUnReadModel:
+      title: ReportUnReadModel
+      required:
+        - guid
+      type: object
+      properties:
+        guid:
+          title: Guid
+          type: string
+        conversation_id:
+          title: Conversation Id
+          type: string
+          default: ''
+      x-apifox-orders:
+        - guid
+        - conversation_id
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      x-apifox-orders:
+        - detail
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      x-apifox-orders:
+        - loc
+        - msg
+        - type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+  securitySchemes: {}
+servers: []
+security: []
+
+```

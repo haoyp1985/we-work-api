@@ -1,0 +1,418 @@
+# 发送聊天合集（合并转发）
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /msg/send_forward_msg:
+    post:
+      summary: 发送聊天合集（合并转发）
+      deprecated: false
+      description: |2-
+         
+        ### 发送聊天合集
+
+        支持合集消息嵌套
+
+        #### 1. msg_type 值
+
+        ```
+            kTextMsg = 2                  # 文本消息
+            kLocationMsg = 3              # 位置消息
+            kLinkCardMsg = 4              # 链接消息
+            kImageMsg = 5                 # 图片消息
+            kVideoMsg = 7                 # 视频消息
+            kFileMsg = 8                  # 文件消息
+            kSphFeedMsg = 14              # 视频号消息
+            kForwardMsg = 16              # 合集消息
+            kSphLiveMsg = 17              # 视频号直播消息
+        ```
+
+        ```json
+        {
+            "guid": "cfec5383-a80d-3a11-b7e7-5f46a7b39a73",
+            "conversation_id" : "S:788129xxx",
+            "message_list": [
+                {
+                    "msg_type": 2,
+                    "content": "文本消息",
+                    "sender_user_id":"xxx",
+                    "sender_name": "xxx"
+                },   
+                {
+                    "msg_type": 3,
+                    "longitude": 116.39,
+                    "latitude": 39.90,
+                    "address": "北京市东城区东长安街",
+                    "title": "天安门",
+                    "zoom": 15.0,
+                    "sender_user_id":"xxx",
+                    "sender_name": "xxx"
+                }, 
+                {
+                    "msg_type": 4,
+                    "title": "百度一下",
+                    "desc": "用科技让复杂的世界更简单！",
+                    "url": "https://www.baidu.com",
+                    "image_url": "https://img.jbzj.com/file_images/Illustrator/201702/2017020411591786.png",
+                    "sender_user_id":"xxx",
+                    "sender_name": "xxx"
+                },
+                {
+                    "msg_type": 5,
+                    "file_id": "3069020102046230600201000204283cabaa02030f4df90204ace63cb70204659fef4b042430666438386237652d633365622d346439632d623134362d61323233386531613734653902010002030bc970041025e2ceb37e281290fcac8d32e5353f4e0201020201000400",
+                    "size": 772458,
+                    "aes_key": "7e7c6dc5e523f6e66354a0619d12d423",
+                    "md5": "25e2ceb37e281290fcac8d32e5353f4e",
+                    "image_width": 600,
+                    "image_height": 800,
+                    "sender_user_id":"xxx",
+                    "sender_name": "xxx"
+                },
+                {
+                    "msg_type": 7,
+                    "file_id": "30819402010204818c3081890201000204283cabaa02030f4df90204ace63cb702046597b5ef044c4e45574944315f32383363616261616163653633636237363539666630363630303032653830325f32303961366435332d336166642d346165352d613666332d646637626431333264613735020100020400a2a910041025794543d528125d6221e60bb5d903ca0201040201000400",
+                    "size": 10660107,
+                    "aes_key": "62643161646438636365356163313239",
+                    "md5": "25794543d528125d6221e60bb5d903ca",
+                    "file_name": "a.mp4",
+                    "video_duration": 14,
+                    "video_width": 800,
+                    "video_height": 450,
+                    "sender_user_id":"xxx",
+                    "sender_name": "xxx"
+                },
+                {
+                    "msg_type": 8,
+                    "file_id": "3069020102046230600201000204283cabaa02030f4df90204ace63cb70204659fefc9042462353361363839622d666531622d343434652d393464642d62316237313763666137653302010002037ca7100410e313756042fcb1fc862ad942407acb040201050201000400",
+                    "size": 8169221,
+                    "aes_key": "0e8f16ace6f64ad49e9c2b9531bbabaf",
+                    "md5": "e313756042fcb1fc862ad942407acb04",
+                    "file_name": "Linux 内核源代码完全注释。第三版.pdf",
+                    "sender_user_id":"xxx",
+                    "sender_name": "xxx"
+                },
+                { 
+                    "sender": "7881300714912093",
+                    "sender_name": "发送人",
+                    "sendtime": 1737360028,
+                    "extra_content": "qr4BUwogVz53mzldTZ4sxw6VhGxxx",
+                    "feed_type": 4,
+                    "cover_url": "http://wxapp.tc.qq.com/251/20350/stodownload?encfilekey=xxx",
+                    "thumb_url": "http://wxapp.tc.qq.com/251/20350/stodownload?encfilekexxxx",
+                    "avatar": "http://wx.qlogo.cn/finderhead/JnLD74Ljseib5pY29wmbPJJWO7aoC7RkDuicK0Yb2Gpj8/0",
+                    "nickname": "暄梓的幸福生活",
+                    "desc": "全新的暄梓！回归！",
+                    "url": "https://channels.weixin.qq.com/web/pages/live?eid=xxxx",
+                    "extras": "CAEQACLsEAAE9OmXBAAAAQAAAAAAgGnLZApg9xxx",
+                    "object_id": "14667437582464845966",
+                    "object_nonce_id": "16428651166334942233_0_0_0_0_0",
+                    "msg_type": 14
+                },
+                { 
+                    "sender": "7881300714912093",
+                    "sender_name": "发送人",
+                    "sendtime": 1737360028,
+                    "extra_content": "qr4BUwogVz53mzldTZ4sxw6VhGxxx",
+                    "feed_type": 9,
+                    "cover_url": "http://wxapp.tc.qq.com/251/20350/stodownload?encfilekey=xxx",
+                    "thumb_url": "http://wxapp.tc.qq.com/251/20350/stodownload?encfilekexxxx",
+                    "avatar": "http://wx.qlogo.cn/finderhead/JnLD74Ljseib5pY29wmbPJJWO7aoC7RkDuicK0Yb2Gpj8/0",
+                    "nickname": "暄梓的幸福生活",
+                    "desc": "全新的暄梓！回归！",
+                    "url": "https://channels.weixin.qq.com/web/pages/live?eid=xxxx",
+                    "extras": "CAEQACLsEAAE9OmXBAAAAQAAAAAAgGnLZApg9xxx",
+                    "object_id": "14667437582464845966",
+                    "object_nonce_id": "16428651166334942233_0_0_0_0_0",
+                    "msg_type": 17
+                },
+                {
+                    "msg_type": 16,
+                    "message_list": [
+                        {
+                            "msg_type": 2,
+                            "content": "嵌套文本消息",
+                            "sender_user_id":"xxx",
+                            "sender_name": "xxx"
+                        }
+                    ]
+                }
+            ]
+        }
+        ```
+      operationId: decorator_msg_send_forward_msg_post
+      tags:
+        - 消息
+        - Msg
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                guid:
+                  type: string
+                conversation_id:
+                  type: string
+                message_list:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      msg_type:
+                        type: integer
+                      content:
+                        type: string
+                      sender_user_id:
+                        type: string
+                      sendtime:
+                        type: integer
+                      sender_name:
+                        type: string
+                      longitude:
+                        type: number
+                      latitude:
+                        type: number
+                      address:
+                        type: string
+                      title:
+                        type: string
+                      zoom:
+                        type: integer
+                      desc:
+                        type: string
+                      url:
+                        type: string
+                      image_url:
+                        type: string
+                      file_id:
+                        type: string
+                      size:
+                        type: integer
+                      aes_key:
+                        type: string
+                      md5:
+                        type: string
+                      image_width:
+                        type: integer
+                      image_height:
+                        type: integer
+                      file_name:
+                        type: string
+                      video_duration:
+                        type: integer
+                      video_width:
+                        type: integer
+                      video_height:
+                        type: integer
+                      message_list:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            msg_type:
+                              type: integer
+                            sendtime:
+                              type: integer
+                            content:
+                              type: string
+                            sender_user_id:
+                              type: string
+                            sender_name:
+                              type: string
+                          x-apifox-orders:
+                            - msg_type
+                            - sendtime
+                            - content
+                            - sender_user_id
+                            - sender_name
+                          x-apifox-ignore-properties: []
+                    required:
+                      - msg_type
+                      - sendtime
+                      - sender_user_id
+                      - sender_name
+                      - title
+                      - file_id
+                      - size
+                      - aes_key
+                      - md5
+                      - file_name
+                    x-apifox-orders:
+                      - msg_type
+                      - content
+                      - sender_user_id
+                      - sendtime
+                      - sender_name
+                      - longitude
+                      - latitude
+                      - address
+                      - title
+                      - zoom
+                      - desc
+                      - url
+                      - image_url
+                      - file_id
+                      - size
+                      - aes_key
+                      - md5
+                      - image_width
+                      - image_height
+                      - file_name
+                      - video_duration
+                      - video_width
+                      - video_height
+                      - message_list
+                    x-apifox-ignore-properties: []
+              required:
+                - guid
+                - conversation_id
+                - message_list
+              x-apifox-orders:
+                - guid
+                - conversation_id
+                - message_list
+              x-apifox-ignore-properties: []
+            example:
+              guid: cfec5383-a80d-3a11-b7e7-5f46a7b39a73
+              conversation_id: S:788129xxx
+              message_list:
+                - msg_type: 2
+                  content: 文本消息
+                  sender_user_id: xxx
+                  sendtime: 1737360028
+                  sender_name: xxx
+                - msg_type: 3
+                  longitude: 116.39
+                  latitude: 39.9
+                  address: 北京市东城区东长安街
+                  title: 天安门
+                  sendtime: 1737360028
+                  zoom: 15
+                  sender_user_id: xxx
+                  sender_name: xxx
+                - msg_type: 4
+                  title: 百度一下
+                  desc: 用科技让复杂的世界更简单！
+                  url: https://www.baidu.com
+                  image_url: >-
+                    https://img.jbzj.com/file_images/Illustrator/201702/2017020411591786.png
+                  sendtime: 1737360028
+                  sender_user_id: xxx
+                  sender_name: xxx
+                - msg_type: 5
+                  sendtime: 1737360028
+                  file_id: >-
+                    3069020102046230600201000204283cabaa02030f4df90204ace63cb70204659fef4b042430666438386237652d633365622d346439632d623134362d61323233386531613734653902010002030bc970041025e2ceb37e281290fcac8d32e5353f4e0201020201000400
+                  size: 772458
+                  aes_key: 7e7c6dc5e523f6e66354a0619d12d423
+                  md5: 25e2ceb37e281290fcac8d32e5353f4e
+                  image_width: 600
+                  image_height: 800
+                  sender_user_id: xxx
+                  sender_name: xxx
+                - msg_type: 7
+                  sendtime: 1737360028
+                  file_id: >-
+                    30819402010204818c3081890201000204283cabaa02030f4df90204ace63cb702046597b5ef044c4e45574944315f32383363616261616163653633636237363539666630363630303032653830325f32303961366435332d336166642d346165352d613666332d646637626431333264613735020100020400a2a910041025794543d528125d6221e60bb5d903ca0201040201000400
+                  size: 10660107
+                  aes_key: '62643161646438636365356163313239'
+                  md5: 25794543d528125d6221e60bb5d903ca
+                  file_name: a.mp4
+                  video_duration: 14
+                  video_width: 800
+                  video_height: 450
+                  sender_user_id: xxx
+                  sender_name: xxx
+                - msg_type: 8
+                  sendtime: 1737360028
+                  file_id: >-
+                    3069020102046230600201000204283cabaa02030f4df90204ace63cb70204659fefc9042462353361363839622d666531622d343434652d393464642d62316237313763666137653302010002037ca7100410e313756042fcb1fc862ad942407acb040201050201000400
+                  size: 8169221
+                  aes_key: 0e8f16ace6f64ad49e9c2b9531bbabaf
+                  md5: e313756042fcb1fc862ad942407acb04
+                  file_name: Linux 内核源代码完全注释。第三版.pdf
+                  sender_user_id: xxx
+                  sender_name: xxx
+                - msg_type: 16
+                  sendtime: 1737360028
+                  message_list:
+                    - msg_type: 2
+                      sendtime: 1737360028
+                      content: 嵌套文本消息
+                      sender_user_id: xxx
+                      sender_name: xxx
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+          headers: {}
+          x-apifox-name: Successful Response
+        '422':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          headers: {}
+          x-apifox-name: Validation Error
+      security: []
+      x-apifox-folder: 消息
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-141290079-run
+components:
+  schemas:
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      x-apifox-orders:
+        - detail
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      x-apifox-orders:
+        - loc
+        - msg
+        - type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+  securitySchemes: {}
+servers: []
+security: []
+
+```

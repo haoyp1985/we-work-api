@@ -1,0 +1,59 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # Prometheus自身监控
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # MySQL监控 (需要mysql_exporter)
+  - job_name: 'mysql'
+    static_configs:
+      - targets: ['localhost:9104']
+    scrape_interval: 30s
+
+  # Redis监控 (需要redis_exporter)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['localhost:9121']
+    scrape_interval: 30s
+
+  # RabbitMQ监控
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15692']
+    scrape_interval: 30s
+
+  # Spring Boot应用监控
+  - job_name: 'spring-boot-apps'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: 
+        - 'gateway-service:8080'
+        - 'account-service:8081'
+        - 'message-service:8082'
+        - 'monitor-service:8083'
+        - 'callback-service:8084'
+    scrape_interval: 15s
+
+  # Node Exporter (系统监控)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['localhost:9100']
+
+  # 容器监控 (cAdvisor)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['localhost:8080']
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093

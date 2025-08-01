@@ -1,0 +1,59 @@
+# 恢复备份实例
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /private/restore_instance:
+    post:
+      summary: 恢复备份实例
+      deprecated: false
+      description: ''
+      tags:
+        - 运维
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                guid:
+                  type: string
+                backup_data:
+                  type: string
+              required:
+                - guid
+                - backup_data
+              x-apifox-orders:
+                - guid
+                - backup_data
+            example:
+              guid: ''
+              backup_data: ''
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+          x-apifox-name: 成功
+      security: []
+      x-apifox-folder: 运维
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-155210252-run
+components:
+  schemas: {}
+  securitySchemes: {}
+servers: []
+security: []
+
+```

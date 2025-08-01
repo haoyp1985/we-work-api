@@ -1,0 +1,86 @@
+# =================================================================
+# WeWork Platform - 共享配置文件 (开发环境)
+# Data ID: shared-config-dev.yml
+# Group: wework-platform
+# =================================================================
+
+spring:
+  # 数据库配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:23306/wework_platform?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: wework
+    password: wework123456
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initial-size: 10
+      min-idle: 10
+      max-active: 100
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+
+  # Redis配置
+  data:
+    redis:
+      host: localhost
+      port: 26379
+      database: 0
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+
+  # 缓存配置
+  cache:
+    type: redis
+    redis:
+      time-to-live: 1800000
+      key-prefix: "wework:cache:"
+      use-key-prefix: true
+
+# JWT配置
+jwt:
+  secret: ${JWT_SECRET:wework-platform-secret-key-for-jwt-token-generation}
+  expiration: 86400000  # 24小时
+  refresh-expiration: 604800000  # 7天
+
+# 加密配置
+encryption:
+  password:
+    salt: ${PASSWORD_SALT:wework-platform-password-salt}
+    iterations: 10000
+
+# 监控配置
+monitoring:
+  metrics:
+    enabled: true
+    export:
+      prometheus:
+        enabled: true
+  health:
+    check-interval: 30000
+    failure-threshold: 3
+
+# 日志配置
+logging:
+  level:
+    root: info
+    com.wework.platform: debug
+    org.springframework.security: debug
+  pattern:
+    console: "[%d{yyyy-MM-dd HH:mm:ss}] [%thread] %-5level [%logger{36}] - %msg%n"
+    file: "[%d{yyyy-MM-dd HH:mm:ss}] [%thread] %-5level [%logger{36}] - %msg%n"
+  file:
+    name: ./logs/wework-platform.log
+    max-size: 100MB
+    max-history: 30

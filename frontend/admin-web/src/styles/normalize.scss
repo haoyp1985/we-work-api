@@ -1,0 +1,152 @@
+// ===========================
+// 重置样式
+// ===========================
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  font-size: $font-size-base;
+  line-height: $line-height-base;
+  color: var(--text-color-primary);
+  background-color: var(--bg-color-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+#app {
+  height: 100%;
+}
+
+// 链接
+a {
+  color: $primary-color;
+  text-decoration: none;
+  background-color: transparent;
+  
+  &:hover {
+    color: lighten($primary-color, 10%);
+    text-decoration: underline;
+  }
+  
+  &:focus {
+    outline: thin dotted;
+  }
+  
+  &:active,
+  &:hover {
+    outline: 0;
+  }
+}
+
+// 标题
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: $font-weight-medium;
+  line-height: 1.2;
+  color: var(--text-color-primary);
+}
+
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1.125rem; }
+h5 { font-size: 1rem; }
+h6 { font-size: 0.875rem; }
+
+// 段落
+p {
+  margin: 0 0 1rem;
+}
+
+// 列表
+ul, ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+li {
+  list-style: none;
+}
+
+// 表格
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+th, td {
+  padding: 0;
+}
+
+// 按钮
+button {
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  
+  &:focus {
+    outline: none;
+  }
+}
+
+// 输入框
+input, textarea, select {
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  
+  &:focus {
+    outline: none;
+  }
+}
+
+// 图片
+img {
+  vertical-align: middle;
+  border-style: none;
+  max-width: 100%;
+  height: auto;
+}
+
+// 代码
+code, pre {
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 1em;
+}
+
+// 水平线
+hr {
+  box-sizing: content-box;
+  height: 0;
+  overflow: visible;
+  margin: 1rem 0;
+  border: 0;
+  border-top: 1px solid var(--border-color-base);
+}
+
+// 禁用元素
+[disabled] {
+  cursor: not-allowed !important;
+}

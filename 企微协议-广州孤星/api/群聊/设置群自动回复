@@ -1,0 +1,65 @@
+# 设置群自动回复
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /room/modify_room_auto_reply:
+    post:
+      summary: 设置群自动回复
+      deprecated: false
+      description: ''
+      tags:
+        - 群聊
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                guid:
+                  type: string
+                room_id:
+                  type: string
+                auto_reply:
+                  type: boolean
+              required:
+                - guid
+                - room_id
+                - auto_reply
+              x-apifox-orders:
+                - guid
+                - room_id
+                - auto_reply
+            example:
+              guid: string
+              room_id: string
+              forbid_add_contact: true
+              forbid_mod_name: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+          x-apifox-name: 成功
+      security: []
+      x-apifox-folder: 群聊
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-227550346-run
+components:
+  schemas: {}
+  securitySchemes: {}
+servers: []
+security: []
+
+```

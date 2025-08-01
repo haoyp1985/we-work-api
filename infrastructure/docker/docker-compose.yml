@@ -1,0 +1,370 @@
+services:
+  # MySQL 8.0 主数据库
+  mysql:
+    image: mysql:8.0
+    container_name: wework-mysql
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    environment:
+      MYSQL_ROOT_PASSWORD: wework123456
+      MYSQL_DATABASE: wework_platform
+      MYSQL_USER: wework
+      MYSQL_PASSWORD: wework123456
+    ports:
+      - "23306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d
+      - ./database/conf/my.cnf:/etc/mysql/conf.d/my.cnf
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - wework-network
+
+  # Redis 7.0 缓存和消息队列
+  redis:
+    image: redis:7.0-alpine
+    container_name: wework-redis
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    ports:
+      - "26379:6379"
+    volumes:
+      - redis_data:/data
+      - ./database/conf/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - wework-network
+
+  # RocketMQ 消息队列
+  rocketmq-nameserver:
+    image: foxiswho/rocketmq:4.8.0
+    platform: linux/amd64  # 指定平台兼容ARM64 Mac
+    container_name: wework-rocketmq-nameserver
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    ports:
+      - "29876:9876"
+    command: ["sh", "mqnamesrv"]
+    environment:
+      JAVA_OPT_EXT: "-Xms128m -Xmx200m"
+    volumes:
+      - rocketmq_nameserver_logs:/home/rocketmq/logs
+      - rocketmq_nameserver_store:/home/rocketmq/store
+    networks:
+      - wework-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "netstat -an | grep 9876 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  rocketmq-broker:
+    image: foxiswho/rocketmq:4.8.0
+    platform: linux/amd64  # 指定平台兼容ARM64 Mac
+    container_name: wework-rocketmq-broker
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    ports:
+      - "20909:10909"
+      - "20911:10911"
+    depends_on:
+      - rocketmq-nameserver
+    command: ["sh", "mqbroker", "-n", "rocketmq-nameserver:9876", "-c", "/opt/rocketmq-4.8.0/conf/broker.conf"]
+    environment:
+      JAVA_OPT_EXT: "-Xms256m -Xmx400m -Xmn128m"
+    volumes:
+      - rocketmq_broker_logs:/opt/logs
+      - rocketmq_broker_store:/opt/store
+      - ./messaging/rocketmq/broker.conf:/opt/rocketmq-4.8.0/conf/broker.conf
+    networks:
+      - wework-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "netstat -an | grep 10911 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  rocketmq-console:
+    image: styletang/rocketmq-console-ng:latest
+    platform: linux/amd64  # 指定平台兼容ARM64 Mac
+    container_name: wework-rocketmq-console
+    restart: unless-stopped
+    ports:
+      - "29877:8080"
+    depends_on:
+      - rocketmq-nameserver
+    environment:
+      JAVA_OPTS: "-Drocketmq.namesrv.addr=rocketmq-nameserver:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
+    networks:
+      - wework-network
+
+  # InfluxDB 2.0 时序数据库
+  influxdb:
+    image: influxdb:2.7-alpine
+    container_name: wework-influxdb
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: wework123456
+      DOCKER_INFLUXDB_INIT_ORG: wework
+      DOCKER_INFLUXDB_INIT_BUCKET: metrics
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: wework-admin-token-2024
+    ports:
+      - "28086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+      - influxdb_config:/etc/influxdb2
+    networks:
+      - wework-network
+
+  # MinIO 对象存储
+  minio:
+    image: minio/minio:latest
+    container_name: wework-minio
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    environment:
+      MINIO_ROOT_USER: wework
+      MINIO_ROOT_PASSWORD: wework123456
+    ports:
+      - "29002:9000"     # API端口
+      - "29001:9001"     # Console端口
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - wework-network
+
+  # Nacos 服务注册和配置中心
+  nacos:
+    image: nacos/nacos-server:v2.3.2
+    platform: linux/amd64  # 指定平台兼容ARM64 Mac
+    container_name: wework-nacos
+    restart: unless-stopped
+    # 暂时移除内存限制，待稳定运行后再调整
+    # deploy:
+    #   resources:
+    #     limits:
+    #       memory: 512M
+    #     reservations:
+    #       memory: 256M
+    environment:
+      MODE: standalone
+      PREFER_HOST_MODE: hostname
+      SPRING_DATASOURCE_PLATFORM: mysql
+      MYSQL_SERVICE_HOST: mysql
+      MYSQL_SERVICE_DB_NAME: nacos_config
+      MYSQL_SERVICE_PORT: 3306
+      MYSQL_SERVICE_USER: wework
+      MYSQL_SERVICE_PASSWORD: wework123456
+      MYSQL_SERVICE_DB_PARAM: characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
+      NACOS_AUTH_ENABLE: true
+      NACOS_AUTH_TOKEN: d2V3b3JrLW5hY29zLWp3dC1zZWNyZXQta2V5LTMyLWJ5dGVzLW1pbmltdW0tbGVuZ3RoLXJlcXVpcmVkLWZvci1obWFjLXNoYQo=
+      NACOS_AUTH_IDENTITY_KEY: serverIdentity
+      NACOS_AUTH_IDENTITY_VALUE: security
+      NACOS_SERVER_PORT: 8848
+    ports:
+      - "28848:8848"     # HTTP端口
+      - "29848:9848"     # gRPC端口
+      - "28080:8080"     # 控制台Web界面端口
+    volumes:
+      - nacos_logs:/home/nacos/logs
+    depends_on:
+      - mysql
+    networks:
+      - wework-network
+
+  # Prometheus 监控指标收集
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: wework-prometheus
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    ports:
+      - "29090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - wework-network
+
+  # Grafana 数据可视化
+  grafana:
+    image: grafana/grafana:latest
+    container_name: wework-grafana
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: wework123456
+      GF_USERS_ALLOW_SIGN_UP: false
+    ports:
+      - "23000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+    networks:
+      - wework-network
+
+  # Elasticsearch (ELK Stack)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: wework-elasticsearch
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx768m
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    ports:
+      - "29200:9200"
+      - "29300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - wework-network
+
+  # Kibana (ELK Stack)
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: wework-kibana
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "25601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - wework-network
+
+  # Logstash (ELK Stack)
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    container_name: wework-logstash
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    volumes:
+      - ./monitoring/logstash/pipeline:/usr/share/logstash/pipeline
+      - ./monitoring/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+    ports:
+      - "25000:5000"     # TCP input
+      - "25044:5044"     # Beats input
+    environment:
+      LS_JAVA_OPTS: "-Xmx400m -Xms256m"
+    depends_on:
+      - elasticsearch
+    networks:
+      - wework-network
+
+  # Jaeger 分布式链路追踪
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: wework-jaeger
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    environment:
+      COLLECTOR_OTLP_ENABLED: true
+    ports:
+      - "26686:16686"   # Jaeger UI
+      - "24268:14268"   # HTTP collector
+      - "24250:14250"   # gRPC collector
+      - "26831:6831/udp" # UDP agent
+    networks:
+      - wework-network
+
+volumes:
+  mysql_data:
+  redis_data:
+  rocketmq_nameserver_logs:
+  rocketmq_nameserver_store:
+  rocketmq_broker_logs:
+  rocketmq_broker_store:
+  influxdb_data:
+  influxdb_config:
+  minio_data:
+  nacos_logs:
+  prometheus_data:
+  grafana_data:
+  elasticsearch_data:
+
+networks:
+  wework-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+          gateway: 172.25.0.1

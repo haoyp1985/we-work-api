@@ -1,0 +1,118 @@
+# 获取群发任务详情
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /msg/get_group_msg_detail:
+    post:
+      summary: 获取群发任务详情
+      deprecated: false
+      description: ''
+      operationId: decorator_msg_get_group_msg_detail_post
+      tags:
+        - 消息/群发助手
+        - Msg
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetGroupMsgDetailModel'
+            example: ''
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: string
+          headers: {}
+          x-apifox-name: 成功
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          headers: {}
+          x-apifox-name: 参数错误
+      security: []
+      x-apifox-folder: 消息/群发助手
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-252443258-run
+components:
+  schemas:
+    GetGroupMsgDetailModel:
+      title: GetGroupMsgDetailModel
+      required:
+        - guid
+        - msgid
+      type: object
+      properties:
+        guid:
+          title: Guid
+          type: string
+        msgid:
+          title: Msgid
+          type: string
+        send_type:
+          title: Send Type
+          type: integer
+          default: 0
+      x-apifox-orders:
+        - guid
+        - msgid
+        - send_type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      x-apifox-orders:
+        - detail
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      x-apifox-orders:
+        - loc
+        - msg
+        - type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+  securitySchemes: {}
+servers: []
+security: []
+
+```

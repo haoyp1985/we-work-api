@@ -1,0 +1,249 @@
+# 发送微信小店商品信息
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /msg/send_finder_product:
+    post:
+      summary: 发送微信小店商品信息
+      deprecated: false
+      description: |-
+        ### 发送引用消息
+
+        json请求
+        ```json
+        {
+          "guid": "b8e6188a-33ee-3c47-8ae5-918416fc551f",
+          "conversation_id": "R:10810965948920358",
+          "quote": "引用消息",
+          "content": "测试引用消息",
+          "appinfo": "9038742283964224996",
+          "content_type": 2,
+          "sender": "7881300714912093",
+          "message": {
+              "msg_type": 2,
+              "content": "引用消息"
+           }
+        }
+        ```
+
+        #### 字段说明
+        - `quote` 引用消息简要内容
+        - `content` 回复内容
+        - `appinfo` 引用原消息的appinfo
+        - `content_type` 引用原消息的content_type
+        - `sender` 引用原消息的发送者
+
+
+        #### message 字段说明
+
+        #### 1. msg_type 值
+
+        ```python
+            kTextMsg = 2                  # 文本消息
+            kLocationMsg = 3              # 位置消息
+            kLinkCardMsg = 4              # 链接消息
+            kImageMsg = 5                 # 图片消息
+            kVideoMsg = 7                 # 视频消息
+            kFileMsg = 8                  # 文件消息
+            kForwardMsg = 16              # 合集消息
+        ```
+
+        ```json
+        [
+            {
+                "msg_type": 2,
+                "content": "文本消息"
+            },   
+            {
+                "msg_type": 3,
+                "longitude": 116.39,
+                "latitude": 39.90,
+                "address": "北京市东城区东长安街",
+                "title": "天安门",
+                "zoom": 15.0
+            }, 
+            {
+                "msg_type": 4,
+                "title": "百度一下",
+                "desc": "用科技让复杂的世界更简单！",
+                "url": "https://www.baidu.com",
+                "image_url": "https://img.jbzj.com/file_images/Illustrator/201702/2017020411591786.png"
+            },
+            {
+                "msg_type": 5,
+                "file_id": "3069020102046230600201000204283cabaa02030f4df90204ace63cb70204659fef4b042430666438386237652d633365622d346439632d623134362d61323233386531613734653902010002030bc970041025e2ceb37e281290fcac8d32e5353f4e0201020201000400",
+                "size": 772458,
+                "aes_key": "7e7c6dc5e523f6e66354a0619d12d423",
+                "md5": "25e2ceb37e281290fcac8d32e5353f4e",
+                "image_width": 600,
+                "image_height": 800,
+                "auth_key": ""
+            },
+            {
+                "msg_type": 7,
+                "file_id": "30819402010204818c3081890201000204283cabaa02030f4df90204ace63cb702046597b5ef044c4e45574944315f32383363616261616163653633636237363539666630363630303032653830325f32303961366435332d336166642d346165352d613666332d646637626431333264613735020100020400a2a910041025794543d528125d6221e60bb5d903ca0201040201000400",
+                "size": 10660107,
+                "aes_key": "62643161646438636365356163313239",
+                "md5": "25794543d528125d6221e60bb5d903ca",
+                "file_name": "a.mp4",
+                "video_duration": 14,
+                "video_width": 800,
+                "video_height": 450,
+                "auth_key": ""
+            },
+            {
+                "msg_type": 8,
+                "file_id": "3069020102046230600201000204283cabaa02030f4df90204ace63cb70204659fefc9042462353361363839622d666531622d343434652d393464642d62316237313763666137653302010002037ca7100410e313756042fcb1fc862ad942407acb040201050201000400",
+                "size": 8169221,
+                "aes_key": "0e8f16ace6f64ad49e9c2b9531bbabaf",
+                "md5": "e313756042fcb1fc862ad942407acb04",
+                "file_name": "Linux 内核源代码完全注释。第三版.pdf",
+                "auth_key": ""
+            },
+            {
+                "msg_type": 16,
+                "message_list": [
+                    {
+                        "msg_type": 2,
+                        "content": "嵌套文本消息"
+                    }
+                ]
+            }
+        ]
+        ```
+      tags:
+        - 消息
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                guid:
+                  type: string
+                conversation_id:
+                  type: string
+                content:
+                  type: object
+                  properties:
+                    finder_live_id:
+                      type: string
+                    finder_username:
+                      type: string
+                    finder_object_id:
+                      type: string
+                    finder_nonce_id:
+                      type: string
+                    product_appid:
+                      type: string
+                    product_page_path:
+                      type: string
+                    product_id:
+                      type: string
+                    product_cover_url:
+                      type: string
+                    product_title:
+                      type: string
+                    product_desc:
+                      type: string
+                    product_price:
+                      type: string
+                    platform_headimg:
+                      type: string
+                    platform_nickname:
+                      type: string
+                    shop_info:
+                      type: object
+                      properties:
+                        shop_id:
+                          type: string
+                        url:
+                          type: string
+                        extra_info:
+                          type: string
+                      required:
+                        - shop_id
+                        - url
+                        - extra_info
+                      x-apifox-orders:
+                        - shop_id
+                        - url
+                        - extra_info
+                  required:
+                    - finder_live_id
+                    - finder_username
+                    - finder_object_id
+                    - finder_nonce_id
+                    - product_appid
+                    - product_page_path
+                    - product_id
+                    - product_cover_url
+                    - product_title
+                    - product_desc
+                    - product_price
+                    - platform_headimg
+                    - platform_nickname
+                    - shop_info
+                  x-apifox-orders:
+                    - finder_live_id
+                    - finder_username
+                    - finder_object_id
+                    - finder_nonce_id
+                    - product_appid
+                    - product_page_path
+                    - product_id
+                    - product_cover_url
+                    - product_title
+                    - product_desc
+                    - product_price
+                    - platform_headimg
+                    - platform_nickname
+                    - shop_info
+              required:
+                - guid
+                - conversation_id
+                - content
+              x-apifox-orders:
+                - guid
+                - conversation_id
+                - content
+            example:
+              guid: b8e6188a-33ee-3c47-8ae5-918416fc551f
+              conversation_id: R:10810965948920358
+              quote: 引用消息
+              content: 测试引用消息
+              appinfo: '9038742283964224996'
+              content_type: 2
+              sender: '7881300714912093'
+              message:
+                msg_type: 2
+                content: 引用消息
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+          x-apifox-name: 成功
+      security: []
+      x-apifox-folder: 消息
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-227551525-run
+components:
+  schemas: {}
+  securitySchemes: {}
+servers: []
+security: []
+
+```

@@ -1,0 +1,46 @@
+# 获取所有实例info
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /client/all_infos:
+    post:
+      summary: 获取所有实例info
+      deprecated: false
+      description: ''
+      tags:
+        - 客户端
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+          x-apifox-name: 成功
+      security: []
+      x-apifox-folder: 客户端
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-261852395-run
+components:
+  schemas: {}
+  securitySchemes: {}
+servers: []
+security: []
+
+```

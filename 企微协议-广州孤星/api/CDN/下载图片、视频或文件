@@ -1,0 +1,133 @@
+# 下载图片、视频或文件
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /cdn/c2c_download:
+    post:
+      summary: 下载图片、视频或文件
+      deprecated: false
+      description: '参数 file_type: 原图=>1, 中图=>2, 缩略图=>3, 视频=>4, 文件&GIF=>5'
+      operationId: decorator_cdn_c2c_download_post
+      tags:
+        - CDN
+        - CDN
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/pywemodels__cdn__C2CDownloadModel'
+            example: ''
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+          headers: {}
+          x-apifox-name: Successful Response
+        '422':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          headers: {}
+          x-apifox-name: Validation Error
+      security: []
+      x-apifox-folder: CDN
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-77530567-run
+components:
+  schemas:
+    pywemodels__cdn__C2CDownloadModel:
+      title: C2CDownloadModel
+      type: object
+      properties:
+        guid:
+          title: Guid
+          type: string
+          default: ''
+        file_type:
+          title: File Type
+          type: integer
+          default: 2
+          description: 原图=>1, 中图=>2, 缩略图=>3, 视频=>4, 文件&GIF=>5
+        file_id:
+          title: File Id
+          type: string
+          default: ''
+        aes_key:
+          title: Aes Key
+          type: string
+          default: ''
+        file_size:
+          title: File Size
+          type: integer
+          default: 0
+        save_path:
+          title: Save Path
+          type: string
+          default: ''
+      x-apifox-orders:
+        - guid
+        - file_type
+        - file_id
+        - aes_key
+        - file_size
+        - save_path
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      x-apifox-orders:
+        - detail
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      x-apifox-orders:
+        - loc
+        - msg
+        - type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+  securitySchemes: {}
+servers: []
+security: []
+
+```

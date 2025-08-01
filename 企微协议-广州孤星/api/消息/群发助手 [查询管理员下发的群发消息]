@@ -1,0 +1,59 @@
+# 查询管理员下发的群发消息
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /msg/query_group_msg_confirm_list:
+    post:
+      summary: 查询管理员下发的群发消息
+      deprecated: false
+      description: ''
+      tags:
+        - 消息/群发助手
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                guid:
+                  type: string
+                next_page:
+                  type: string
+              required:
+                - guid
+                - next_page
+              x-apifox-orders:
+                - guid
+                - next_page
+            example:
+              guid: string
+              next_page: ''
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+          x-apifox-name: 成功
+      security: []
+      x-apifox-folder: 消息/群发助手
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-236868960-run
+components:
+  schemas: {}
+  securitySchemes: {}
+servers: []
+security: []
+
+```

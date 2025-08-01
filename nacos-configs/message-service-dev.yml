@@ -1,0 +1,118 @@
+# =================================================================
+# WeWork Platform - 消息服务配置 (开发环境)
+# Data ID: message-service-dev.yml
+# Group: wework-platform
+# =================================================================
+
+server:
+  port: 18082
+
+spring:
+  # RocketMQ配置
+  cloud:
+    stream:
+      rocketmq:
+        binder:
+          name-server: localhost:29876
+      bindings:
+        message-send-output:
+          destination: message-send
+          content-type: application/json
+        message-callback-input:
+          destination: message-callback
+          content-type: application/json
+          group: message-service-group
+        account-event-input:
+          destination: account-events
+          content-type: application/json
+          group: message-service-group
+
+# RocketMQ Spring Boot配置 (用于RocketMQTemplate)
+rocketmq:
+  name-server: localhost:29876
+  producer:
+    group: message-service-producer-group
+    send-message-timeout: 3000
+    retry-times-when-send-failed: 3
+    max-message-size: 4194304
+  consumer:
+    group: message-service-consumer-group
+    
+# 原生RocketMQ客户端配置 (用于自定义客户端)
+rocketmq-native:
+  name-server: localhost:29876
+  producer:
+    group: message-service-native-producer-group
+    send-message-timeout: 3000
+    retry-times-when-send-failed: 3
+    max-message-size: 4194304
+
+# WeWork消息配置
+wework:
+  message:
+    # 发送配置
+    send:
+      batch-size: 100
+      max-retry: 3
+      timeout: 30000
+      delay-level: 3
+    
+    # 模板配置
+    template:
+      cache-size: 1000
+      cache-ttl: 3600
+    
+    # 限流配置
+    rate-limit:
+      enabled: true
+      permits-per-second: 100
+      max-burst: 200
+
+# WeWork Provider配置
+app:
+  wework:
+    providers:
+      guangzhou-guxing:
+        api-base-url: http://localhost:19000
+        timeout-ms: 30000
+        retry-count: 3
+        enabled: true
+        priority: 1
+
+# 消息队列配置
+message:
+  queue:
+    high-priority:
+      name: "message-high-priority"
+      concurrency: 10
+    normal-priority:
+      name: "message-normal-priority"
+      concurrency: 5
+    low-priority:
+      name: "message-low-priority"
+      concurrency: 2
+
+# API文档配置
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+# 日志配置
+logging:
+  level:
+    com.wework.platform: debug
+    org.springframework.cloud.stream: debug
+  pattern:
+    console: "[%d{yyyy-MM-dd HH:mm:ss}] [%thread] %-5level %logger{36} - %msg%n"
+
+# 监控端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

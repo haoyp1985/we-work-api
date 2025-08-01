@@ -1,0 +1,44 @@
+# WeWork Platform Message Service Configuration
+# 企微平台消息服务配置 - 简化版本，大部分配置从Nacos获取
+
+spring:
+  application:
+    name: message-service
+  config:
+    import: 
+      - optional:nacos:basic-config-dev.yml
+      - optional:nacos:data-config-dev.yml
+      - optional:nacos:message-service-dev.yml
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration
+  cloud:
+    nacos:
+      config:
+        server-addr: localhost:28848
+        group: wework-platform
+        file-extension: yml
+        username: nacos
+        password: nacos
+      discovery:
+        server-addr: localhost:28848
+        username: nacos
+        password: nacos
+
+# 开发环境特定配置
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  cloud:
+    nacos:
+      config:
+        server-addr: localhost:28848
+        group: wework-platform
+        username: nacos
+        password: nacos
+      discovery:
+        server-addr: localhost:28848
+        username: nacos
+        password: nacos

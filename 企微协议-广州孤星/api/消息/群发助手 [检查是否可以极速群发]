@@ -1,0 +1,67 @@
+# 检查是否可以极速群发
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /msg/check_can_send_group_msg:
+    post:
+      summary: 检查是否可以极速群发
+      deprecated: false
+      description: ''
+      tags:
+        - 消息/群发助手
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                guid:
+                  type: string
+                vid_list:
+                  type: array
+                  items:
+                    type: string
+                is_room:
+                  type: boolean
+              required:
+                - guid
+                - vid_list
+                - is_room
+              x-apifox-orders:
+                - guid
+                - vid_list
+                - is_room
+            example:
+              guid: string
+              vid_list:
+                - string
+              is_room: false
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+          headers: {}
+          x-apifox-name: 成功
+      security: []
+      x-apifox-folder: 消息/群发助手
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-219035183-run
+components:
+  schemas: {}
+  securitySchemes: {}
+servers: []
+security: []
+
+```

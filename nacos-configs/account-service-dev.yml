@@ -1,0 +1,74 @@
+# =================================================================
+# WeWork Platform - 账号管理服务配置 (开发环境)
+# Data ID: account-service-dev.yml
+# Group: wework-platform
+# =================================================================
+
+server:
+  port: 18081
+
+spring:
+  # RocketMQ配置
+  cloud:
+    stream:
+      rocketmq:
+        binder:
+          name-server: localhost:29876
+      bindings:
+        account-event-output:
+          destination: account-events
+          content-type: application/json
+        account-event-input:
+          destination: account-events
+          content-type: application/json
+          group: account-service-group
+
+# WeWork API配置
+wework:
+  api:
+    base-url: https://qyapi.weixin.qq.com
+    corp-id: ${WEWORK_CORP_ID:your-corp-id}
+    corp-secret: ${WEWORK_CORP_SECRET:your-corp-secret}
+    agent-id: ${WEWORK_AGENT_ID:your-agent-id}
+  
+  # 账号配置
+  account:
+    max-accounts: 1000
+    login-timeout: 300000
+    heartbeat-interval: 30000
+    max-retry-count: 3
+
+# 业务配置
+business:
+  qr-code:
+    expire-time: 300
+    refresh-interval: 30
+  sync:
+    enabled: true
+    interval: 60000
+
+# API文档配置
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+# 日志配置
+logging:
+  level:
+    com.wework.platform: debug
+    org.hibernate.SQL: debug
+    org.hibernate.type.descriptor.sql.BasicBinder: trace
+  pattern:
+    console: "[%d{yyyy-MM-dd HH:mm:ss}] [%thread] %-5level %logger{36} - %msg%n"
+
+# 监控端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

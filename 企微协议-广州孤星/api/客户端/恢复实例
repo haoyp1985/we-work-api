@@ -1,0 +1,135 @@
+# 恢复实例
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /client/restore_client:
+    post:
+      summary: 恢复实例
+      deprecated: false
+      description: >-
+        代理支持http、socks4和socks5的url格式: 如 http://127.0.0.1:10807,
+        socks5://user:pass@10.10.1.10:3128, 不使用代理请留空
+      operationId: decorator_client_restore_client_post
+      tags:
+        - 客户端
+        - Client
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestoreClientModel'
+            example: ''
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+          headers: {}
+          x-apifox-name: Successful Response
+        '422':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          headers: {}
+          x-apifox-name: Validation Error
+      security: []
+      x-apifox-folder: 客户端
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-77530559-run
+components:
+  schemas:
+    RestoreClientModel:
+      title: RestoreClientModel
+      required:
+        - guid
+      type: object
+      properties:
+        guid:
+          title: Guid
+          type: string
+        proxy:
+          title: Proxy
+          type: string
+          default: ''
+        bridge:
+          title: Bridge
+          type: string
+          default: ''
+        sync_history_msg:
+          title: Sync History Msg
+          type: boolean
+          default: true
+        force_online:
+          title: Force Online
+          type: boolean
+          default: false
+        auto_start:
+          title: Auto Start
+          type: boolean
+          default: true
+      x-apifox-orders:
+        - guid
+        - proxy
+        - bridge
+        - sync_history_msg
+        - force_online
+        - auto_start
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      x-apifox-orders:
+        - detail
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      x-apifox-orders:
+        - loc
+        - msg
+        - type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+  securitySchemes: {}
+servers: []
+security: []
+
+```

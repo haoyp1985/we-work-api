@@ -1,0 +1,156 @@
+# 发送视频消息
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /msg/send_video:
+    post:
+      summary: 发送视频消息
+      deprecated: false
+      description: |-
+        当视频文件大于20M需要使用/msg/send_big_video发送
+        - 使用/cloud/cdn_big_upload上传视频
+        - 使用/cloud/upload_video_preview 上传预览图
+      operationId: decorator_msg_send_video_post
+      tags:
+        - 消息
+        - Msg
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendVideoModel'
+            example: ''
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+          headers: {}
+          x-apifox-name: Successful Response
+        '422':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          headers: {}
+          x-apifox-name: Validation Error
+      security: []
+      x-apifox-folder: 消息
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/2640672/apis/api-77530588-run
+components:
+  schemas:
+    SendVideoModel:
+      title: SendVideoModel
+      required:
+        - guid
+      type: object
+      properties:
+        guid:
+          title: Guid
+          type: string
+        conversation_id:
+          title: Conversation Id
+          type: string
+          default: ''
+        file_id:
+          title: File Id
+          type: string
+          default: ''
+        size:
+          title: Size
+          type: integer
+          default: 0
+        file_name:
+          title: File Name
+          type: string
+          default: ''
+        aes_key:
+          title: Aes Key
+          type: string
+          default: ''
+        md5:
+          title: Md5
+          type: string
+          default: ''
+        video_duration:
+          title: Video Duration
+          type: integer
+          default: 0
+        video_width:
+          title: Video Width
+          type: integer
+          default: 0
+        video_height:
+          title: Video Height
+          type: integer
+          default: 0
+      x-apifox-orders:
+        - guid
+        - conversation_id
+        - file_id
+        - size
+        - file_name
+        - aes_key
+        - md5
+        - video_duration
+        - video_width
+        - video_height
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+      x-apifox-orders:
+        - detail
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      x-apifox-orders:
+        - loc
+        - msg
+        - type
+      x-apifox-ignore-properties: []
+      x-apifox-folder: ''
+  securitySchemes: {}
+servers: []
+security: []
+
+```

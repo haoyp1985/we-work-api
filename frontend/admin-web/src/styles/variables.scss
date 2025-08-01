@@ -1,0 +1,156 @@
+// ===========================
+// 颜色变量
+// ===========================
+
+// 主题色
+$primary-color: #409eff;
+$success-color: #67c23a;
+$warning-color: #e6a23c;
+$danger-color: #f56c6c;
+$info-color: #909399;
+
+// 文字颜色
+$text-color-primary: #303133;
+$text-color-regular: #606266;
+$text-color-secondary: #909399;
+$text-color-placeholder: #c0c4cc;
+
+// 边框颜色
+$border-color-base: #dcdfe6;
+$border-color-light: #e4e7ed;
+$border-color-lighter: #ebeef5;
+$border-color-extra-light: #f2f6fc;
+
+// 背景颜色
+$bg-color: #ffffff;
+$bg-color-page: #f2f3f5;
+$bg-color-overlay: rgba(255, 255, 255, 0.8);
+
+// ===========================
+// 尺寸变量
+// ===========================
+
+// 布局尺寸
+$header-height: 60px;
+$sidebar-width: 240px;
+$sidebar-collapsed-width: 64px;
+$footer-height: 50px;
+
+// 边距和间距
+$base-margin: 16px;
+$base-padding: 16px;
+$small-margin: 8px;
+$small-padding: 8px;
+$large-margin: 24px;
+$large-padding: 24px;
+
+// 圆角
+$border-radius-small: 2px;
+$border-radius-base: 4px;
+$border-radius-large: 6px;
+$border-radius-round: 20px;
+$border-radius-circle: 50%;
+
+// 阴影
+$box-shadow-base: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
+$box-shadow-dark: 0 2px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.12);
+$box-shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+
+// ===========================
+// 字体变量
+// ===========================
+
+// 字体大小
+$font-size-extra-small: 10px;
+$font-size-small: 12px;
+$font-size-base: 14px;
+$font-size-medium: 16px;
+$font-size-large: 18px;
+$font-size-extra-large: 20px;
+
+// 字体粗细
+$font-weight-light: 300;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 700;
+
+// 行高
+$line-height-base: 1.5;
+$line-height-small: 1.2;
+$line-height-large: 1.8;
+
+// ===========================
+// 层级变量
+// ===========================
+
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 1040;
+$z-index-modal: 1050;
+$z-index-popover: 1060;
+$z-index-tooltip: 1070;
+$z-index-toast: 1080;
+
+// ===========================
+// 动画变量
+// ===========================
+
+$transition-duration-fast: 0.15s;
+$transition-duration-base: 0.3s;
+$transition-duration-slow: 0.5s;
+
+$transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+
+// ===========================
+// 响应式断点
+// ===========================
+
+$breakpoint-xs: 480px;
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+$breakpoint-xxl: 1600px;
+
+// ===========================
+// 深色主题变量
+// ===========================
+
+:root {
+  // 亮色主题
+  --bg-color: #{$bg-color};
+  --bg-color-page: #{$bg-color-page};
+  --text-color-primary: #{$text-color-primary};
+  --text-color-regular: #{$text-color-regular};
+  --border-color-base: #{$border-color-base};
+}
+
+[data-theme="dark"] {
+  // 深色主题
+  --bg-color: #1d1e1f;
+  --bg-color-page: #0a0a0a;
+  --text-color-primary: #e5eaf3;
+  --text-color-regular: #cfd3dc;
+  --border-color-base: #414243;
+}
+
+// ===========================
+// Element Plus 主题定制
+// ===========================
+
+:root {
+  --el-color-primary: #{$primary-color};
+  --el-color-success: #{$success-color};
+  --el-color-warning: #{$warning-color};
+  --el-color-danger: #{$danger-color};
+  --el-color-info: #{$info-color};
+  
+  --el-border-radius-base: #{$border-radius-base};
+  --el-border-radius-small: #{$border-radius-small};
+  --el-border-radius-large: #{$border-radius-large};
+  
+  --el-font-size-base: #{$font-size-base};
+  --el-font-size-small: #{$font-size-small};
+  --el-font-size-large: #{$font-size-large};
+}
