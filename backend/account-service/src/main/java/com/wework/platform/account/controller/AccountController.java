@@ -55,12 +55,12 @@ public class AccountController {
     @GetMapping
     @Operation(summary = "分页查询账号", description = "根据租户ID分页查询账号列表")
     public ApiResponse<PageResponse<AccountResponse>> listAccounts(
-            @Parameter(description = "租户ID") @RequestParam String tenantId,
-            @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer page,
-            @Parameter(description = "每页大小") @RequestParam(defaultValue = "20") Integer size,
-            @Parameter(description = "排序字段") @RequestParam(required = false) String sortBy,
-            @Parameter(description = "排序方向") @RequestParam(defaultValue = "desc") String sortDir,
-            @Parameter(description = "搜索关键词") @RequestParam(required = false) String keyword) {
+            @Parameter(description = "租户ID") @RequestParam("tenantId") String tenantId,
+            @Parameter(description = "页码") @RequestParam(value = "page", defaultValue = "1") Integer page,
+            @Parameter(description = "每页大小") @RequestParam(value = "size", defaultValue = "20") Integer size,
+            @Parameter(description = "排序字段") @RequestParam(value = "sortBy", required = false) String sortBy,
+            @Parameter(description = "排序方向") @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
+            @Parameter(description = "搜索关键词") @RequestParam(value = "keyword", required = false) String keyword) {
         
         log.debug("分页查询账号: 租户ID={}, 页码={}, 大小={}", tenantId, page, size);
         

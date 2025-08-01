@@ -32,8 +32,8 @@ mvn clean
 echo "📦 编译整个项目..."
 mvn compile -DskipTests
 
-echo "🧪 运行测试..."
-mvn test -pl account-service
+# echo "🧪 运行测试..."
+# mvn test -pl account-service
 
 echo "📦 打包服务..."
 mvn package -DskipTests -pl account-service

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 企微账号Repository
@@ -173,13 +174,7 @@ public interface WeWorkAccountRepository extends BaseMapper<WeWorkAccount> {
             "AND (last_heartbeat_time IS NULL OR last_heartbeat_time < #{checkTime})")
     List<WeWorkAccount> selectNeedHeartbeatCheck(@Param("checkTime") LocalDateTime checkTime);
 
-    /**
-     * 统计租户账号数量
-     */
-    @Select("SELECT COUNT(*) FROM wework_accounts WHERE tenant_id = #{tenantId}")
-    int countByTenantId(@Param("tenantId") String tenantId);
-
-            /**
+        /**
          * 统计租户在线账号数量
          */
         @Select("SELECT COUNT(*) FROM wework_accounts WHERE tenant_id = #{tenantId} AND status = 'online'")

@@ -7,8 +7,8 @@ import com.wework.platform.common.enums.AlertLevel;
 import com.wework.platform.common.enums.AlertStatus;
 import com.wework.platform.common.tenant.TenantRequired;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -29,11 +29,11 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @TenantRequired
 public class NotificationServiceImpl implements NotificationService {
 
-    private final MailSender mailSender;
+    @Autowired(required = false)
+    private MailSender mailSender;
     private final WebClient webClient = WebClient.builder().build();
 
     @Value("${notification.sms.enabled:false}")
@@ -106,6 +106,11 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         try {
+            if (mailSender == null) {
+                log.warn("邮件服务未配置，跳过邮件通知: alertId={}", alert.getId());
+                return;
+            }
+            
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(emailFrom);
             message.setTo(getNotificationEmails(alert.getTenantId()));

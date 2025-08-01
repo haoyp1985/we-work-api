@@ -133,10 +133,8 @@ public class TenantInterceptor implements HandlerInterceptor {
 
         try {
             // 验证并解析Token
-            if (!jwtUtils.validateToken(token)) {
-                log.warn("JWT Token验证失败");
-                return;
-            }
+            // 验证Token（如果无效会抛出异常）
+            jwtUtils.verifyToken(token);
 
             String tenantId = jwtUtils.getTenantId(token);
             String userId = jwtUtils.getUserId(token);

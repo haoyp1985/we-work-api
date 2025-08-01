@@ -75,6 +75,12 @@
             <artifactId>jedis</artifactId>
         </dependency>
 
+        <!-- AOP Support -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
         <!-- API文档 -->
         <dependency>
             <groupId>org.springdoc</groupId>
