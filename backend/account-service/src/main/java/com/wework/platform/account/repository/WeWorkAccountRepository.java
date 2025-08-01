@@ -45,13 +45,105 @@ public interface WeWorkAccountRepository extends BaseMapper<WeWorkAccount> {
     List<WeWorkAccount> selectByTenantIdAndStatus(@Param("tenantId") String tenantId, 
                                                   @Param("status") AccountStatus status);
 
-    /**
+        /**
      * 更新账号状态
      */
     @Update("UPDATE wework_accounts SET status = #{status}, updated_at = #{updatedAt} WHERE id = #{id}")
     int updateStatus(@Param("id") String id, 
-                     @Param("status") AccountStatus status, 
-                     @Param("updatedAt") LocalDateTime updatedAt);
+                    @Param("status") AccountStatus status,
+                    @Param("updatedAt") LocalDateTime updatedAt);
+
+    /**
+     * 根据租户ID统计账号数量
+     */
+    @Select("SELECT COUNT(*) FROM wework_accounts WHERE tenant_id = #{tenantId}")
+    long countByTenantId(@Param("tenantId") String tenantId);
+
+    /**
+     * 根据租户ID和状态统计账号数量
+     */
+    @Select("SELECT COUNT(*) FROM wework_accounts WHERE tenant_id = #{tenantId} AND status = #{status}")
+    long countByTenantIdAndStatus(@Param("tenantId") String tenantId, @Param("status") AccountStatus status);
+
+    /**
+     * 获取租户的在线账号列表
+     */
+    @Select("SELECT * FROM wework_accounts WHERE tenant_id = #{tenantId} AND status = 'ONLINE' ORDER BY last_heartbeat_time DESC")
+    List<WeWorkAccount> findOnlineAccountsByTenantId(@Param("tenantId") String tenantId);
+
+    /**
+     * 根据租户ID和健康度范围查询账号
+     */
+    @Select("SELECT * FROM wework_accounts WHERE tenant_id = #{tenantId} " +
+            "AND health_score BETWEEN #{minScore} AND #{maxScore} " +
+            "ORDER BY health_score DESC")
+    List<WeWorkAccount> findByTenantIdAndHealthScoreRange(@Param("tenantId") String tenantId,
+                                                         @Param("minScore") Integer minScore,
+                                                         @Param("maxScore") Integer maxScore);
+
+    /**
+     * 获取租户账号状态统计
+     */
+    @Select("SELECT status, COUNT(*) as count FROM wework_accounts " +
+            "WHERE tenant_id = #{tenantId} GROUP BY status")
+    List<Map<String, Object>> getAccountStatusStatsByTenantId(@Param("tenantId") String tenantId);
+
+    /**
+     * 查询需要监控的账号（在线状态且超过心跳间隔时间）
+     */
+    @Select("SELECT * FROM wework_accounts WHERE tenant_id = #{tenantId} " +
+            "AND status = 'ONLINE' " +
+            "AND (last_heartbeat_time IS NULL OR last_heartbeat_time < #{timeThreshold}) " +
+            "ORDER BY last_heartbeat_time ASC")
+    List<WeWorkAccount> findAccountsNeedingMonitor(@Param("tenantId") String tenantId,
+                                                  @Param("timeThreshold") LocalDateTime timeThreshold);
+
+    /**
+     * 批量更新账号健康度评分
+     */
+    @Update("UPDATE wework_accounts SET health_score = #{healthScore}, updated_at = NOW() " +
+            "WHERE id = #{accountId}")
+    int updateHealthScore(@Param("accountId") String accountId, @Param("healthScore") Integer healthScore);
+
+    /**
+     * 更新账号心跳时间
+     */
+    @Update("UPDATE wework_accounts SET last_heartbeat_time = #{heartbeatTime}, updated_at = NOW() " +
+            "WHERE id = #{accountId}")
+    int updateHeartbeatTime(@Param("accountId") String accountId, @Param("heartbeatTime") LocalDateTime heartbeatTime);
+
+    /**
+     * 查询长时间离线的账号
+     */
+    @Select("SELECT * FROM wework_accounts WHERE tenant_id = #{tenantId} " +
+            "AND status = 'OFFLINE' " +
+            "AND updated_at < #{timeThreshold} " +
+            "ORDER BY updated_at ASC")
+    List<WeWorkAccount> findLongOfflineAccounts(@Param("tenantId") String tenantId,
+                                               @Param("timeThreshold") LocalDateTime timeThreshold);
+
+    /**
+     * 查询异常状态的账号
+     */
+    @Select("SELECT * FROM wework_accounts WHERE tenant_id = #{tenantId} " +
+            "AND (status = 'ERROR' OR health_score < #{minHealthScore}) " +
+            "ORDER BY health_score ASC, updated_at ASC")
+    List<WeWorkAccount> findProblematicAccounts(@Param("tenantId") String tenantId,
+                                               @Param("minHealthScore") Integer minHealthScore);
+
+    /**
+     * 更新重试次数
+     */
+    @Update("UPDATE wework_accounts SET retry_count = #{retryCount}, updated_at = NOW() " +
+            "WHERE id = #{accountId}")
+    int updateRetryCount(@Param("accountId") String accountId, @Param("retryCount") Integer retryCount);
+
+    /**
+     * 重置重试次数
+     */
+    @Update("UPDATE wework_accounts SET retry_count = 0, updated_at = NOW() " +
+            "WHERE tenant_id = #{tenantId} AND status = 'ONLINE'")
+    int resetRetryCountForOnlineAccounts(@Param("tenantId") String tenantId);
 
     /**
      * 更新心跳时间
@@ -87,9 +179,15 @@ public interface WeWorkAccountRepository extends BaseMapper<WeWorkAccount> {
     @Select("SELECT COUNT(*) FROM wework_accounts WHERE tenant_id = #{tenantId}")
     int countByTenantId(@Param("tenantId") String tenantId);
 
-    /**
-     * 统计租户在线账号数量
-     */
-    @Select("SELECT COUNT(*) FROM wework_accounts WHERE tenant_id = #{tenantId} AND status = 'online'")
-    int countOnlineByTenantId(@Param("tenantId") String tenantId);
+            /**
+         * 统计租户在线账号数量
+         */
+        @Select("SELECT COUNT(*) FROM wework_accounts WHERE tenant_id = #{tenantId} AND status = 'online'")
+        int countOnlineByTenantId(@Param("tenantId") String tenantId);
+
+        /**
+         * 根据状态查询账号
+         */
+        @Select("SELECT * FROM wework_accounts WHERE status = #{status}")
+        List<WeWorkAccount> selectByStatus(@Param("status") AccountStatus status);
 }

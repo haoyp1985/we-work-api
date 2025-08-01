@@ -202,7 +202,7 @@ public class AccountServiceImpl implements AccountService {
             JSONObject qrData = weWorkApiClient.getLoginQRCode(guid);
 
             // 更新账号状态
-            accountRepository.updateStatus(account.getId(), AccountStatus.LOGGING, LocalDateTime.now());
+            accountRepository.updateStatus(account.getId(), AccountStatus.WAITING_QR, LocalDateTime.now());
 
             // 缓存登录信息
             String loginKey = CACHE_LOGIN_PREFIX + account.getId();
@@ -402,7 +402,7 @@ public class AccountServiceImpl implements AccountService {
      */
     private void checkTenantQuota(String tenantId) {
         // TODO: 实现租户配额检查逻辑
-        int accountCount = accountRepository.countByTenantId(tenantId);
+        long accountCount = accountRepository.countByTenantId(tenantId);
         log.debug("租户 {} 当前账号数量: {}", tenantId, accountCount);
     }
 

@@ -17,32 +17,53 @@ public enum AccountStatus {
     /**
      * 已创建
      */
-    CREATED("created", "已创建"),
+    CREATED("created", "已创建", 1),
 
     /**
-     * 登录中
+     * 初始化中
      */
-    LOGGING("logging", "登录中"),
+    INITIALIZING("initializing", "初始化中", 2),
+
+    /**
+     * 等待扫码
+     */
+    WAITING_QR("waiting_qr", "等待扫码", 3),
+
+    /**
+     * 等待确认
+     */
+    WAITING_CONFIRM("waiting_confirm", "等待确认", 4),
+
+    /**
+     * 验证中
+     */
+    VERIFYING("verifying", "验证中", 5),
 
     /**
      * 在线
      */
-    ONLINE("online", "在线"),
+    ONLINE("online", "在线", 10),
 
     /**
      * 离线
      */
-    OFFLINE("offline", "离线"),
+    OFFLINE("offline", "离线", 6),
 
     /**
      * 异常
      */
-    ERROR("error", "异常");
+    ERROR("error", "异常", 7),
+
+    /**
+     * 恢复中
+     */
+    RECOVERING("recovering", "恢复中", 8);
 
     @EnumValue
     @JsonValue
     private final String code;
     private final String description;
+    private final int priority; // 状态优先级，数值越高表示状态越好
 
     public static AccountStatus fromCode(String code) {
         for (AccountStatus status : values()) {
@@ -65,5 +86,58 @@ public enum AccountStatus {
      */
     public boolean isError() {
         return this == ERROR;
+    }
+
+    /**
+     * 是否为最终状态
+     */
+    public boolean isFinalState() {
+        return this == ONLINE || this == OFFLINE || this == ERROR;
+    }
+
+    /**
+     * 是否为过渡状态
+     */
+    public boolean isTransitionState() {
+        return this == INITIALIZING || this == WAITING_QR || 
+               this == WAITING_CONFIRM || this == VERIFYING || 
+               this == RECOVERING;
+    }
+
+    /**
+     * 是否可以开始登录
+     */
+    public boolean canStartLogin() {
+        return this == CREATED || this == OFFLINE || this == ERROR;
+    }
+
+    /**
+     * 是否需要用户干预
+     */
+    public boolean needsUserIntervention() {
+        return this == WAITING_QR || this == WAITING_CONFIRM || this == VERIFYING;
+    }
+
+    /**
+     * 获取状态颜色（用于前端显示）
+     */
+    public String getStatusColor() {
+        switch (this) {
+            case ONLINE:
+                return "success";
+            case OFFLINE:
+                return "warning";
+            case ERROR:
+                return "danger";
+            case RECOVERING:
+            case INITIALIZING:
+                return "info";
+            case WAITING_QR:
+            case WAITING_CONFIRM:
+            case VERIFYING:
+                return "primary";
+            default:
+                return "default";
+        }
     }
 }
