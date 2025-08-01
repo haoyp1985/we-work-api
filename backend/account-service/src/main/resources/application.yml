@@ -40,3 +40,10 @@ spring:
         server-addr: localhost:28848
         username: nacos
         password: nacos
+
+# 临时调试配置
+logging:
+  level:
+    com.wework.platform.account.service.impl.UserServiceImpl: DEBUG
+    com.wework.platform.account.repository: DEBUG
+    org.apache.ibatis: DEBUG

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { UserInfo, LoginRequest, LoginResponse } from '@/types'
+import type { UserInfo, LoginRequest, LoginResponse, TenantInfo } from '@/types'
+import { TenantStatus, TenantType } from '@/types'
 import { login, logout, getUserInfo } from '@/api/auth'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { ElMessage } from 'element-plus'
@@ -69,6 +70,11 @@ export const useUserStore = defineStore('user', () => {
       userInfo.value = user
       roles.value = user.roles || []
       permissions.value = user.permissions || []
+      
+      // 设置租户信息
+      if (user.tenantId) {
+        await setUserTenant(user.tenantId)
+      }
       
       ElMessage.success('登录成功')
       return true
@@ -172,6 +178,37 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  const setUserTenant = async (tenantId: string) => {
+    try {
+      // 导入tenantStore (延迟导入避免循环依赖)
+      const { useTenantStore } = await import('./tenant')
+      const tenantStore = useTenantStore()
+      
+      // 根据tenantId创建租户信息 (临时方案，实际应该从API获取)
+      const tenantInfo: TenantInfo = {
+        id: tenantId,
+        name: tenantId === 'default-tenant-id-001' ? '默认租户' : '演示租户', 
+        code: tenantId === 'default-tenant-id-001' ? 'DEFAULT' : 'DEMO',
+        type: TenantType.ENTERPRISE,
+        status: TenantStatus.ACTIVE,
+        description: '系统租户',
+        logo: '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+      
+      // 设置当前租户
+      tenantStore.currentTenant = tenantInfo
+      
+      // 保存到本地存储
+      localStorage.setItem('current-tenant', JSON.stringify(tenantInfo))
+      
+      console.log('✅ 租户信息设置成功:', tenantInfo)
+    } catch (error) {
+      console.error('❌ 设置租户信息失败:', error)
+    }
+  }
+
   const resetState = () => {
     token.value = ''
     userInfo.value = null
@@ -197,6 +234,7 @@ export const useUserStore = defineStore('user', () => {
     logoutAction,
     getUserInfoAction,
     updateUserInfo,
+    setUserTenant,
     resetState
   }
 })

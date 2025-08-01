@@ -2,6 +2,7 @@ package com.wework.platform.account.controller;
 
 import com.wework.platform.account.dto.*;
 import com.wework.platform.account.service.AccountService;
+import com.wework.platform.account.service.UserService;
 import com.wework.platform.common.dto.ApiResponse;
 import com.wework.platform.common.dto.PageRequest;
 import com.wework.platform.common.dto.PageResponse;
@@ -32,6 +33,7 @@ import java.util.Map;
 public class AccountController {
 
     private final AccountService accountService;
+    private final UserService userService;
     private final JwtUtils jwtUtils;
 
     @PostMapping
@@ -159,34 +161,14 @@ public class AccountController {
             @Valid @RequestBody AdminLoginRequest request) {
         log.info("管理员登录: {}", request.getUsername());
         
-        // 简单的用户名密码验证（实际项目中应该从数据库验证）
-        if (!"admin".equals(request.getUsername()) || !"123456".equals(request.getPassword())) {
-            return ApiResponse.error("用户名或密码错误");
+        try {
+            // 使用UserService进行数据库验证
+            AdminLoginResponse response = userService.authenticateUser(request);
+            return ApiResponse.success("登录成功", response);
+        } catch (Exception e) {
+            log.error("用户登录失败: {}, 错误: {}", request.getUsername(), e.getMessage());
+            return ApiResponse.error(e.getMessage());
         }
-        
-        // 创建用户信息
-        UserInfo userInfo = new UserInfo();
-        userInfo.setUserId("admin");
-        userInfo.setUsername("admin");
-        userInfo.setNickname("系统管理员");
-        userInfo.setRole("ADMIN");
-        userInfo.setTenantId("default");
-        userInfo.setEnabled(true);
-        userInfo.setCreateTime(LocalDateTime.now());
-        userInfo.setLastLoginTime(LocalDateTime.now());
-        
-        // 生成JWT Token
-        String token = jwtUtils.generateToken("admin", "admin", "default");
-        String refreshToken = jwtUtils.generateToken("admin", "admin", "default");
-        
-        // 构建响应
-        AdminLoginResponse response = new AdminLoginResponse();
-        response.setToken(token);
-        response.setRefreshToken(refreshToken);
-        response.setUser(userInfo);
-        response.setExpiresIn(7200); // 2小时
-        
-        return ApiResponse.success("登录成功", response);
     }
 
     @PostMapping("/logout")

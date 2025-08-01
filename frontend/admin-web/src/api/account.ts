@@ -14,8 +14,9 @@ export const getAccountList = (params: PageParams & {
   name?: string
   status?: string
   wxid?: string
+  tenantId?: string
 }) => {
-  return http.get<PageResult<WeWorkAccount>>('/accounts', params)
+  return http.get<PageResult<WeWorkAccountDetail>>('/accounts', params)
 }
 
 /**

@@ -253,6 +253,11 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { DataTable, StatusIndicator } from '@/components/ui'
 import { formatDateTime } from '@/utils/format'
 import type { WeWorkAccountDetail } from '@/types'
+import { getAccountList, createAccount, updateAccount, deleteAccount } from '@/api/account'
+import { useTenantStore } from '@/stores/modules/tenant'
+
+// 状态管理
+const tenantStore = useTenantStore()
 
 // 响应式数据
 const loading = ref(false)
@@ -266,51 +271,10 @@ const tableRef = ref()
 const formRef = ref()
 const uploadRef = ref()
 
-// 模拟数据
-const accountList = ref<WeWorkAccountDetail[]>([
-  {
-    id: '1',
-    tenantId: 'tenant-001',
-    accountName: '客服01',
-    weWorkGuid: 'wx123456789abcdef',
-    phone: '13800138001',
-    proxyId: 'proxy-001',
-    callbackUrl: 'https://api.example.com/callback',
-    status: 'ONLINE',
-    healthScore: 95,
-    lastLoginTime: '2024-01-01T10:00:00Z',
-    lastHeartbeatTime: '2024-01-01T10:30:00Z',
-    autoReconnect: true,
-    monitorInterval: 30,
-    maxRetryCount: 3,
-    retryCount: 0,
-    tenantTag: 'VIP',
-    autoRecoveryAttempts: 0,
-    lastAutoRecoveryTime: '',
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T10:30:00Z'
-  },
-  {
-    id: '2',
-    tenantId: 'tenant-001',
-    accountName: '销售02',
-    weWorkGuid: 'wx987654321fedcba',
-    phone: '13800138002',
-    status: 'OFFLINE',
-    healthScore: 72,
-    lastLoginTime: '2024-01-01T08:00:00Z',
-    lastHeartbeatTime: '2024-01-01T09:15:00Z',
-    autoReconnect: false,
-    monitorInterval: 60,
-    maxRetryCount: 5,
-    retryCount: 2,
-    tenantTag: '普通',
-    autoRecoveryAttempts: 0,
-    lastAutoRecoveryTime: '',
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T09:15:00Z'
-  }
-])
+// 账号列表数据
+const accountList = ref<WeWorkAccountDetail[]>([])
+
+
 
 // 统计数据
 const stats = computed(() => {
@@ -495,11 +459,29 @@ const batchActions = [
 const loadAccounts = async () => {
   try {
     loading.value = true
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    pagination.total = accountList.value.length
+    
+    // 获取当前租户ID
+    const tenantId = tenantStore.currentTenant?.id || 'tenant-001'
+    
+    // 调用真实API
+    const response = await getAccountList({
+      page: pagination.current,
+      size: pagination.size,
+      name: filters.keyword,
+      status: filters.status,
+      tenantId  // 作为额外参数传递
+    } as any)
+    
+    if (response.code === 200) {
+      accountList.value = response.data.records || []
+      pagination.total = response.data.total || 0
+      ElMessage.success('加载账号列表成功')
+    } else {
+      ElMessage.error(response.message || '加载账号列表失败')
+    }
   } catch (error: any) {
-    ElMessage.error('加载账号列表失败')
+    console.error('加载账号列表失败:', error)
+    ElMessage.error('加载账号列表失败: ' + (error.message || '网络错误'))
   } finally {
     loading.value = false
   }
@@ -537,8 +519,8 @@ const handleSelectionChange = (selection: WeWorkAccountDetail[]) => {
   selectedAccounts.value = selection
 }
 
-const handleAction = async (action: string, row: WeWorkAccountDetail) => {
-  switch (action) {
+const handleAction = async (action: { key: string }, row: WeWorkAccountDetail, index: number) => {
+  switch (action.key) {
     case 'edit':
       editingAccount.value = row
       Object.assign(accountForm, {
