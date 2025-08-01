@@ -13,6 +13,11 @@
     </div>
     
     <div class="header-right">
+      <!-- 租户切换器 -->
+      <div class="tenant-switcher-wrapper">
+        <TenantSwitcher @tenant-changed="handleTenantChange" />
+      </div>
+      
       <!-- 全屏按钮 -->
       <div class="header-item" @click="toggleFullscreen">
         <el-icon>
@@ -60,8 +65,11 @@
 import { computed, ref } from 'vue'
 import { useAppStore } from '@/stores'
 import { useFullscreen } from '@vueuse/core'
+import { ElMessage } from 'element-plus'
 import Breadcrumb from './Breadcrumb.vue'
 import UserInfo from './UserInfo.vue'
+import TenantSwitcher from '@/components/TenantSwitcher.vue'
+import type { TenantInfo } from '@/types'
 
 const appStore = useAppStore()
 const { isFullscreen, toggle: toggleFullscreen } = useFullscreen()
@@ -88,6 +96,13 @@ const toggleTheme = () => {
 // 处理语言切换
 const handleLanguageChange = (language: 'zh-cn' | 'en') => {
   appStore.setLanguage(language)
+}
+
+// 处理租户切换
+const handleTenantChange = (tenant: TenantInfo) => {
+  ElMessage.success(`已切换到租户：${tenant.name}`)
+  // 可以在这里添加其他租户切换后的处理逻辑
+  // 比如刷新当前页面数据、更新用户权限等
 }
 </script>
 
@@ -133,6 +148,10 @@ const handleLanguageChange = (language: 'zh-cn' | 'en') => {
   display: flex;
   align-items: center;
   gap: 16px;
+  
+  .tenant-switcher-wrapper {
+    margin-right: 8px;
+  }
 }
 
 .header-item {

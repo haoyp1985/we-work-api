@@ -51,7 +51,7 @@ export const constantRoutes: RouteRecordRaw[] = [
 
 // 动态路由（需要权限控制）
 export const asyncRoutes: RouteRecordRaw[] = [
-  // 账号管理 - 占位页面
+  // 账号管理
   {
     path: '/account',
     component: Layout,
@@ -66,7 +66,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       {
         path: 'list',
         name: 'AccountList',
-        component: () => import('@/views/error/404.vue'),
+        component: () => import('@/views/account/list-fixed.vue'),
         meta: { 
           title: '账号列表',
           icon: 'UserFilled'
@@ -75,7 +75,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
     ]
   },
 
-  // 消息管理 - 占位页面
+  // 消息管理
   {
     path: '/message',
     component: Layout,
@@ -90,7 +90,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       {
         path: 'send',
         name: 'MessageSend',
-        component: () => import('@/views/error/404.vue'),
+        component: () => import('@/views/message/send.vue'),
         meta: { 
           title: '发送消息',
           icon: 'Promotion'
@@ -99,7 +99,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
     ]
   },
 
-  // 提供商管理 - 占位页面
+  // 提供商管理
   {
     path: '/provider',
     component: Layout,
@@ -114,7 +114,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       {
         path: 'list',
         name: 'ProviderList',
-        component: () => import('@/views/error/404.vue'),
+        component: () => import('@/views/provider/list.vue'),
         meta: { 
           title: '提供商列表',
           icon: 'List'
@@ -123,7 +123,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
     ]
   },
 
-  // 监控中心 - 占位页面
+  // 监控中心
   {
     path: '/monitor',
     component: Layout,
@@ -132,22 +132,53 @@ export const asyncRoutes: RouteRecordRaw[] = [
     meta: {
       title: '监控中心',
       icon: 'Monitor',
-      roles: ['admin', 'monitor_viewer']
+      roles: ['admin', 'tenant_admin', 'monitor_viewer']
     },
     children: [
       {
         path: 'dashboard',
         name: 'MonitorDashboard',
-        component: () => import('@/views/error/404.vue'),
+        component: () => import('@/views/monitor/dashboard.vue'),
         meta: { 
           title: '监控面板',
-          icon: 'DataAnalysis'
+          icon: 'DataAnalysis',
+          keepAlive: true
+        }
+      },
+      {
+        path: 'alerts',
+        name: 'MonitorAlerts',
+        component: () => import('@/views/monitor/alerts.vue'),
+        meta: { 
+          title: '告警管理',
+          icon: 'Bell',
+          keepAlive: true
+        }
+      },
+      {
+        path: 'accounts',
+        name: 'MonitorAccounts',
+        component: () => import('@/views/monitor/accounts.vue'),
+        meta: { 
+          title: '账号监控',
+          icon: 'User',
+          keepAlive: true
+        }
+      },
+      {
+        path: 'rules',
+        name: 'MonitorRules',
+        component: () => import('@/views/monitor/rules.vue'),
+        meta: { 
+          title: '监控规则',
+          icon: 'SetUp',
+          roles: ['admin', 'tenant_admin']
         }
       }
     ]
   },
 
-  // 系统管理 - 占位页面
+  // 系统管理
   {
     path: '/system',
     component: Layout,
@@ -162,7 +193,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
       {
         path: 'user',
         name: 'SystemUser',
-        component: () => import('@/views/error/404.vue'),
+        component: () => import('@/views/system/user.vue'),
         meta: { 
           title: '用户管理',
           icon: 'User'

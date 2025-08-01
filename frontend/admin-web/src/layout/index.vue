@@ -17,6 +17,9 @@
     
     <!-- 设置面板 -->
     <Settings v-if="showSettings" />
+    
+    <!-- 调试信息 (仅开发环境) -->
+    <DebugInfo v-if="isDev" />
   </div>
 </template>
 
@@ -28,12 +31,14 @@ import Header from './components/Header/index.vue'
 import TagsView from './components/TagsView/index.vue'
 import AppMain from './components/AppMain/index.vue'
 import Settings from './components/Settings/index.vue'
+import DebugInfo from '@/components/DebugInfo.vue'
 
 const appStore = useAppStore()
 
 // 配置项
 const showTagsView = computed(() => true) // 可以从设置中控制
 const showSettings = computed(() => false) // 可以从设置中控制
+const isDev = import.meta.env.DEV
 </script>
 
 <style lang="scss" scoped>

@@ -41,9 +41,16 @@ const activeMenu = computed(() => {
 
 // 可访问的路由
 const routes = computed(() => {
-  return permissionStore.routes.filter(route => 
+  const allRoutes = permissionStore.routes
+  const filteredRoutes = allRoutes.filter(route => 
     !route.meta?.hidden && route.children?.length
   )
+  
+  console.log('🍔 SidebarMenu 调试信息:')
+  console.log('📋 所有权限路由:', allRoutes.map(r => ({ path: r.path, name: r.name, hidden: r.meta?.hidden, childrenCount: r.children?.length })))
+  console.log('✅ 过滤后菜单路由:', filteredRoutes.map(r => ({ path: r.path, name: r.name, children: r.children?.map(c => c.name) })))
+  
+  return filteredRoutes
 })
 </script>
 

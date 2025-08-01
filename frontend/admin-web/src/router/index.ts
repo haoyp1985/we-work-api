@@ -45,10 +45,15 @@ router.beforeEach(async (to, from, next) => {
           // 生成动态路由
           const accessRoutes = await permissionStore.generateRoutes(userStore.roles)
           
+          console.log('🚀 路由守卫：开始添加动态路由', accessRoutes.length)
+          
           // 动态添加路由
           accessRoutes.forEach(route => {
             router.addRoute(route)
+            console.log('➕ 添加路由:', route.path, route.name)
           })
+          
+          console.log('📋 当前所有路由:', router.getRoutes().map(r => ({ path: r.path, name: r.name })))
           
           // 重新导航到目标路由
           next({ ...to, replace: true })

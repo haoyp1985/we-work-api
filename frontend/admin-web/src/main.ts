@@ -15,6 +15,14 @@ import '@/styles/index.scss'
 // NProgress
 import 'nprogress/nprogress.css'
 
+// 权限指令
+import { setupPermissionDirectives } from '@/directives/permission'
+
+// 调试工具 (仅开发环境)
+if (import.meta.env.DEV) {
+  import('@/utils/debug')
+}
+
 // 创建应用实例
 const app = createApp(App)
 
@@ -32,6 +40,8 @@ app.config.globalProperties.$ELEMENT = {
 if (import.meta.env.DEV) {
   app.config.performance = true
   app.config.globalProperties.$log = console.log
+  // 暴露router实例到全局用于调试
+  ;(window as any).__VUE_ROUTER__ = router
 }
 
 // 错误处理
@@ -47,6 +57,9 @@ app.use(router)
 app.use(ElementPlus, {
   size: 'default'
 })
+
+// 注册权限指令
+setupPermissionDirectives(app)
 
 // 挂载应用
 app.mount('#app')

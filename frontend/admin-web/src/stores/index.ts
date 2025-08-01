@@ -8,3 +8,6 @@ export default pinia
 export * from './modules/user'
 export * from './modules/app'
 export * from './modules/permission'
+export * from './modules/tenant'
+export * from './modules/monitor'
+export * from './modules/alert'
