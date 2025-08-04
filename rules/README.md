@@ -16,6 +16,9 @@
 | [05-microservice-rules.md](./05-microservice-rules.md) | 🏗️ 微服务规则 | 服务拆分、通信、治理、监控 |
 | [06-security-rules.md](./06-security-rules.md) | 🔐 安全规范 | 认证授权、数据加密、防护策略 |
 | [07-performance-rules.md](./07-performance-rules.md) | 🚀 性能规范 | 缓存策略、查询优化、异步处理 |
+| [08-infrastructure-rules.md](./08-infrastructure-rules.md) | 🏗️ 基础设施规范 | Docker编排、监控体系、中间件配置 |
+| [09-devops-rules.md](./09-devops-rules.md) | ⚙️ 运维规范 | 脚本开发、服务管理、CI/CD |
+| [10-frontend-rules.md](./10-frontend-rules.md) | 🎨 前端规范 | Vue3+TS、组件设计、状态管理 |
 
 ## 🎯 使用指南
 
@@ -29,25 +32,36 @@
 ### 🔍 快速查找规则
 
 ```bash
-# 架构相关
+# 🏗️ 架构相关
 - 服务拆分策略 → 01-architecture-rules.md
 - 数据库设计 → 02-database-rules.md
 - 微服务通信 → 05-microservice-rules.md
 
-# 代码质量
+# 💻 代码质量
 - 命名规范 → 04-code-standards.md
 - 异常处理 → 04-code-standards.md
 - 单元测试 → 04-code-standards.md
 
-# API设计
+# 🔌 API设计
 - RESTful规范 → 03-api-rules.md
 - 参数验证 → 03-api-rules.md
 - 认证授权 → 06-security-rules.md
 
-# 性能优化
+# 🚀 性能优化
 - 缓存策略 → 07-performance-rules.md
 - 数据库优化 → 02-database-rules.md
 - 异步处理 → 07-performance-rules.md
+
+# 🏗️ 基础设施和运维
+- Docker编排 → 08-infrastructure-rules.md
+- 监控体系 → 08-infrastructure-rules.md
+- 运维脚本 → 09-devops-rules.md
+- 服务管理 → 09-devops-rules.md
+
+# 🎨 前端开发
+- Vue3组件 → 10-frontend-rules.md
+- TypeScript → 10-frontend-rules.md
+- 状态管理 → 10-frontend-rules.md
 ```
 
 ## 🔧 核心技术栈
