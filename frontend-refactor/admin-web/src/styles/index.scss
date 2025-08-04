@@ -1,0 +1,363 @@
+// ==========================================================================
+// WeWork Platform Global Styles
+// ==========================================================================
+
+// 导入变量和混入
+@import './variables.scss';
+@import './mixins.scss';
+
+// 导入第三方库样式
+@import './vendors.scss';
+
+// 导入元素重置
+@import './reset.scss';
+
+// 导入工具类
+@import './utilities.scss';
+
+// 导入组件样式
+@import './components.scss';
+
+// 导入动画
+@import './animations.scss';
+
+// ===== 全局基础样式 =====
+
+* {
+  box-sizing: border-box;
+}
+
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: $font-family-primary;
+  font-size: $font-size-base;
+  line-height: $line-height-base;
+  color: $text-color-primary;
+  background-color: $bg-color-page;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+  
+  // 响应式字体大小
+  @include respond-to(lg) {
+    font-size: 16px;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: $bg-color-page;
+  
+  // 禁用移动端下拉刷新
+  overscroll-behavior: none;
+}
+
+// ===== 链接样式 =====
+
+a {
+  color: $primary-color;
+  text-decoration: none;
+  @include transition(color);
+  
+  &:hover {
+    color: $primary-light-1;
+  }
+  
+  &:active {
+    color: $primary-dark-1;
+  }
+}
+
+// ===== 图片样式 =====
+
+img {
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+// ===== 表格样式 =====
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+// ===== 按钮样式增强 =====
+
+button {
+  @include transition(all);
+  
+  &:not(:disabled) {
+    cursor: pointer;
+  }
+  
+  &:disabled {
+    opacity: $opacity-disabled;
+    cursor: not-allowed;
+  }
+}
+
+// ===== 输入框样式增强 =====
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
+  
+  &::placeholder {
+    color: $text-color-placeholder;
+  }
+  
+  &:disabled {
+    opacity: $opacity-disabled;
+    cursor: not-allowed;
+  }
+}
+
+// ===== 滚动条样式 =====
+
+* {
+  @include scrollbar(6px, transparent, rgba(0, 0, 0, 0.2));
+}
+
+// ===== 全局类 =====
+
+// 容器
+.container {
+  @include page-container;
+}
+
+// 文本对齐
+.text-left { text-align: left !important; }
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
+
+// 文本省略
+.text-ellipsis {
+  @include text-ellipsis;
+}
+
+.text-ellipsis-2 {
+  @include text-ellipsis-multiline(2);
+}
+
+.text-ellipsis-3 {
+  @include text-ellipsis-multiline(3);
+}
+
+// 颜色类
+.text-primary { color: $primary-color !important; }
+.text-success { color: $success-color !important; }
+.text-warning { color: $warning-color !important; }
+.text-danger { color: $danger-color !important; }
+.text-info { color: $info-color !important; }
+
+// 字体大小
+.text-xs { font-size: $font-size-extra-small !important; }
+.text-sm { font-size: $font-size-small !important; }
+.text-base { font-size: $font-size-base !important; }
+.text-lg { font-size: $font-size-medium !important; }
+.text-xl { font-size: $font-size-large !important; }
+.text-2xl { font-size: $font-size-extra-large !important; }
+
+// 字体粗细
+.font-light { font-weight: $font-weight-light !important; }
+.font-normal { font-weight: $font-weight-normal !important; }
+.font-medium { font-weight: $font-weight-medium !important; }
+.font-semibold { font-weight: $font-weight-semibold !important; }
+.font-bold { font-weight: $font-weight-bold !important; }
+
+// 显示/隐藏
+.hide { display: none !important; }
+.show { display: block !important; }
+.invisible { visibility: hidden !important; }
+.visible { visibility: visible !important; }
+
+// Flex相关
+.flex { @include flex; }
+.flex-center { @include flex-center; }
+.flex-between { @include flex-between; }
+.flex-around { @include flex-around; }
+.flex-column { @include flex-column; }
+.flex-column-center { @include flex-column-center; }
+.flex-wrap { flex-wrap: wrap !important; }
+.flex-nowrap { flex-wrap: nowrap !important; }
+.flex-1 { flex: 1 !important; }
+
+// 对齐
+.items-start { align-items: flex-start !important; }
+.items-center { align-items: center !important; }
+.items-end { align-items: flex-end !important; }
+.justify-start { justify-content: flex-start !important; }
+.justify-center { justify-content: center !important; }
+.justify-end { justify-content: flex-end !important; }
+.justify-between { justify-content: space-between !important; }
+
+// 生成间距工具类
+@include generate-spacing-classes('m', 'margin');
+@include generate-spacing-classes('mt', 'margin-top');
+@include generate-spacing-classes('mr', 'margin-right');
+@include generate-spacing-classes('mb', 'margin-bottom');
+@include generate-spacing-classes('ml', 'margin-left');
+@include generate-spacing-classes('mx', 'margin-left margin-right');
+@include generate-spacing-classes('my', 'margin-top margin-bottom');
+
+@include generate-spacing-classes('p', 'padding');
+@include generate-spacing-classes('pt', 'padding-top');
+@include generate-spacing-classes('pr', 'padding-right');
+@include generate-spacing-classes('pb', 'padding-bottom');
+@include generate-spacing-classes('pl', 'padding-left');
+@include generate-spacing-classes('px', 'padding-left padding-right');
+@include generate-spacing-classes('py', 'padding-top padding-bottom');
+
+// 宽度和高度
+.w-full { width: 100% !important; }
+.h-full { height: 100% !important; }
+.w-auto { width: auto !important; }
+.h-auto { height: auto !important; }
+
+// 圆角
+.rounded-none { border-radius: 0 !important; }
+.rounded-sm { border-radius: $border-radius-sm !important; }
+.rounded { border-radius: $border-radius-base !important; }
+.rounded-md { border-radius: $border-radius-md !important; }
+.rounded-lg { border-radius: $border-radius-lg !important; }
+.rounded-full { border-radius: $border-radius-circle !important; }
+
+// 边框
+.border { border: $border-width-thin solid $border-color-base !important; }
+.border-0 { border: 0 !important; }
+.border-t { border-top: $border-width-thin solid $border-color-base !important; }
+.border-r { border-right: $border-width-thin solid $border-color-base !important; }
+.border-b { border-bottom: $border-width-thin solid $border-color-base !important; }
+.border-l { border-left: $border-width-thin solid $border-color-base !important; }
+
+// 阴影
+.shadow-none { box-shadow: none !important; }
+.shadow { box-shadow: $box-shadow-base !important; }
+.shadow-lg { box-shadow: $box-shadow-dark !important; }
+
+// 用户选择
+.select-none { @include user-select-none; }
+.select-auto { user-select: auto !important; }
+
+// 指针事件
+.pointer-events-none { pointer-events: none !important; }
+.pointer-events-auto { pointer-events: auto !important; }
+
+// 溢出处理
+.overflow-hidden { overflow: hidden !important; }
+.overflow-auto { overflow: auto !important; }
+.overflow-scroll { overflow: scroll !important; }
+
+// 定位
+.relative { position: relative !important; }
+.absolute { position: absolute !important; }
+.fixed { position: fixed !important; }
+.sticky { position: sticky !important; }
+
+// Z-index
+.z-0 { z-index: 0 !important; }
+.z-10 { z-index: 10 !important; }
+.z-20 { z-index: 20 !important; }
+.z-30 { z-index: 30 !important; }
+.z-40 { z-index: 40 !important; }
+.z-50 { z-index: 50 !important; }
+
+// ===== 响应式显示 =====
+
+// 移动端隐藏
+@include mobile-only {
+  .hidden-mobile {
+    display: none !important;
+  }
+}
+
+// 桌面端隐藏
+@include desktop-only {
+  .hidden-desktop {
+    display: none !important;
+  }
+}
+
+// ===== 暗色主题 =====
+
+:global(.dark) {
+  html {
+    color: $dark-text-color-primary;
+    background-color: $dark-bg-color;
+  }
+  
+  body {
+    background-color: $dark-bg-color;
+  }
+  
+  // 文本颜色适配
+  .text-primary { color: $primary-light-1 !important; }
+  
+  // 边框颜色适配
+  .border { border-color: $dark-border-color !important; }
+  .border-t { border-top-color: $dark-border-color !important; }
+  .border-r { border-right-color: $dark-border-color !important; }
+  .border-b { border-bottom-color: $dark-border-color !important; }
+  .border-l { border-left-color: $dark-border-color !important; }
+}
+
+// ===== 打印样式 =====
+
+@include print-only {
+  * {
+    color: #000 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  
+  .print-hidden {
+    display: none !important;
+  }
+  
+  a {
+    text-decoration: underline;
+  }
+  
+  a[href^="http"]:after {
+    content: " (" attr(href) ")";
+  }
+}
+
+// ===== 可访问性 =====
+
+// 屏幕阅读器专用
+.sr-only {
+  @include screen-reader-only;
+}
+
+// 焦点样式
+:focus-visible {
+  @include focus-visible;
+}
+
+// ===== 性能优化 =====
+
+// GPU加速
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+// 滚动优化
+.smooth-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}

@@ -1,0 +1,85 @@
+{
+  "name": "WeWork管理平台",
+  "short_name": "WeWork平台",
+  "description": "专业的企业微信管理解决方案",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#409eff",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-512.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "business",
+    "productivity",
+    "utilities"
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop-1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "主控制台界面"
+    },
+    {
+      "src": "/screenshots/mobile-1.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "移动端界面"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "控制台",
+      "short_name": "控制台",
+      "description": "查看系统概览",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/icons/dashboard.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "账号管理",
+      "short_name": "账号",
+      "description": "管理企微账号",
+      "url": "/account",
+      "icons": [
+        {
+          "src": "/icons/account.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "消息中心",
+      "short_name": "消息",
+      "description": "发送和管理消息",
+      "url": "/message",
+      "icons": [
+        {
+          "src": "/icons/message.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

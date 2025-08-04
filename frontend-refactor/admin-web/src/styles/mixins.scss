@@ -1,0 +1,398 @@
+// ==========================================================================
+// WeWork Platform SCSS Mixins
+// ==========================================================================
+
+// ===== 清除浮动 =====
+@mixin clearfix {
+  &::after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+// ===== 文本处理 =====
+
+// 单行文本省略
+@mixin text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 多行文本省略
+@mixin text-ellipsis-multiline($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+}
+
+// 文本选择禁用
+@mixin user-select-none {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+// 换行处理
+@mixin word-break {
+  word-break: break-all;
+  word-wrap: break-word;
+}
+
+// ===== Flex布局 =====
+
+// Flex容器
+@mixin flex($direction: row, $wrap: nowrap) {
+  display: flex;
+  flex-direction: $direction;
+  flex-wrap: $wrap;
+}
+
+// Flex居中
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Flex水平居中
+@mixin flex-x-center {
+  display: flex;
+  justify-content: center;
+}
+
+// Flex垂直居中
+@mixin flex-y-center {
+  display: flex;
+  align-items: center;
+}
+
+// Flex两端对齐
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// Flex环绕对齐
+@mixin flex-around {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+// Flex均匀分布
+@mixin flex-evenly {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+// Flex列布局
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// Flex列居中
+@mixin flex-column-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+// ===== 定位相关 =====
+
+// 绝对定位居中
+@mixin absolute-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+// 绝对定位填满
+@mixin absolute-full {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+// 固定定位居中
+@mixin fixed-center {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+// ===== 响应式设计 =====
+
+// 响应式断点
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == xs {
+    @media (max-width: #{$breakpoint-xs - 1px}) {
+      @content;
+    }
+  }
+  @if $breakpoint == sm {
+    @media (min-width: #{$breakpoint-sm}) {
+      @content;
+    }
+  }
+  @if $breakpoint == md {
+    @media (min-width: #{$breakpoint-md}) {
+      @content;
+    }
+  }
+  @if $breakpoint == lg {
+    @media (min-width: #{$breakpoint-lg}) {
+      @content;
+    }
+  }
+  @if $breakpoint == xl {
+    @media (min-width: #{$breakpoint-xl}) {
+      @content;
+    }
+  }
+  @if $breakpoint == 2xl {
+    @media (min-width: #{$breakpoint-2xl}) {
+      @content;
+    }
+  }
+}
+
+// 移动端优先
+@mixin mobile-first($breakpoint) {
+  @media (min-width: $breakpoint) {
+    @content;
+  }
+}
+
+// 桌面端优先
+@mixin desktop-first($breakpoint) {
+  @media (max-width: $breakpoint - 1px) {
+    @content;
+  }
+}
+
+// 移动端专用
+@mixin mobile-only {
+  @media (max-width: #{$breakpoint-md - 1px}) {
+    @content;
+  }
+}
+
+// 桌面端专用
+@mixin desktop-only {
+  @media (min-width: $breakpoint-md) {
+    @content;
+  }
+}
+
+// ===== 动画和过渡 =====
+
+// 基础过渡
+@mixin transition($property: all, $duration: $transition-duration-base, $timing: $transition-timing-function-ease-in-out) {
+  transition: $property $duration $timing;
+}
+
+// 悬停效果
+@mixin hover-effect($property: all) {
+  transition: $property $transition-duration-fast $transition-timing-function-ease-out;
+  
+  &:hover {
+    @content;
+  }
+}
+
+// 点击效果
+@mixin click-effect {
+  transition: transform $transition-duration-fast $transition-timing-function-ease-out;
+  
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// 渐入动画
+@mixin fade-in($duration: $transition-duration-base) {
+  animation: fadeIn $duration $transition-timing-function-ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// 滑入动画
+@mixin slide-in-up($duration: $transition-duration-base, $distance: 20px) {
+  animation: slideInUp $duration $transition-timing-function-ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ===== 样式重置 =====
+
+// 按钮重置
+@mixin button-reset {
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+// 列表重置
+@mixin list-reset {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+// 输入框重置
+@mixin input-reset {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+// ===== 组件样式 =====
+
+// 卡片样式
+@mixin card-style($shadow: $box-shadow-base) {
+  background: $bg-color;
+  border: 1px solid $border-color-light;
+  border-radius: $border-radius-base;
+  box-shadow: $shadow;
+  padding: $spacing-lg;
+}
+
+// 悬浮卡片
+@mixin card-hover {
+  @include card-style;
+  @include transition(box-shadow);
+  
+  &:hover {
+    box-shadow: $box-shadow-dark;
+  }
+}
+
+// 页面容器
+@mixin page-container {
+  max-width: $container-max-width;
+  margin: 0 auto;
+  padding: 0 $container-padding;
+}
+
+// 滚动条样式
+@mixin scrollbar($width: 6px, $track-color: transparent, $thumb-color: rgba(0, 0, 0, 0.2)) {
+  &::-webkit-scrollbar {
+    width: $width;
+    height: $width;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: $track-color;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: $thumb-color;
+    border-radius: $width / 2;
+    
+    &:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+  }
+}
+
+// ===== 工具类生成 =====
+
+// 生成间距类
+@mixin generate-spacing-classes($prefix, $property) {
+  .#{$prefix}-0 { #{$property}: 0 !important; }
+  .#{$prefix}-1 { #{$property}: $spacing-xs !important; }
+  .#{$prefix}-2 { #{$property}: $spacing-sm !important; }
+  .#{$prefix}-3 { #{$property}: $spacing-base !important; }
+  .#{$prefix}-4 { #{$property}: $spacing-md !important; }
+  .#{$prefix}-5 { #{$property}: $spacing-lg !important; }
+  .#{$prefix}-6 { #{$property}: $spacing-xl !important; }
+  .#{$prefix}-7 { #{$property}: $spacing-2xl !important; }
+  .#{$prefix}-8 { #{$property}: $spacing-3xl !important; }
+}
+
+// ===== 暗色主题 =====
+
+// 暗色主题适配
+@mixin dark-theme {
+  :global(.dark) & {
+    @content;
+  }
+}
+
+// ===== 打印样式 =====
+
+// 打印专用样式
+@mixin print-only {
+  @media print {
+    @content;
+  }
+}
+
+// 打印隐藏
+@mixin print-hidden {
+  @media print {
+    display: none !important;
+  }
+}
+
+// ===== 可访问性 =====
+
+// 屏幕阅读器专用文本
+@mixin screen-reader-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// 焦点样式
+@mixin focus-visible {
+  &:focus-visible {
+    outline: 2px solid $primary-color;
+    outline-offset: 2px;
+  }
+}
