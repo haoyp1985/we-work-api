@@ -1,0 +1,603 @@
+# 🔐 安全设计和实现规则
+
+## 🛡️ 认证授权规则
+
+### 1. JWT Token管理
+```java
+// ✅ JWT工具类实现
+@Component
+@ConfigurationProperties(prefix = "app.jwt")
+@Data
+public class JwtUtils {
+    
+    private String secretKey = "default-secret-key-change-in-production";
+    private long accessTokenExpiration = 7200000; // 2小时
+    private long refreshTokenExpiration = 604800000; // 7天
+    private String issuer = "wework-platform";
+    
+    private final Algorithm algorithm = Algorithm.HMAC256(secretKey);
+    
+    public String generateAccessToken(UserContext userContext) {
+        return JWT.create()
+                .withIssuer(issuer)
+                .withSubject(userContext.getUserId())
+                .withClaim("tenantId", userContext.getTenantId())
+                .withClaim("username", userContext.getUsername())
+                .withClaim("roles", userContext.getRoles())
+                .withClaim("permissions", userContext.getPermissions())
+                .withClaim("tokenType", "access")
+                .withIssuedAt(new Date())
+                .withExpiresAt(new Date(System.currentTimeMillis() + accessTokenExpiration))
+                .sign(algorithm);
+    }
+    
+    public String generateRefreshToken(String userId) {
+        return JWT.create()
+                .withIssuer(issuer)
+                .withSubject(userId)
+                .withClaim("tokenType", "refresh")
+                .withIssuedAt(new Date())
+                .withExpiresAt(new Date(System.currentTimeMillis() + refreshTokenExpiration))
+                .sign(algorithm);
+    }
+    
+    public boolean validateToken(String token) {
+        try {
+            JWTVerifier verifier = JWT.require(algorithm)
+                    .withIssuer(issuer)
+                    .build();
+            verifier.verify(token);
+            return true;
+        } catch (JWTVerificationException e) {
+            log.warn("Token验证失败: {}", e.getMessage());
+            return false;
+        }
+    }
+    
+    public UserContext parseToken(String token) {
+        try {
+            DecodedJWT jwt = JWT.decode(token);
+            return UserContext.builder()
+                    .userId(jwt.getSubject())
+                    .tenantId(jwt.getClaim("tenantId").asString())
+                    .username(jwt.getClaim("username").asString())
+                    .roles(jwt.getClaim("roles").asList(String.class))
+                    .permissions(jwt.getClaim("permissions").asList(String.class))
+                    .build();
+        } catch (Exception e) {
+            throw new SecurityException("Token解析失败", e);
+        }
+    }
+}
+```
+
+### 2. 权限控制实现
+```java
+// ✅ 基于注解的权限控制
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface RequirePermission {
+    String resource();
+    String action();
+}
+
+@Component
+@RequiredArgsConstructor
+public class PermissionService {
+    
+    private final RedisTemplate<String, Object> redisTemplate;
+    
+    public boolean hasPermission(String userId, String tenantId, String resource, String action) {
+        // 1. 从缓存获取用户权限
+        String cacheKey = String.format("user:permissions:%s:%s", tenantId, userId);
+        Set<String> permissions = (Set<String>) redisTemplate.opsForValue().get(cacheKey);
+        
+        if (permissions == null) {
+            // 2. 从数据库加载权限
+            permissions = loadUserPermissions(userId, tenantId);
+            // 3. 缓存权限(30分钟)
+            redisTemplate.opsForValue().set(cacheKey, permissions, Duration.ofMinutes(30));
+        }
+        
+        // 4. 检查权限
+        String permission = resource + ":" + action;
+        return permissions.contains(permission) || permissions.contains("*:*");
+    }
+    
+    private Set<String> loadUserPermissions(String userId, String tenantId) {
+        // 查询用户角色
+        List<String> roles = userRoleMapper.selectRolesByUserId(userId, tenantId);
+        
+        // 查询角色权限
+        Set<String> permissions = new HashSet<>();
+        for (String role : roles) {
+            List<String> rolePermissions = rolePermissionMapper.selectPermissionsByRole(role, tenantId);
+            permissions.addAll(rolePermissions);
+        }
+        
+        return permissions;
+    }
+}
+
+// AOP权限拦截器
+@Aspect
+@Component
+@RequiredArgsConstructor
+public class PermissionAspect {
+    
+    private final PermissionService permissionService;
+    
+    @Around("@annotation(requirePermission)")
+    public Object checkPermission(ProceedingJoinPoint point, RequirePermission requirePermission) throws Throwable {
+        UserContext userContext = UserContextHolder.getContext();
+        if (userContext == null) {
+            throw new SecurityException("用户未登录");
+        }
+        
+        boolean hasPermission = permissionService.hasPermission(
+                userContext.getUserId(),
+                userContext.getTenantId(),
+                requirePermission.resource(),
+                requirePermission.action()
+        );
+        
+        if (!hasPermission) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, 
+                    String.format("无权限执行操作: %s:%s", 
+                                 requirePermission.resource(), 
+                                 requirePermission.action()));
+        }
+        
+        return point.proceed();
+    }
+}
+```
+
+## 🔒 数据安全规则
+
+### 1. 敏感数据加密
+```java
+// ✅ 数据加密工具
+@Component
+public class CryptoUtils {
+    
+    private static final String AES_ALGORITHM = "AES/CBC/PKCS5Padding";
+    private static final String KEY_ALGORITHM = "AES";
+    private static final int KEY_LENGTH = 256;
+    
+    @Value("${app.security.encrypt.key}")
+    private String encryptKey;
+    
+    public String encrypt(String plainText) {
+        if (StringUtils.isBlank(plainText)) {
+            return plainText;
+        }
+        
+        try {
+            SecretKeySpec keySpec = new SecretKeySpec(encryptKey.getBytes(), KEY_ALGORITHM);
+            Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
+            
+            // 生成随机IV
+            byte[] iv = new byte[16];
+            new SecureRandom().nextBytes(iv);
+            IvParameterSpec ivSpec = new IvParameterSpec(iv);
+            
+            cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+            byte[] encrypted = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
+            
+            // IV + 加密数据
+            byte[] result = new byte[iv.length + encrypted.length];
+            System.arraycopy(iv, 0, result, 0, iv.length);
+            System.arraycopy(encrypted, 0, result, iv.length, encrypted.length);
+            
+            return Base64.getEncoder().encodeToString(result);
+            
+        } catch (Exception e) {
+            throw new SecurityException("数据加密失败", e);
+        }
+    }
+    
+    public String decrypt(String encryptedText) {
+        if (StringUtils.isBlank(encryptedText)) {
+            return encryptedText;
+        }
+        
+        try {
+            byte[] data = Base64.getDecoder().decode(encryptedText);
+            
+            // 提取IV
+            byte[] iv = new byte[16];
+            System.arraycopy(data, 0, iv, 0, 16);
+            
+            // 提取加密数据
+            byte[] encrypted = new byte[data.length - 16];
+            System.arraycopy(data, 16, encrypted, 0, encrypted.length);
+            
+            SecretKeySpec keySpec = new SecretKeySpec(encryptKey.getBytes(), KEY_ALGORITHM);
+            Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
+            IvParameterSpec ivSpec = new IvParameterSpec(iv);
+            
+            cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
+            byte[] decrypted = cipher.doFinal(encrypted);
+            
+            return new String(decrypted, StandardCharsets.UTF_8);
+            
+        } catch (Exception e) {
+            throw new SecurityException("数据解密失败", e);
+        }
+    }
+}
+
+// 敏感字段自动加密
+@Component
+public class SensitiveDataHandler implements TypeHandler<String> {
+    
+    @Autowired
+    private CryptoUtils cryptoUtils;
+    
+    @Override
+    public void setParameter(PreparedStatement ps, int i, String parameter, JdbcType jdbcType) throws SQLException {
+        if (parameter != null) {
+            ps.setString(i, cryptoUtils.encrypt(parameter));
+        } else {
+            ps.setString(i, null);
+        }
+    }
+    
+    @Override
+    public String getResult(ResultSet rs, String columnName) throws SQLException {
+        String encrypted = rs.getString(columnName);
+        return encrypted != null ? cryptoUtils.decrypt(encrypted) : null;
+    }
+}
+```
+
+### 2. SQL注入防护
+```java
+// ✅ 防SQL注入规范
+@Repository
+public class AccountMapper {
+    
+    // 正确使用参数化查询
+    @Select("SELECT * FROM wework_accounts WHERE tenant_id = #{tenantId} AND account_name = #{accountName}")
+    WeWorkAccount selectByTenantAndName(@Param("tenantId") String tenantId, 
+                                       @Param("accountName") String accountName);
+    
+    // 动态SQL使用#{}参数绑定
+    List<WeWorkAccount> selectByConditions(AccountQueryDTO query) {
+        return sqlSession.selectList("selectByConditions", query);
+    }
+    
+    // ❌ 错误：字符串拼接容易SQL注入
+    // String sql = "SELECT * FROM accounts WHERE name = '" + name + "'";
+}
+
+// MyBatis动态SQL
+@Mapper
+public interface AccountMapper {
+    
+    List<WeWorkAccount> selectByDynamicConditions(@Param("query") AccountQueryDTO query);
+}
+
+<!-- account-mapper.xml -->
+<select id="selectByDynamicConditions" resultType="WeWorkAccount">
+    SELECT * FROM wework_accounts 
+    WHERE tenant_id = #{query.tenantId}
+    <if test="query.accountName != null and query.accountName != ''">
+        AND account_name LIKE CONCAT('%', #{query.accountName}, '%')
+    </if>
+    <if test="query.status != null">
+        AND status = #{query.status}
+    </if>
+    <if test="query.startDate != null">
+        AND created_at >= #{query.startDate}
+    </if>
+    ORDER BY created_at DESC
+    LIMIT #{query.offset}, #{query.limit}
+</select>
+```
+
+## 🔐 API安全规则
+
+### 1. 请求签名验证
+```java
+// ✅ API签名验证
+@Component
+public class ApiSignatureValidator {
+    
+    public boolean validateSignature(HttpServletRequest request, String apiKey) {
+        String timestamp = request.getHeader("X-Timestamp");
+        String nonce = request.getHeader("X-Nonce");
+        String signature = request.getHeader("X-Signature");
+        
+        // 1. 验证时间戳(防重放攻击)
+        if (!isValidTimestamp(timestamp)) {
+            return false;
+        }
+        
+        // 2. 验证nonce(防重复请求)
+        if (!isValidNonce(nonce)) {
+            return false;
+        }
+        
+        // 3. 计算签名
+        String body = getRequestBody(request);
+        String expectedSignature = calculateSignature(apiKey, timestamp, nonce, body);
+        
+        // 4. 验证签名
+        return signature.equals(expectedSignature);
+    }
+    
+    private boolean isValidTimestamp(String timestamp) {
+        try {
+            long ts = Long.parseLong(timestamp);
+            long now = System.currentTimeMillis() / 1000;
+            // 允许5分钟时间差
+            return Math.abs(now - ts) <= 300;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+    
+    private boolean isValidNonce(String nonce) {
+        String key = "api:nonce:" + nonce;
+        Boolean exists = redisTemplate.hasKey(key);
+        if (exists) {
+            return false; // nonce已使用
+        }
+        
+        // 记录nonce，5分钟过期
+        redisTemplate.opsForValue().set(key, "1", Duration.ofMinutes(5));
+        return true;
+    }
+    
+    private String calculateSignature(String apiKey, String timestamp, String nonce, String body) {
+        String data = apiKey + timestamp + nonce + body;
+        return DigestUtils.sha256Hex(data);
+    }
+}
+
+// 签名验证拦截器
+@Component
+public class SignatureInterceptor implements HandlerInterceptor {
+    
+    @Autowired
+    private ApiSignatureValidator signatureValidator;
+    
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        // 只对API接口进行签名验证
+        if (!request.getRequestURI().startsWith("/api/")) {
+            return true;
+        }
+        
+        String apiKey = request.getHeader("X-API-Key");
+        if (StringUtils.isBlank(apiKey)) {
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            return false;
+        }
+        
+        if (!signatureValidator.validateSignature(request, apiKey)) {
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            return false;
+        }
+        
+        return true;
+    }
+}
+```
+
+### 2. 限流防护
+```java
+// ✅ 多级限流策略
+@Component
+public class RateLimitService {
+    
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+    
+    /**
+     * 令牌桶限流
+     */
+    public boolean allowRequest(String key, int maxRequests, Duration window) {
+        String script = 
+            "local key = KEYS[1] " +
+            "local window = ARGV[1] " +
+            "local limit = tonumber(ARGV[2]) " +
+            "local current = redis.call('GET', key) " +
+            "if current == false then " +
+            "    redis.call('SET', key, 1) " +
+            "    redis.call('EXPIRE', key, window) " +
+            "    return 1 " +
+            "end " +
+            "if tonumber(current) < limit then " +
+            "    return redis.call('INCR', key) " +
+            "else " +
+            "    return 0 " +
+            "end";
+        
+        DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>(script, Long.class);
+        Long result = redisTemplate.execute(redisScript, 
+                                          Collections.singletonList(key), 
+                                          String.valueOf(window.getSeconds()), 
+                                          String.valueOf(maxRequests));
+        return result != null && result > 0;
+    }
+    
+    /**
+     * 滑动窗口限流
+     */
+    public boolean allowRequestSlidingWindow(String key, int maxRequests, Duration window) {
+        long now = System.currentTimeMillis();
+        long windowStart = now - window.toMillis();
+        
+        String script =
+            "local key = KEYS[1] " +
+            "local window_start = ARGV[1] " +
+            "local window_end = ARGV[2] " +
+            "local limit = ARGV[3] " +
+            "redis.call('ZREMRANGEBYSCORE', key, 0, window_start) " +
+            "local current = redis.call('ZCARD', key) " +
+            "if current < tonumber(limit) then " +
+            "    redis.call('ZADD', key, window_end, window_end) " +
+            "    redis.call('EXPIRE', key, 3600) " +
+            "    return 1 " +
+            "else " +
+            "    return 0 " +
+            "end";
+        
+        DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>(script, Long.class);
+        Long result = redisTemplate.execute(redisScript,
+                                          Collections.singletonList(key),
+                                          String.valueOf(windowStart),
+                                          String.valueOf(now),
+                                          String.valueOf(maxRequests));
+        return result != null && result > 0;
+    }
+}
+
+// 限流注解
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface RateLimit {
+    String key() default "";
+    int maxRequests() default 100;
+    int windowSeconds() default 60;
+    RateLimitType type() default RateLimitType.TOKEN_BUCKET;
+}
+
+enum RateLimitType {
+    TOKEN_BUCKET, SLIDING_WINDOW
+}
+```
+
+## 🛡️ 输入验证规则
+
+### 1. 参数校验
+```java
+// ✅ 全面的参数校验
+@Data
+@Valid
+public class CreateAccountRequest {
+    
+    @NotBlank(message = "账号名称不能为空")
+    @Length(min = 2, max = 50, message = "账号名称长度必须在2-50之间")
+    @Pattern(regexp = "^[a-zA-Z0-9\\u4e00-\\u9fa5_-]+$", message = "账号名称只能包含字母、数字、中文、下划线和短横线")
+    private String accountName;
+    
+    @NotBlank(message = "企微GUID不能为空")
+    @Pattern(regexp = "^[a-zA-Z0-9_-]{10,50}$", message = "企微GUID格式不正确")
+    private String weWorkGuid;
+    
+    @Email(message = "邮箱格式不正确")
+    @Length(max = 100, message = "邮箱长度不能超过100")
+    private String email;
+    
+    @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")
+    private String mobile;
+    
+    @Valid
+    @NotNull(message = "配置信息不能为空")
+    private AccountConfigDTO config;
+}
+
+// 自定义校验注解
+@Target({ElementType.FIELD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy = TenantIdValidator.class)
+public @interface ValidTenantId {
+    String message() default "租户ID格式不正确";
+    Class<?>[] groups() default {};
+    Class<? extends Payload>[] payload() default {};
+}
+
+@Component
+public class TenantIdValidator implements ConstraintValidator<ValidTenantId, String> {
+    
+    @Override
+    public boolean isValid(String tenantId, ConstraintValidatorContext context) {
+        if (StringUtils.isBlank(tenantId)) {
+            return false;
+        }
+        
+        // 验证UUID格式
+        try {
+            UUID.fromString(tenantId);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+}
+```
+
+### 2. XSS防护
+```java
+// ✅ XSS过滤器
+@Component
+public class XssFilter implements Filter {
+    
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) 
+            throws IOException, ServletException {
+        
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        XssHttpServletRequestWrapper wrappedRequest = new XssHttpServletRequestWrapper(httpRequest);
+        
+        chain.doFilter(wrappedRequest, response);
+    }
+}
+
+public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
+    
+    private final Pattern[] xssPatterns = {
+        Pattern.compile("<script[^>]*>.*?</script>", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("javascript:", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("onload=", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("onclick=", Pattern.CASE_INSENSITIVE),
+        Pattern.compile("onerror=", Pattern.CASE_INSENSITIVE)
+    };
+    
+    public XssHttpServletRequestWrapper(HttpServletRequest request) {
+        super(request);
+    }
+    
+    @Override
+    public String getParameter(String name) {
+        String value = super.getParameter(name);
+        return cleanXss(value);
+    }
+    
+    @Override
+    public String[] getParameterValues(String name) {
+        String[] values = super.getParameterValues(name);
+        if (values != null) {
+            for (int i = 0; i < values.length; i++) {
+                values[i] = cleanXss(values[i]);
+            }
+        }
+        return values;
+    }
+    
+    private String cleanXss(String value) {
+        if (value == null) {
+            return null;
+        }
+        
+        String cleanValue = value;
+        for (Pattern pattern : xssPatterns) {
+            cleanValue = pattern.matcher(cleanValue).replaceAll("");
+        }
+        
+        return StringEscapeUtils.escapeHtml4(cleanValue);
+    }
+}
+```
+
+**规则总结**:
+- 使用JWT进行身份认证，实现无状态认证
+- 基于RBAC模型实现细粒度权限控制
+- 敏感数据必须加密存储，传输使用HTTPS
+- API接口实现签名验证和限流保护
+- 严格进行输入验证，防止XSS和SQL注入
+- 记录详细的安全审计日志

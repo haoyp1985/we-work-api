@@ -1,0 +1,376 @@
+# 💾 数据库设计和操作规则
+
+## 📊 数据库设计规范
+
+### 1. 表设计规范
+```sql
+-- ✅ 正确的表设计模板
+CREATE TABLE {business_entity} (
+    -- 主键设计
+    id VARCHAR(36) PRIMARY KEY COMMENT '主键ID(UUID)',
+    
+    -- 多租户字段(必须)
+    tenant_id VARCHAR(36) NOT NULL COMMENT '租户ID',
+    
+    -- 业务字段
+    {business_field} VARCHAR(100) NOT NULL COMMENT '业务字段',
+    
+    -- 状态字段
+    status ENUM('active', 'inactive', 'deleted') DEFAULT 'active' COMMENT '状态',
+    
+    -- 审计字段(必须)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    created_by VARCHAR(36) DEFAULT NULL COMMENT '创建人ID',
+    updated_by VARCHAR(36) DEFAULT NULL COMMENT '更新人ID',
+    
+    -- 软删除字段
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT '删除时间',
+    
+    -- 版本控制(可选)
+    version INT DEFAULT 1 COMMENT '版本号',
+    
+    -- 索引设计
+    INDEX idx_tenant_id (tenant_id),
+    INDEX idx_status (status),
+    INDEX idx_created_at (created_at),
+    INDEX idx_tenant_status (tenant_id, status),
+    
+    -- 外键约束
+    FOREIGN KEY (tenant_id) REFERENCES saas_tenants(id) ON DELETE CASCADE
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci 
+  COMMENT='{表的中文描述}';
+```
+
+**规则**:
+- 主键统一使用VARCHAR(36)存储UUID
+- 所有业务表必须包含tenant_id字段
+- 必须包含created_at、updated_at审计字段
+- 使用软删除，添加deleted_at字段
+- 表名和字段名使用snake_case命名法
+- 必须添加表和字段的COMMENT注释
+
+### 2. 命名规范
+```sql
+-- ✅ 正确的命名
+表名: wework_accounts, message_templates, tenant_quotas
+字段名: tenant_id, account_name, created_at, is_active
+索引名: idx_tenant_id, idx_status, idx_tenant_status
+外键名: fk_accounts_tenant_id
+
+-- ❌ 错误的命名  
+表名: WeWorkAccount, messageTemplate, TenantQuota
+字段名: tenantId, accountName, createdAt, isActive
+索引名: index1, idx1, tenant_index
+外键名: fk1, foreign_key_1
+```
+
+**规则**:
+- 表名使用复数形式
+- 字段名描述性强，避免缩写
+- 索引名以idx_开头，描述包含的字段
+- 外键名以fk_开头，表明关联关系
+
+### 3. 数据类型规范
+```sql
+-- ✅ 正确的数据类型选择
+id VARCHAR(36)              -- UUID主键
+tenant_id VARCHAR(36)       -- 外键ID
+name VARCHAR(100)           -- 短文本
+description TEXT            -- 长文本  
+config JSON                 -- 复杂配置
+amount DECIMAL(10,2)        -- 金额
+count INT                   -- 计数
+is_active BOOLEAN           -- 布尔值
+created_at TIMESTAMP        -- 时间戳
+status ENUM('active','inactive') -- 状态枚举
+
+-- ❌ 错误的数据类型
+id INT AUTO_INCREMENT       -- 不使用自增ID
+name VARCHAR(255)           -- 过长的字符串
+config TEXT                 -- 应该用JSON
+amount FLOAT                -- 精度问题
+created_at DATETIME         -- 应该用TIMESTAMP
+```
+
+**规则**:
+- 主键和外键统一使用VARCHAR(36)
+- 短文本字段根据实际需要设置长度
+- 配置信息使用JSON类型
+- 金额使用DECIMAL类型
+- 时间字段使用TIMESTAMP类型
+- 状态字段使用ENUM类型
+
+## 🏗️ 分库分表规则
+
+### 1. 数据库拆分策略
+```yaml
+数据库拆分规范:
+  saas_unified_core:
+    - 用途: 统一身份认证、权限管理、系统配置
+    - 特点: 数据量相对较小，查询频繁
+    - 表数: 24张表
+    
+  ai_agent_platform:  
+    - 用途: AI智能体管理、调度、监控
+    - 特点: 复杂业务逻辑，需要保留完整功能
+    - 表数: 20张表
+    
+  wework_platform:
+    - 用途: 企微账号管理、状态跟踪
+    - 特点: 9种状态跟踪，生命周期管理
+    - 表数: 15张表
+    
+  health_management:
+    - 用途: 健康管理、体检预约
+    - 特点: 业务相对独立
+    - 表数: 12张表
+    
+  core_business:
+    - 用途: 服务产品、订单、营销
+    - 特点: 交易核心，高并发访问
+    - 表数: 15张表
+    
+  customer_management:
+    - 用途: 客户管理、标签、分群
+    - 特点: 数据分析需求较大
+    - 表数: 12张表
+```
+
+**规则**:
+- 按业务域进行数据库拆分
+- 避免跨库JOIN查询
+- 通过服务调用实现跨库数据获取
+
+### 2. 分区表设计
+```sql
+-- ✅ 大数据量表使用分区
+CREATE TABLE message_records (
+    id VARCHAR(36) PRIMARY KEY,
+    tenant_id VARCHAR(36) NOT NULL,
+    content TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    INDEX idx_tenant_created (tenant_id, created_at)
+) ENGINE=InnoDB
+  PARTITION BY RANGE (UNIX_TIMESTAMP(created_at)) (
+    PARTITION p202401 VALUES LESS THAN (UNIX_TIMESTAMP('2024-02-01')),
+    PARTITION p202402 VALUES LESS THAN (UNIX_TIMESTAMP('2024-03-01')),
+    PARTITION p202403 VALUES LESS THAN (UNIX_TIMESTAMP('2024-04-01')),
+    PARTITION p_future VALUES LESS THAN MAXVALUE
+);
+```
+
+**规则**:
+- 大数据量表(>1000万行)必须使用分区
+- 优先按时间分区，便于数据清理
+- 预创建未来分区，避免数据插入失败
+
+## 💽 索引优化规则
+
+### 1. 索引设计原则
+```sql
+-- ✅ 正确的索引设计
+-- 单列索引
+INDEX idx_tenant_id (tenant_id),
+INDEX idx_status (status),
+INDEX idx_created_at (created_at),
+
+-- 复合索引(最常用查询条件在前)
+INDEX idx_tenant_status (tenant_id, status),
+INDEX idx_tenant_created (tenant_id, created_at),
+INDEX idx_tenant_status_created (tenant_id, status, created_at),
+
+-- 覆盖索引(包含SELECT字段)
+INDEX idx_tenant_cover (tenant_id, status, name, created_at),
+
+-- ❌ 错误的索引设计
+INDEX idx_bad1 (created_at, tenant_id),  -- 顺序错误
+INDEX idx_bad2 (name, description),      -- 低选择性字段在前
+INDEX idx_redundant (tenant_id),         -- 已存在复合索引
+```
+
+**规则**:
+- 高选择性字段在前(tenant_id优先)
+- 查询条件字段在前，排序字段在后
+- 避免过多索引，影响写入性能
+- 定期分析慢查询，优化索引
+
+### 2. 查询优化规范
+```sql
+-- ✅ 正确的查询写法
+SELECT id, name, status, created_at 
+FROM wework_accounts 
+WHERE tenant_id = ? 
+  AND status = 'active' 
+  AND created_at >= ?
+ORDER BY created_at DESC 
+LIMIT 20;
+
+-- ❌ 错误的查询写法
+SELECT * FROM wework_accounts           -- 避免SELECT *
+WHERE name LIKE '%keyword%'             -- 避免左模糊查询
+  OR description LIKE '%keyword%'       -- 避免OR查询
+ORDER BY created_at                     -- 缺少LIMIT
+```
+
+**规则**:
+- 避免SELECT *，明确指定字段
+- WHERE条件必须包含tenant_id
+- 避免左模糊查询和OR条件
+- 大结果集必须使用LIMIT分页
+
+## 🔄 数据操作规范
+
+### 1. 事务处理
+```java
+// ✅ 正确的事务处理
+@Service
+@Transactional(rollbackFor = Exception.class)
+public class AccountService {
+    
+    // 只读事务
+    @Transactional(readOnly = true)
+    public AccountDTO getAccount(String tenantId, String accountId) {
+        return accountMapper.selectByTenantAndId(tenantId, accountId);
+    }
+    
+    // 写事务
+    @Transactional(rollbackFor = Exception.class)
+    public void createAccount(CreateAccountRequest request) {
+        // 1. 验证权限
+        tenantQuotaService.checkAccountQuota(request.getTenantId());
+        
+        // 2. 创建账号
+        WeWorkAccount account = new WeWorkAccount();
+        account.setTenantId(request.getTenantId());
+        accountMapper.insert(account);
+        
+        // 3. 记录审计日志
+        auditLogService.logAccountCreated(account);
+        
+        // 4. 发送事件
+        eventPublisher.publishAccountCreated(account);
+    }
+}
+```
+
+**规则**:
+- 明确指定rollbackFor = Exception.class
+- 查询操作使用readOnly = true
+- 事务范围尽可能小，避免长事务
+- 事务内避免调用外部服务
+
+### 2. 批量操作
+```java
+// ✅ 正确的批量操作
+@Service
+public class MessageService {
+    
+    public void batchCreateMessages(List<MessageDTO> messages) {
+        if (CollectionUtils.isEmpty(messages)) {
+            return;
+        }
+        
+        // 分批处理，避免大事务
+        int batchSize = 100;
+        for (int i = 0; i < messages.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, messages.size());
+            List<MessageDTO> batch = messages.subList(i, end);
+            batchInsertMessages(batch);
+        }
+    }
+    
+    @Transactional(rollbackFor = Exception.class)
+    private void batchInsertMessages(List<MessageDTO> batch) {
+        messageMapper.batchInsert(batch);
+    }
+}
+```
+
+**规则**:
+- 大批量操作分批处理，单批次不超过1000条
+- 使用MyBatis-Plus的批量插入功能
+- 批量操作前验证租户权限
+
+### 3. 缓存策略
+```java
+// ✅ 正确的缓存使用
+@Service
+public class ConfigService {
+    
+    @Cacheable(value = "tenant-config", key = "#tenantId")
+    public TenantConfigDTO getTenantConfig(String tenantId) {
+        return configMapper.selectByTenantId(tenantId);
+    }
+    
+    @CacheEvict(value = "tenant-config", key = "#config.tenantId")
+    public void updateTenantConfig(TenantConfigDTO config) {
+        configMapper.updateByTenantId(config);
+    }
+    
+    @CacheEvict(value = "tenant-config", allEntries = true)
+    public void clearAllCache() {
+        // 清空所有缓存
+    }
+}
+```
+
+**规则**:
+- 配置信息使用缓存，提升查询性能
+- 更新操作及时清理缓存
+- 缓存key包含租户信息，避免数据泄露
+- 设置合理的缓存过期时间
+
+## 📋 数据迁移规则
+
+### 1. 数据库版本管理
+```sql
+-- ✅ 版本管理SQL文件命名
+V1.0.0__初始化数据库结构.sql
+V1.0.1__添加账号状态字段.sql  
+V1.1.0__创建消息模板表.sql
+V1.1.1__修改消息字段长度.sql
+
+-- 文件内容规范
+-- 版本: V1.1.0
+-- 描述: 创建消息模板表
+-- 作者: developer@company.com
+-- 日期: 2024-01-15
+
+CREATE TABLE message_templates (
+    id VARCHAR(36) PRIMARY KEY COMMENT '模板ID',
+    tenant_id VARCHAR(36) NOT NULL COMMENT '租户ID',
+    template_name VARCHAR(100) NOT NULL COMMENT '模板名称',
+    -- 其他字段...
+    
+    INDEX idx_tenant_id (tenant_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 
+  COMMENT='消息模板表';
+```
+
+**规则**:
+- SQL文件按版本号命名
+- 每个文件包含版本信息和变更描述
+- 禁止修改已执行的历史SQL文件
+- 数据迁移脚本必须支持回滚
+
+### 2. 数据备份恢复
+```bash
+# ✅ 正确的备份策略
+# 全量备份
+mysqldump --single-transaction --routines --triggers \
+  --all-databases > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# 增量备份(基于binlog)
+mysqlbinlog --start-datetime="2024-01-01 00:00:00" \
+  --stop-datetime="2024-01-02 00:00:00" \
+  mysql-bin.000001 > incremental_backup.sql
+```
+
+**规则**:
+- 每日凌晨执行全量备份
+- 每小时执行增量备份
+- 备份文件保留30天
+- 定期验证备份文件完整性
