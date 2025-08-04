@@ -17,47 +17,47 @@ public enum AccountStatus {
     /**
      * 已创建
      */
-    CREATED("created", "已创建", 1),
+    CREATED("CREATED", "已创建", 1),
 
     /**
      * 初始化中
      */
-    INITIALIZING("initializing", "初始化中", 2),
+    INITIALIZING("INITIALIZING", "初始化中", 2),
 
     /**
      * 等待扫码
      */
-    WAITING_QR("waiting_qr", "等待扫码", 3),
+    WAITING_QR("WAITING_QR", "等待扫码", 3),
 
     /**
      * 等待确认
      */
-    WAITING_CONFIRM("waiting_confirm", "等待确认", 4),
+    WAITING_CONFIRM("WAITING_CONFIRM", "等待确认", 4),
 
     /**
      * 验证中
      */
-    VERIFYING("verifying", "验证中", 5),
+    VERIFYING("VERIFYING", "验证中", 5),
 
     /**
      * 在线
      */
-    ONLINE("online", "在线", 10),
+    ONLINE("ONLINE", "在线", 10),
 
     /**
      * 离线
      */
-    OFFLINE("offline", "离线", 6),
+    OFFLINE("OFFLINE", "离线", 6),
 
     /**
      * 异常
      */
-    ERROR("error", "异常", 7),
+    ERROR("ERROR", "异常", 7),
 
     /**
      * 恢复中
      */
-    RECOVERING("recovering", "恢复中", 8);
+    RECOVERING("RECOVERING", "恢复中", 8);
 
     @EnumValue
     @JsonValue

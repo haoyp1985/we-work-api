@@ -1,0 +1,39 @@
+LOAD DATABASE
+    FROM mysql://root:wework123456@127.0.0.1:23306/wework_platform
+    INTO postgresql://postgres:postgres@localhost:5432/wework_platform_pg
+
+-- 设置MySQL连接参数
+SET MySQL PARAMETERS
+    net_read_timeout = '600',
+    net_write_timeout = '600'
+
+-- 设置PostgreSQL参数
+SET PostgreSQL PARAMETERS
+    maintenance_work_mem to '128MB',
+    work_mem to '12MB'
+
+-- 数据类型转换规则
+CAST
+    -- 处理ENUM类型
+    type enum with extra using quote_ident,
+    -- 处理JSON类型
+    type json to jsonb using inline,
+    -- 处理TEXT类型
+    type text to text,
+    -- 处理DATETIME类型
+    type datetime to timestamptz using zero-dates-to-null,
+    -- 处理BLOB类型
+    type blob to bytea using hex-encode
+
+-- 包含所有表
+INCLUDING ALL TABLES
+
+-- 排除系统表
+EXCLUDING TABLE NAMES MATCHING 'mysql', 'information_schema', 'performance_schema'
+
+-- 重置序列
+RESET SEQUENCES
+
+-- 设置工作内存
+SET WORK_MEM TO '128MB'
+SET MAINTENANCE_WORK_MEM TO '512 MB' 
