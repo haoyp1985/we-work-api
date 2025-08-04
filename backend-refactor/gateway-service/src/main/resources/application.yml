@@ -1,0 +1,166 @@
+spring:
+  cloud:
+    gateway:
+      # 全局配置
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins: "*"
+            allowed-methods: "*"
+            allowed-headers: "*"
+            allow-credentials: true
+      
+      # 路由配置
+      routes:
+        # 用户权限服务
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/users/**,/api/v1/auth/**,/api/v1/tenants/**,/api/v1/roles/**,/api/v1/permissions/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 100
+                redis-rate-limiter.burstCapacity: 200
+                key-resolver: "#{@ipKeyResolver}"
+            - name: Hystrix
+              args:
+                name: user-service
+                fallbackUri: forward:/fallback/user-service
+        
+        # 企微账号服务
+        - id: account-service
+          uri: lb://account-service
+          predicates:
+            - Path=/api/v1/accounts/**,/api/v1/contacts/**,/api/v1/groups/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 100
+                redis-rate-limiter.burstCapacity: 200
+                key-resolver: "#{@ipKeyResolver}"
+            - name: Hystrix
+              args:
+                name: account-service
+                fallbackUri: forward:/fallback/account-service
+        
+        # 消息发送服务
+        - id: message-service
+          uri: lb://message-service
+          predicates:
+            - Path=/api/v1/messages/**,/api/v1/templates/**,/api/v1/tasks/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 50
+                redis-rate-limiter.burstCapacity: 100
+                key-resolver: "#{@ipKeyResolver}"
+            - name: Hystrix
+              args:
+                name: message-service
+                fallbackUri: forward:/fallback/message-service
+        
+        # 监控告警服务
+        - id: monitor-service
+          uri: lb://monitor-service
+          predicates:
+            - Path=/api/v1/monitor/**,/api/v1/alerts/**,/api/v1/metrics/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 200
+                redis-rate-limiter.burstCapacity: 300
+                key-resolver: "#{@ipKeyResolver}"
+            - name: Hystrix
+              args:
+                name: monitor-service
+                fallbackUri: forward:/fallback/monitor-service
+        
+        # 文件管理服务
+        - id: file-service
+          uri: lb://file-service
+          predicates:
+            - Path=/api/v1/files/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 30
+                redis-rate-limiter.burstCapacity: 50
+                key-resolver: "#{@ipKeyResolver}"
+            - name: Hystrix
+              args:
+                name: file-service
+                fallbackUri: forward:/fallback/file-service
+
+      # 默认过滤器
+      default-filters:
+        - name: AddRequestHeader
+          args:
+            name: X-Gateway-Source
+            value: wework-gateway
+        - name: AddResponseHeader
+          args:
+            name: X-Gateway-Response
+            value: wework-gateway
+
+  # Redis配置
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    database: 0
+    timeout: 3000
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1
+
+# Hystrix配置
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 30000
+      circuitBreaker:
+        requestVolumeThreshold: 20
+        sleepWindowInMilliseconds: 5000
+        errorThresholdPercentage: 50
+
+# Ribbon配置
+ribbon:
+  ReadTimeout: 30000
+  ConnectTimeout: 10000
+  MaxAutoRetries: 1
+  MaxAutoRetriesNextServer: 2
+
+# App配置
+app:
+  gateway:
+    # 忽略认证的路径
+    ignore-urls:
+      - /api/v1/auth/login
+      - /api/v1/auth/logout
+      - /api/v1/auth/refresh
+      - /actuator/**
+      - /fallback/**
+      - /swagger-ui/**
+      - /v3/api-docs/**
+    
+    # CORS配置
+    cors:
+      enabled: true
+      allow-credentials: true
+      allowed-origins: "*"
+      allowed-methods: "GET,POST,PUT,DELETE,OPTIONS"
+      allowed-headers: "*"
+      max-age: 3600
+    
+    # 限流配置
+    rate-limit:
+      enabled: true
+      default-replenish-rate: 100
+      default-burst-capacity: 200
