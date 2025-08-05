@@ -171,3 +171,6 @@ scripts/*.log
 
 # 监控数据
 monitoring/data/
+# Build artifacts
+**/target/
+
