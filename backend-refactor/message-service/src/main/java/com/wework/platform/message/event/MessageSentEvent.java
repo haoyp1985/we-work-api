@@ -63,7 +63,7 @@ public class MessageSentEvent extends ApplicationEvent {
         return errorMessage;
     }
 
-    public Long getTimestamp() {
+    public Long getEventTimestamp() {
         return timestamp;
     }
 }

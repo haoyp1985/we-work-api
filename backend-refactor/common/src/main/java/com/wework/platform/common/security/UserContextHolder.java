@@ -28,6 +28,13 @@ public class UserContextHolder {
     }
 
     /**
+     * 获取用户上下文（别名方法）
+     */
+    public static UserContext getUserContext() {
+        return getContext();
+    }
+
+    /**
      * 获取当前用户ID
      */
     public static String getCurrentUserId() {

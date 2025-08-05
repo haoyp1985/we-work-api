@@ -1,6 +1,6 @@
 package com.wework.platform.monitor.controller;
 
-import com.wework.platform.common.dto.Result;
+import com.wework.platform.common.core.base.Result;
 import com.wework.platform.monitor.dto.MonitorStatisticsDTO;
 import com.wework.platform.monitor.service.MonitorService;
 import com.wework.platform.monitor.service.SystemMetricService;

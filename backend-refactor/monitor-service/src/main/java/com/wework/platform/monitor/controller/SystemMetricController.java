@@ -1,7 +1,7 @@
 package com.wework.platform.monitor.controller;
 
-import com.wework.platform.common.dto.PageResult;
-import com.wework.platform.common.dto.Result;
+import com.wework.platform.common.core.base.PageResult;
+import com.wework.platform.common.core.base.Result;
 import com.wework.platform.monitor.dto.CreateMetricRequest;
 import com.wework.platform.monitor.dto.SystemMetricDTO;
 import com.wework.platform.monitor.service.SystemMetricService;
@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 

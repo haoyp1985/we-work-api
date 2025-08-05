@@ -154,7 +154,10 @@ create_database_structure() {
     # 4. 创建监控分析表
     execute_sql_file "$SCRIPT_DIR/04-monitor-analytics-tables.sql" "创建监控分析表结构"
     
-    # 5. 插入初始数据
+    # 5. 创建AI智能体和任务调度表
+    execute_sql_file "$SCRIPT_DIR/06-ai-agent-task-tables.sql" "创建AI智能体和任务调度表结构"
+    
+    # 6. 插入初始数据
     execute_sql_file "$SCRIPT_DIR/05-initial-data.sql" "插入初始化数据"
     
     log_info "✅ 数据库结构创建完成"

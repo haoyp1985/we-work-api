@@ -1,7 +1,7 @@
 package com.wework.platform.monitor.service;
 
-import com.wework.platform.common.dto.PageResult;
-import com.wework.platform.common.dto.Result;
+import com.wework.platform.common.core.base.PageResult;
+import com.wework.platform.common.core.base.Result;
 import com.wework.platform.common.enums.AlertLevel;
 import com.wework.platform.common.enums.AlertStatus;
 import com.wework.platform.monitor.dto.AlertDTO;

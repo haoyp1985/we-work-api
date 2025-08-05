@@ -2,8 +2,8 @@ package com.wework.platform.monitor.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.wework.platform.common.dto.PageResult;
-import com.wework.platform.common.dto.Result;
+import com.wework.platform.common.core.base.PageResult;
+import com.wework.platform.common.core.base.Result;
 import com.wework.platform.common.enums.AlertLevel;
 import com.wework.platform.common.enums.AlertStatus;
 import com.wework.platform.monitor.dto.AlertRuleDTO;
@@ -157,12 +157,7 @@ public class AlertRuleServiceImpl implements AlertRuleService {
                     .map(this::convertToDTO)
                     .collect(Collectors.toList());
 
-            PageResult<AlertRuleDTO> pageResult = new PageResult<>();
-            pageResult.setRecords(records);
-            pageResult.setTotal(result.getTotal());
-            pageResult.setPageNum(pageNum);
-            pageResult.setPageSize(pageSize);
-            pageResult.setPages((int) Math.ceil((double) result.getTotal() / pageSize));
+            PageResult<AlertRuleDTO> pageResult = PageResult.of(records, result.getTotal(), pageNum.longValue(), pageSize.longValue());
 
             return Result.success(pageResult);
 

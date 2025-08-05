@@ -1,7 +1,7 @@
 package com.wework.platform.monitor.service;
 
-import com.wework.platform.common.dto.PageResult;
-import com.wework.platform.common.dto.Result;
+import com.wework.platform.common.core.base.PageResult;
+import com.wework.platform.common.core.base.Result;
 import com.wework.platform.monitor.dto.CreateMetricRequest;
 import com.wework.platform.monitor.dto.SystemMetricDTO;
 

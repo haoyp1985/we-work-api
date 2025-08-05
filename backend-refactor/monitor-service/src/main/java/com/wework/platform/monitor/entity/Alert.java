@@ -105,6 +105,12 @@ public class Alert {
     private LocalDateTime endedAt;
 
     /**
+     * 是否已确认
+     */
+    @TableField("acknowledged")
+    private Boolean acknowledged;
+
+    /**
      * 确认时间
      */
     @TableField("acknowledged_at")
@@ -115,6 +121,12 @@ public class Alert {
      */
     @TableField("acknowledged_by")
     private String acknowledgedBy;
+
+    /**
+     * 解决时间
+     */
+    @TableField("resolved_at")
+    private LocalDateTime resolvedAt;
 
     /**
      * 通知状态

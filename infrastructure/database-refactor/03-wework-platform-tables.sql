@@ -53,31 +53,55 @@ CREATE TABLE `account_status_logs` (
 
 -- ===== 联系人管理 =====
 
--- 联系人表
-CREATE TABLE `contacts` (
+-- 企微联系人表
+CREATE TABLE `wework_contacts` (
     `id` VARCHAR(36) PRIMARY KEY COMMENT '联系人ID',
-    `account_id` VARCHAR(36) NOT NULL COMMENT '账号ID',
-    `contact_wework_id` VARCHAR(100) NOT NULL COMMENT '企微联系人ID',
-    `contact_name` VARCHAR(100) COMMENT '联系人姓名',
-    `contact_alias` VARCHAR(100) COMMENT '联系人备注',
-    `contact_type` ENUM('user', 'group', 'external') NOT NULL COMMENT '联系人类型',
-    `contact_avatar` VARCHAR(255) COMMENT '头像URL',
-    `phone_number` VARCHAR(20) COMMENT '手机号',
-    `email` VARCHAR(100) COMMENT '邮箱',
+    `tenant_id` VARCHAR(36) NOT NULL COMMENT '租户ID',
+    `account_id` VARCHAR(36) NOT NULL COMMENT '企微账号ID',
+    `corp_id` VARCHAR(100) COMMENT '企业ID',
+    `contact_type` INT NOT NULL COMMENT '联系人类型：1-内部员工，2-外部联系人，3-群聊',
+    `contact_id` VARCHAR(100) NOT NULL COMMENT '联系人ID（企微内部ID）',
+    `contact_name` VARCHAR(100) COMMENT '联系人名称',
+    `nickname` VARCHAR(100) COMMENT '联系人昵称',
+    `avatar` VARCHAR(255) COMMENT '联系人头像',
+    `gender` VARCHAR(10) COMMENT '性别',
+    `mobile` VARCHAR(20) COMMENT '手机号码',
+    `email` VARCHAR(100) COMMENT '邮箱地址',
+    `position` VARCHAR(100) COMMENT '职位',
     `department` VARCHAR(100) COMMENT '部门',
-    `is_friend` BOOLEAN DEFAULT FALSE COMMENT '是否好友',
-    `is_blocked` BOOLEAN DEFAULT FALSE COMMENT '是否被拉黑',
-    `tags` JSON COMMENT '标签',
-    `last_active_at` TIMESTAMP NULL COMMENT '最后活跃时间',
+    `external_profile` JSON COMMENT '外部联系人资料',
+    `follow_user` VARCHAR(100) COMMENT '跟进人用户ID',
+    `state` VARCHAR(100) COMMENT '渠道活码标识',
+    `corp_name` VARCHAR(100) COMMENT '企业名称',
+    `corp_full_name` VARCHAR(200) COMMENT '企业全称',
+    `type` VARCHAR(50) COMMENT '外部联系人类型',
+    `is_deleted_by_user` BOOLEAN DEFAULT FALSE COMMENT '是否被用户删除',
+    `is_deleted_by_external` BOOLEAN DEFAULT FALSE COMMENT '是否被外部联系人删除',
+    `union_id` VARCHAR(100) COMMENT 'Union ID',
+    `add_way` INT COMMENT '添加方式',
+    `oper_userid` VARCHAR(100) COMMENT '操作人用户ID',
+    `tags` JSON COMMENT '标签信息',
+    `remark` VARCHAR(500) COMMENT '备注',
+    `description` TEXT COMMENT '描述',
+    `remark_corp_name` VARCHAR(100) COMMENT '备注企业名称',
+    `remark_mobiles` JSON COMMENT '备注手机号',
+    `wework_create_time` TIMESTAMP NULL COMMENT '企微创建时间',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `created_by` VARCHAR(36) COMMENT '创建者ID',
+    `updated_by` VARCHAR(36) COMMENT '更新者ID',
+    `deleted_at` TIMESTAMP NULL COMMENT '删除时间',
     
-    UNIQUE KEY `uk_account_contact` (`account_id`, `contact_wework_id`),
+    UNIQUE KEY `uk_account_contact` (`account_id`, `contact_id`),
+    INDEX `idx_tenant_id` (`tenant_id`),
     INDEX `idx_account_id` (`account_id`),
     INDEX `idx_contact_type` (`contact_type`),
     INDEX `idx_contact_name` (`contact_name`),
+    INDEX `idx_follow_user` (`follow_user`),
+    INDEX `idx_corp_id` (`corp_id`),
+    INDEX `idx_created_at` (`created_at`),
     FOREIGN KEY (`account_id`) REFERENCES `wework_accounts`(`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='联系人表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='企微联系人表';
 
 -- 群聊表
 CREATE TABLE `groups` (
