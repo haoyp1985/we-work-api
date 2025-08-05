@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.util.List;

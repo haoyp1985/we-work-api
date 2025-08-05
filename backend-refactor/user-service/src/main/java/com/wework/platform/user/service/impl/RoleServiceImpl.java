@@ -66,9 +66,9 @@ public class RoleServiceImpl implements RoleService {
         return PageResult.<RoleDTO>builder()
                 .records(roleDTOs)
                 .total(rolePage.getTotal())
-                .pageNum(pageNum)
-                .pageSize(pageSize)
-                .pages((int) rolePage.getPages())
+                .current(pageNum.longValue())
+                .size(pageSize.longValue())
+                .pages(rolePage.getPages())
                 .build();
     }
 

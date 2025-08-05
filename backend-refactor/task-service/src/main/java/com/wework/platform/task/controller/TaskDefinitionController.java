@@ -1,8 +1,8 @@
 package com.wework.platform.task.controller;
 
-import com.wework.platform.common.dto.PageQuery;
-import com.wework.platform.common.dto.PageResult;
-import com.wework.platform.common.dto.Result;
+import com.wework.platform.common.core.base.PageQuery;
+import com.wework.platform.common.core.base.PageResult;
+import com.wework.platform.common.core.base.Result;
 import com.wework.platform.task.dto.CreateTaskDefinitionRequest;
 import com.wework.platform.task.dto.TaskDefinitionDTO;
 import com.wework.platform.task.dto.UpdateTaskDefinitionRequest;

@@ -21,7 +21,7 @@
         <!-- 通用模块 -->
         <dependency>
             <groupId>com.wework.platform</groupId>
-            <artifactId>common</artifactId>
+            <artifactId>wework-platform-common</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -108,10 +108,10 @@
             <artifactId>fastjson</artifactId>
         </dependency>
 
-        <!-- API文档 -->
+        <!-- SpringDoc OpenAPI -->
         <dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
 
         <!-- 监控 -->

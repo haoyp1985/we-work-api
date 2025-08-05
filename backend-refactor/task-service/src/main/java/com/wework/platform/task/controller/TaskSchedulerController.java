@@ -1,6 +1,6 @@
 package com.wework.platform.task.controller;
 
-import com.wework.platform.common.dto.Result;
+import com.wework.platform.common.core.base.Result;
 import com.wework.platform.task.dto.TaskDefinitionDTO;
 import com.wework.platform.task.dto.TaskInstanceDTO;
 import com.wework.platform.task.entity.TaskDefinition;
