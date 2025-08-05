@@ -55,4 +55,11 @@ public abstract class BaseEntity implements Serializable {
      */
     @TableField(value = "updated_by", fill = FieldFill.INSERT_UPDATE)
     private String updatedBy;
+
+    /**
+     * 删除时间（软删除）
+     */
+    @TableField(value = "deleted_at")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime deletedAt;
 }

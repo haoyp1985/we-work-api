@@ -1,0 +1,263 @@
+---
+alwaysApply: true
+---
+```
+
+## 🗄️ 数据库部署规范
+
+### 1. MySQL配置优化
+```ini
+# ✅ my.cnf生产环境配置
+[mysqld]
+# 基础配置
+port = 3306
+socket = /var/run/mysqld/mysqld.sock
+pid-file = /var/run/mysqld/mysqld.pid
+datadir = /var/lib/mysql
+
+# 字符集配置
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+init_connect = 'SET NAMES utf8mb4'
+
+# 连接配置
+max_connections = 200
+max_connect_errors = 1000
+wait_timeout = 28800
+interactive_timeout = 28800
+
+# 缓存配置
+innodb_buffer_pool_size = 512M
+innodb_log_file_size = 128M
+innodb_log_buffer_size = 16M
+innodb_flush_log_at_trx_commit = 1
+innodb_flush_method = O_DIRECT
+
+# 查询缓存
+query_cache_type = 1
+query_cache_size = 64M
+query_cache_limit = 2M
+
+# 慢查询日志
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/slow.log
+long_query_time = 2
+log_queries_not_using_indexes = 1
+
+# 二进制日志
+log-bin = mysql-bin
+binlog_format = ROW
+expire_logs_days = 7
+max_binlog_size = 100M
+
+# 错误日志
+log-error = /var/log/mysql/error.log
+
+# 安全配置
+local-infile = 0
+skip-symbolic-links
+```
+
+### 2. Redis配置优化
+```ini
+# ✅ redis.conf生产环境配置
+# 基础配置
+port 6379
+bind 0.0.0.0
+protected-mode yes
+requirepass wework_redis_2024
+
+# 内存配置
+maxmemory 256mb
+maxmemory-policy allkeys-lru
+
+# 持久化配置
+save 900 1
+save 300 10
+save 60 10000
+stop-writes-on-bgsave-error yes
+rdbcompression yes
+rdbchecksum yes
+dbfilename dump.rdb
+
+# AOF配置
+appendonly yes
+appendfilename "appendonly.aof"
+appendfsync everysec
+no-appendfsync-on-rewrite no
+auto-aof-rewrite-percentage 100
+auto-aof-rewrite-min-size 64mb
+
+# 日志配置
+loglevel notice
+logfile /var/log/redis/redis-server.log
+syslog-enabled yes
+syslog-ident redis
+
+# 网络配置
+timeout 300
+tcp-keepalive 300
+tcp-backlog 511
+
+# 客户端配置
+maxclients 10000
+```
+
+## 📦 中间件部署规范
+
+### 1. RocketMQ配置
+```properties
+# ✅ broker.conf配置
+# 集群名称
+brokerClusterName = DefaultCluster
+brokerName = broker-a
+brokerId = 0
+
+# 网络配置
+listenPort = 10911
+namesrvAddr = rocketmq-nameserver:9876
+
+# 存储配置
+storePathRootDir = /opt/store
+storePathCommitLog = /opt/store/commitlog
+storePathConsumeQueue = /opt/store/consumequeue
+storePathIndex = /opt/store/index
+
+# 性能配置
+defaultTopicQueueNums = 4
+autoCreateTopicEnable = true
+autoCreateSubscriptionGroup = true
+
+# 清理配置
+fileReservedTime = 72
+deleteWhen = 04
+diskMaxUsedSpaceRatio = 88
+
+# 网络配置
+brokerIP1 = 0.0.0.0
+```
+
+### 2. Nacos配置
+```yaml
+# ✅ nacos配置
+server:
+  port: 8848
+
+spring:
+  datasource:
+    platform: mysql
+    db:
+      num: 1
+      url:
+        0: jdbc:mysql://mysql:3306/nacos_config?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=Asia/Shanghai
+      username:
+        0: nacos
+      password:
+        0: nacos123456
+
+nacos:
+  security:
+    ignore:
+      urls: /,/error,/**/*.css,/**/*.js,/**/*.html,/**/*.map,/**/*.svg,/**/*.png,/**/*.ico,/console-ui/public/**,/v1/auth/**,/v1/console/health/**,/actuator/**,/v1/console/server/**
+  core:
+    auth:
+      system:
+        type: nacos
+        token:
+          secret:
+            key: VGhpc0lzTXlDdXN0b21TZWNyZXRLZXkwMTIzNDU2Nzg5QUJDREVGMDEyMzQ1Njc4OUFCQ0RFRg==
+      enabled: true
+      enable:
+        userAgentAuthWhite: false
+      plugin:
+        nacos:
+          token:
+            expire:
+              seconds: 18000
+  istio:
+    mcp:
+      server:
+        enabled: false
+```
+
+## 🔍 环境管理规范
+
+### 1. 环境配置
+```bash
+# ✅ 环境变量配置
+# 开发环境 (.env.dev)
+PROFILE=dev
+MYSQL_ROOT_PASSWORD=dev123456
+MYSQL_USER=wework_dev
+MYSQL_PASSWORD=dev123456
+REDIS_PASSWORD=dev_redis_2024
+NACOS_SERVER=localhost:8848
+NACOS_NAMESPACE=dev
+
+# 测试环境 (.env.test)
+PROFILE=test
+MYSQL_ROOT_PASSWORD=test123456
+MYSQL_USER=wework_test
+MYSQL_PASSWORD=test123456
+REDIS_PASSWORD=test_redis_2024
+NACOS_SERVER=nacos-test:8848
+NACOS_NAMESPACE=test
+
+# 生产环境 (.env.prod)
+PROFILE=prod
+MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+MYSQL_USER=wework_prod
+MYSQL_PASSWORD=${MYSQL_PASSWORD}
+REDIS_PASSWORD=${REDIS_PASSWORD}
+NACOS_SERVER=nacos-cluster:8848
+NACOS_NAMESPACE=prod
+```
+
+### 2. 资源限制配置
+```yaml
+# ✅ 资源限制标准
+deploy:
+  resources:
+    # 网关服务
+    gateway-service:
+      limits:
+        memory: 1Gi
+        cpu: 1000m
+      reservations:
+        memory: 512Mi
+        cpu: 500m
+    
+    # 业务服务
+    account-service:
+      limits:
+        memory: 800Mi
+        cpu: 800m
+      reservations:
+        memory: 400Mi
+        cpu: 400m
+    
+    # 数据库
+    mysql:
+      limits:
+        memory: 1Gi
+        cpu: 1000m
+      reservations:
+        memory: 512Mi
+        cpu: 500m
+    
+    # 缓存
+    redis:
+      limits:
+        memory: 256Mi
+        cpu: 200m
+      reservations:
+        memory: 128Mi
+        cpu: 100m
+```
+
+**规则总结**:
+- 使用Docker Compose统一编排所有基础设施
+- 配置完整的监控体系(Prometheus + Grafana + 告警)
+- 数据库和中间件必须优化配置参数
+- 实现多环境配置管理和资源限制
+- 所有服务必须配置健康检查和日志收集

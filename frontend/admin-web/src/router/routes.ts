@@ -178,6 +178,71 @@ export const asyncRoutes: RouteRecordRaw[] = [
     ]
   },
 
+  // AI智能体管理
+  {
+    path: '/agent',
+    component: Layout,
+    redirect: '/agent/list',
+    name: 'Agent',
+    meta: {
+      title: 'AI智能体',
+      icon: 'Robot',
+      roles: ['admin', 'agent_manager']
+    },
+    children: [
+      {
+        path: 'list',
+        name: 'AgentList',
+        component: () => import('@/views/agent/list.vue'),
+        meta: { 
+          title: '智能体管理',
+          icon: 'Robot',
+          keepAlive: true
+        }
+      },
+      {
+        path: 'platform',
+        name: 'AgentPlatform',
+        component: () => import('@/views/agent/platform.vue'),
+        meta: { 
+          title: '平台配置',
+          icon: 'Connection',
+          keepAlive: true
+        }
+      },
+      {
+        path: 'model',
+        name: 'AgentModel',
+        component: () => import('@/views/agent/model.vue'),
+        meta: { 
+          title: '模型配置',
+          icon: 'Document',
+          keepAlive: true
+        }
+      },
+      {
+        path: 'chat/:agentId?',
+        name: 'AgentChat',
+        component: () => import('@/views/agent/chat.vue'),
+        meta: { 
+          title: '对话测试',
+          icon: 'ChatDotRound',
+          hidden: true
+        }
+      },
+      {
+        path: 'monitoring',
+        name: 'AgentMonitoring',
+        component: () => import('@/views/agent/monitoring.vue'),
+        meta: { 
+          title: '调用监控',
+          icon: 'DataAnalysis',
+          keepAlive: true
+        }
+      }
+    ]
+  },
+
   // 系统管理
   {
     path: '/system',

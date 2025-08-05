@@ -713,3 +713,6 @@ export interface QuotaCheckResult {
   quotaLimit?: number
   usagePercentage?: number
 }
+
+// ==================== AI智能体相关类型导出 ====================
+export * from './agent'

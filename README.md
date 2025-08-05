@@ -1,199 +1,238 @@
-# WeWork Platform - 企业微信管理平台
+# 🤖 AI智能体管理系统
 
-一个基于Spring Boot 3.x和Vue 3的现代化企业微信管理平台，提供统一的API网关、消息管理、账号管理和监控功能。
+> 企业级多租户AI智能体统一管理平台，支持Dify、Coze、OpenAI、Claude等多平台集成
 
-## 🚀 项目架构
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Vue 3](https://img.shields.io/badge/Vue-3.4.0-4FC08D.svg)](https://vuejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-3178C6.svg)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-### 后端技术栈
-- **Spring Boot 3.2.0** - 主框架
-- **Spring Cloud Gateway** - API网关
-- **Spring Cloud Alibaba** - 微服务框架
-- **Nacos** - 服务发现与配置中心
-- **MyBatis Plus** - ORM框架
-- **MySQL 8.0** - 主数据库
-- **Redis** - 缓存数据库
-- **RocketMQ** - 消息队列
-- **Docker** - 容器化部署
+## 🌟 系统特性
 
-### 前端技术栈
-- **Vue 3** - 前端框架
-- **Vite** - 构建工具
-- **TypeScript** - 类型系统
-- **Element Plus** - UI组件库
-- **Pinia** - 状态管理
-- **Vue Router** - 路由管理
-- **ECharts** - 图表库
+### 🎯 核心功能
+- **智能体统一管理** - 创建、配置、监控AI智能体生命周期
+- **多平台集成** - 支持Dify、Coze、OpenAI、Claude等主流AI平台
+- **实时对话交互** - WebSocket实时聊天，支持流式响应
+- **调用监控分析** - 详细的API调用记录、性能统计、成本分析
+- **可视化监控面板** - ECharts图表展示，实时监控系统状态
 
-## 📁 项目结构
+### 🏗️ 技术架构
+- **后端**: Spring Boot 3.2.0 + Spring Cloud微服务架构
+- **前端**: Vue 3 + TypeScript + Element Plus
+- **数据库**: MySQL 8.0 + Redis 7.0
+- **消息队列**: RocketMQ 5.1
+- **监控**: Prometheus + Grafana + Jaeger
+- **容器化**: Docker + Docker Compose
 
-```
-we-work-api/
-├── backend/                    # 后端服务
-│   ├── common/                # 公共模块
-│   ├── gateway-service/       # 网关服务
-│   ├── account-service/       # 账号服务
-│   ├── message-service/       # 消息服务
-│   └── pom.xml               # Maven父项目配置
-├── frontend/                  # 前端项目
-│   └── admin-web/            # 管理后台
-├── docker/                    # Docker配置
-├── nacos-configs/            # Nacos配置文件
-├── scripts/                  # 部署和管理脚本
-└── docs/                     # 项目文档
-```
+### 🚀 系统优势
+- **多租户架构** - 完整的租户隔离和权限管理
+- **微服务设计** - 独立部署、弹性扩展、故障隔离
+- **企业级安全** - JWT认证、RBAC权限、数据加密
+- **高可用设计** - 熔断降级、限流保护、健康检查
+
+## 📋 功能模块
+
+### 1. 智能体管理
+- 智能体创建与配置
+- 参数调优与版本管理
+- 状态监控与生命周期管理
+- 批量操作与导入导出
+
+### 2. 平台集成管理
+- **Dify平台**: 完整的API集成，支持工作流和智能体
+- **Coze平台**: 对话机器人配置和管理
+- **OpenAI**: GPT系列模型集成
+- **Claude**: Anthropic Claude模型支持
+
+### 3. 对话交互
+- 实时聊天界面
+- 会话历史管理
+- 多轮对话上下文
+- 流式响应显示
+
+### 4. 监控与分析
+- API调用统计
+- 性能指标监控
+- 成本分析报表
+- 错误率跟踪
 
 ## 🛠️ 快速开始
 
 ### 环境要求
-- Java 8+
-- Node.js 16+
-- Maven 3.6+
-- MySQL 8.0+
-- Redis 6.0+
-- Docker & Docker Compose
+- **Java**: JDK 17+
+- **Node.js**: 18.0+
+- **Docker**: 20.0+
+- **MySQL**: 8.0+
+- **Redis**: 7.0+
 
-### 1. 启动基础设施
+### 1. 克隆项目
 ```bash
-# 启动Docker服务(Nacos、MySQL、Redis、RocketMQ)
-cd docker
-docker-compose up -d
+git clone https://github.com/your-org/we-work-api.git
+cd we-work-api
 ```
 
-### 2. 启动后端服务
+### 2. 启动基础设施 (Docker)
 ```bash
-# 构建所有服务
-cd backend
-mvn clean install -Dmaven.test.skip=true
-
-# 启动服务(自动按依赖顺序启动)
-cd ..
-./scripts/manage-services.sh start all
+cd infrastructure/docker
+docker-compose up -d mysql redis nacos
 ```
 
-### 3. 启动前端
+### 3. 初始化数据库
+```bash
+mysql -h127.0.0.1 -P23306 -uwework -pwework123456 < backend-refactor/ai-agent-service/sql/init-ai-agent-platform.sql
+```
+
+### 4. 启动后端服务
+```bash
+cd backend-refactor/ai-agent-service
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+### 5. 启动前端应用
 ```bash
 cd frontend/admin-web
 npm install
 npm run dev
 ```
 
-### 4. 访问应用
-- 前端管理后台: http://localhost:3000
-- Nacos控制台: http://localhost:8848/nacos (nacos/nacos)
-- API网关: http://localhost:18080
+### 6. 访问应用
+- **前端应用**: http://localhost:3000
+- **API网关**: http://localhost:18080
+- **API文档**: http://localhost:18086/swagger-ui.html
 
-## 🔧 服务管理
+## 📖 详细文档
 
-项目提供了便捷的服务管理脚本：
+### 用户手册
+- [🚀 快速入门指南](docs/01-项目概述/DEPLOYMENT_GUIDE.md)
+- [📋 功能使用说明](docs/08-开发工具/user-manual.md)
+- [🔧 管理员指南](docs/08-开发工具/admin-guide.md)
 
-```bash
-# 启动所有服务
-./scripts/manage-services.sh start all
+### 技术文档  
+- [🏗️ 架构设计](docs/03-架构设计/)
+- [💾 数据库设计](docs/02-系统设计/database-scripts/)
+- [🔌 API接口文档](docs/07-参考文档/API_REFERENCE.md)
 
-# 停止所有服务
-./scripts/manage-services.sh stop all
+### 部署运维
+- [🐳 Docker部署指南](docs/06-部署运维/DEPLOYMENT_ARCHITECTURE_DESIGN.md)
+- [⚙️ 配置管理](docs/08-开发工具/configuration-guide.md)
+- [🔍 故障排除](docs/08-开发工具/troubleshooting-guide.md)
 
-# 重启Gateway服务
-./scripts/manage-services.sh restart gateway
+## 🎯 使用场景
 
-# 查看服务状态
-./scripts/manage-services.sh status
-
-# 构建特定服务
-./scripts/manage-services.sh build account
+### 企业AI助手
+```javascript
+// 创建企业客服智能体
+const agent = await agentAPI.createAgent({
+  name: "智能客服",
+  description: "7×24小时客户服务助手",
+  platformType: "DIFY",
+  modelConfig: {
+    modelName: "gpt-4",
+    temperature: 0.7,
+    maxTokens: 2048
+  }
+});
 ```
 
-## 📊 功能特性
+### 多平台管理
+```javascript
+// 配置多个AI平台
+await platformAPI.createPlatformConfig({
+  platformType: "DIFY",
+  apiKey: "dify-api-key",
+  baseUrl: "https://api.dify.ai"
+});
 
-### ✅ 已完成功能
-- [x] 微服务架构设计与实现
-- [x] API网关路由与认证
-- [x] 用户认证与权限管理
-- [x] 响应式仪表盘
-- [x] 系统监控与指标展示
-- [x] 菜单权限管理
-- [x] 前端布局与组件系统
+await platformAPI.createPlatformConfig({
+  platformType: "OPENAI", 
+  apiKey: "openai-api-key",
+  baseUrl: "https://api.openai.com"
+});
+```
 
-### 🚧 开发中功能
-- [ ] 账号管理模块
-- [ ] 消息发送与模板管理
-- [ ] 提供商集成
-- [ ] 详细监控与日志
+### 对话交互
+```javascript
+// 发起对话
+const conversation = await conversationAPI.createConversation({
+  agentId: "agent-123",
+  title: "产品咨询"
+});
 
-### 📋 待开发功能
-- [ ] 文件上传与管理
-- [ ] 数据导入导出
-- [ ] 定时任务管理
-- [ ] 操作日志与审计
+// 发送消息
+const response = await conversationAPI.sendMessage({
+  conversationId: conversation.id,
+  content: "请介绍一下你们的产品特性"
+});
+```
 
-## 🔍 API文档
+## 📊 系统监控
 
-启动后端服务后，可以通过以下地址查看API文档：
+### 关键指标
+- **调用量**: 实时API调用统计
+- **响应时间**: P95/P99延迟监控
+- **成功率**: 错误率和成功率跟踪
+- **成本**: 按平台的成本分析
 
-- Gateway服务: http://localhost:18080/swagger-ui.html
-- Account服务: http://localhost:18081/swagger-ui.html
-- Message服务: http://localhost:18082/swagger-ui.html
+### 监控面板
+```bash
+# Grafana监控面板
+http://localhost:23000
+账号: admin / wework123456
 
-## 🐛 问题解决
+# Prometheus指标
+http://localhost:29090
 
-### 常见问题
-
-1. **服务启动失败**
-   ```bash
-   # 检查端口占用
-   netstat -tulpn | grep :18080
-   
-   # 查看服务日志
-   ./scripts/manage-services.sh logs gateway
-   ```
-
-2. **Nacos连接失败**
-   ```bash
-   # 确保Nacos服务正常运行
-   docker ps | grep nacos
-   
-   # 检查Nacos健康状态
-   curl http://localhost:8848/nacos/actuator/health
-   ```
-
-3. **前端开发服务器启动失败**
-   ```bash
-   # 清除缓存重新安装依赖
-   cd frontend/admin-web
-   rm -rf node_modules package-lock.json
-   npm install
-   ```
-
-## 📝 开发指南
-
-### 后端开发
-1. 添加新的服务模块
-2. 配置Nacos服务发现
-3. 更新Gateway路由配置
-4. 编写API文档
-
-### 前端开发
-1. 创建新的页面组件
-2. 配置路由和权限
-3. 集成API接口
-4. 更新菜单配置
+# Jaeger链路追踪  
+http://localhost:26686
+```
 
 ## 🤝 贡献指南
 
-1. Fork 项目
-2. 创建功能分支
-3. 提交更改
-4. 推送到分支
+### 开发环境设置
+1. Fork项目到个人仓库
+2. 创建功能分支: `git checkout -b feature/新功能`
+3. 提交变更: `git commit -am '添加新功能'`
+4. 推送分支: `git push origin feature/新功能`
 5. 提交Pull Request
+
+### 代码规范
+- **后端**: 遵循Spring Boot最佳实践，使用Checkstyle检查
+- **前端**: 遵循Vue.js风格指南，使用ESLint检查
+- **文档**: 使用Markdown格式，保持结构清晰
+
+### 测试
+```bash
+# 后端测试
+cd backend-refactor/ai-agent-service
+./mvnw test
+
+# 前端测试  
+cd frontend/admin-web
+npm run test
+
+# 集成测试
+./docs/08-开发工具/test-api-endpoints.sh
+```
 
 ## 📄 许可证
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
+本项目采用 [MIT许可证](LICENSE)。
 
-## 📞 联系方式
+## 🙏 致谢
 
-如有问题或建议，请提交Issue或联系项目维护者。
+感谢以下开源项目：
+- [Spring Boot](https://spring.io/projects/spring-boot) - 强大的Java应用框架
+- [Vue.js](https://vuejs.org/) - 渐进式JavaScript框架  
+- [Element Plus](https://element-plus.org/) - 优秀的Vue UI组件库
+- [ECharts](https://echarts.apache.org/) - 专业的数据可视化库
+
+## 📞 联系我们
+
+- **项目地址**: https://github.com/your-org/we-work-api
+- **问题反馈**: [GitHub Issues](https://github.com/your-org/we-work-api/issues)
+- **邮箱**: support@your-company.com
+- **文档**: https://docs.your-company.com
 
 ---
 
-⭐ 如果这个项目对你有帮助，请给它一个Star！
+⭐ 如果这个项目对你有帮助，请给我们一个星标！

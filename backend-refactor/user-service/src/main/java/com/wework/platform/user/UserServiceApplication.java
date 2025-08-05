@@ -20,7 +20,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @EnableDiscoveryClient
 @EnableFeignClients
 @EnableCaching
-@MapperScan("com.wework.platform.user.mapper")
+@MapperScan("com.wework.platform.user.repository")
 public class UserServiceApplication {
 
     public static void main(String[] args) {

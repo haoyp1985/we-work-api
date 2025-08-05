@@ -1,0 +1,190 @@
+# 服务配置
+server:
+  port: ${PORT:18082}
+  servlet:
+    context-path: /message-service
+
+# Spring配置
+spring:
+  application:
+    name: message-service
+  profiles:
+    active: ${PROFILE:dev}
+  
+  # 数据源配置
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:wework_platform}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:123456}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      max-lifetime: 1800000
+      idle-timeout: 600000
+      pool-name: MessageServiceHikariPool
+      connection-test-query: SELECT 1
+      leak-detection-threshold: 60000
+  
+  # Redis配置
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    database: 1
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 20
+        max-idle: 10
+        min-idle: 5
+        max-wait: 3000ms
+
+  # Jackson配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    default-property-inclusion: NON_NULL
+
+# MyBatis-Plus配置
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.wework.platform.message.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+    lazy-loading-enabled: true
+    multiple-result-sets-enabled: true
+    use-column-label: true
+    use-generated-keys: true
+    auto-mapping-behavior: partial
+    default-executor-type: reuse
+    default-statement-timeout: 30
+  global-config:
+    banner: false
+    db-config:
+      id-type: assign_uuid
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      insert-strategy: not_null
+      update-strategy: not_null
+      select-strategy: not_null
+
+# 消息服务配置
+app:
+  message:
+    weWork:
+      apiBaseUrl: https://qyapi.weixin.qq.com
+      connectTimeout: PT10S
+      readTimeout: PT30S
+      maxRetries: 3
+      retryInterval: PT2S
+      sslEnabled: true
+      userAgent: WeWork-Platform/2.0.0
+    send:
+      maxBatchSize: 100
+      sendTimeout: PT5M
+      asyncEnabled: true
+      asyncThreadPoolSize: 10
+      logEnabled: true
+      deduplicationEnabled: true
+      deduplicationCacheExpire: PT30M
+      supportedTypes: [0, 1, 2, 3, 4, 5]
+    template:
+      maxContentLength: 4000
+      maxParameterCount: 50
+      maxParameterNameLength: 50
+      cacheEnabled: true
+      cacheExpire: PT60M
+      syntaxCheckEnabled: true
+      placeholderPrefixes: ["${", "{{"]
+      placeholderSuffixes: ["}", "}}"]
+    task:
+      scanInterval: PT30S
+      batchSize: 10
+      executionTimeout: PT30M
+      monitoringEnabled: true
+      logRetentionDays: 30
+      priorityEnabled: true
+      maxConcurrentTasks: 5
+      maxQueueSize: 1000
+    retry:
+      enabled: true
+      maxAttempts: 3
+      retryInterval: PT30S
+      backoffStrategy: EXPONENTIAL
+      backoffMultiplier: 2.0
+      maxRetryInterval: PT30M
+      retryableExceptions:
+        - java.net.SocketTimeoutException
+        - java.net.ConnectException
+        - org.springframework.web.client.ResourceAccessException
+    rateLimit:
+      enabled: true
+      maxRequestsPerSecond: 100
+      maxRequestsPerMinute: 3000
+      maxRequestsPerHour: 50000
+      maxRequestsPerDay: 1000000
+      algorithm: TOKEN_BUCKET
+      tenantLevelEnabled: true
+      userLevelEnabled: true
+
+# 管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,nacos-config,nacos-discovery
+  endpoint:
+    health:
+      show-details: always
+  health:
+    defaults:
+      enabled: true
+    diskspace:
+      enabled: true
+      threshold: 10GB
+    db:
+      enabled: true
+    redis:
+      enabled: true
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.wework.platform.message: DEBUG
+    org.springframework.cloud.nacos: WARN
+    org.springframework.security: WARN
+    org.springframework.boot.autoconfigure: WARN
+    com.alibaba.nacos: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId}] %logger{50} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId}] %logger{50} - %msg%n"
+  file:
+    name: logs/message-service.log
+    max-size: 100MB
+    max-history: 30
+    total-size-cap: 3GB
+
+# OpenAPI文档配置
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  info:
+    title: 消息服务 API
+    description: WeWork平台消息发送和管理服务
+    version: 2.0.0
+    contact:
+      name: WeWork Platform Team
+      email: platform@wework.com
+  packages-to-scan: com.wework.platform.message.controller

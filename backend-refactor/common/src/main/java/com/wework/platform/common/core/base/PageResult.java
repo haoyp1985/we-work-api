@@ -1,6 +1,9 @@
 package com.wework.platform.common.core.base;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -15,6 +18,9 @@ import java.util.List;
  * @since 2.0.0
  */
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PageResult<T> implements Serializable {
 
     @Serial
@@ -45,42 +51,32 @@ public class PageResult<T> implements Serializable {
      */
     private Long pages;
 
-    public PageResult() {
-    }
-
-    public PageResult(List<T> records, Long total, Long current, Long size) {
-        this.records = records;
-        this.total = total;
-        this.current = current;
-        this.size = size;
-        this.pages = calculatePages(total, size);
-    }
-
     /**
      * 创建分页结果
      */
     public static <T> PageResult<T> of(List<T> records, Long total, Long current, Long size) {
-        return new PageResult<>(records, total, current, size);
+        Long pages = calculatePages(total, size);
+        return new PageResult<>(records, total, current, size, pages);
     }
 
     /**
      * 创建空分页结果
      */
     public static <T> PageResult<T> empty() {
-        return new PageResult<>(Collections.emptyList(), 0L, 1L, 20L);
+        return new PageResult<>(Collections.emptyList(), 0L, 1L, 20L, 0L);
     }
 
     /**
      * 创建空分页结果
      */
     public static <T> PageResult<T> empty(Long current, Long size) {
-        return new PageResult<>(Collections.emptyList(), 0L, current, size);
+        return new PageResult<>(Collections.emptyList(), 0L, current, size, 0L);
     }
 
     /**
      * 计算总页数
      */
-    private Long calculatePages(Long total, Long size) {
+    private static Long calculatePages(Long total, Long size) {
         if (total == null || size == null || size == 0) {
             return 0L;
         }

@@ -1,0 +1,96 @@
+server:
+  port: 18080
+
+spring:
+  application:
+    name: gateway-service
+  profiles:
+    active: docker
+  
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:nacos:8848}
+        namespace: ${NACOS_NAMESPACE:wework-platform}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+        group: DEFAULT_GROUP
+        cluster-name: default
+        metadata:
+          version: 2.0.0
+          zone: docker
+      config:
+        server-addr: ${NACOS_SERVER_ADDR:nacos:8848}
+        namespace: ${NACOS_NAMESPACE:wework-platform}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+        file-extension: yml
+        group: DEFAULT_GROUP
+        
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/user-service/**
+          filters:
+            - StripPrefix=1
+            
+        - id: account-service
+          uri: lb://account-service
+          predicates:
+            - Path=/account-service/**
+          filters:
+            - StripPrefix=1
+            
+        - id: message-service
+          uri: lb://message-service
+          predicates:
+            - Path=/message-service/**
+          filters:
+            - StripPrefix=1
+            
+        - id: monitor-service
+          uri: lb://monitor-service
+          predicates:
+            - Path=/monitor-service/**
+          filters:
+            - StripPrefix=1
+
+  redis:
+    host: ${REDIS_HOST:redis}
+    port: ${REDIS_PORT:6379}
+    timeout: 10000
+    lettuce:
+      pool:
+        max-active: 200
+        max-idle: 20
+        min-idle: 5
+        max-wait: -1ms
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+
+logging:
+  level:
+    com.wework.platform: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

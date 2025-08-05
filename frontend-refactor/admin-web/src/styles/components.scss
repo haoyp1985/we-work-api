@@ -1,0 +1,552 @@
+// ==========================================================================
+// Component Styles - WeWork Platform
+// ==========================================================================
+
+// ===== Element Plus 主题定制 =====
+
+:root {
+  // 主色调
+  --el-color-primary: #{$primary-color};
+  --el-color-primary-light-1: #{$primary-light-1};
+  --el-color-primary-light-2: #{$primary-light-2};
+  --el-color-primary-light-3: #{$primary-light-3};
+  --el-color-primary-light-4: #{$primary-light-4};
+  --el-color-primary-light-5: #{$primary-light-5};
+  --el-color-primary-light-6: #{$primary-light-6};
+  --el-color-primary-light-7: #{$primary-light-7};
+  --el-color-primary-light-8: #{$primary-light-8};
+  --el-color-primary-light-9: #{$primary-light-9};
+  --el-color-primary-dark-2: #{$primary-dark-2};
+
+  // 功能色
+  --el-color-success: #{$success-color};
+  --el-color-warning: #{$warning-color};
+  --el-color-danger: #{$danger-color};
+  --el-color-info: #{$info-color};
+
+  // 文本色
+  --el-text-color-primary: #{$text-color-primary};
+  --el-text-color-regular: #{$text-color-regular};
+  --el-text-color-secondary: #{$text-color-secondary};
+  --el-text-color-placeholder: #{$text-color-placeholder};
+  --el-text-color-disabled: #{$text-color-disabled};
+
+  // 边框色
+  --el-border-color: #{$border-color-base};
+  --el-border-color-light: #{$border-color-light};
+  --el-border-color-lighter: #{$border-color-lighter};
+  --el-border-color-extra-light: #{$border-color-extra-light};
+
+  // 背景色
+  --el-bg-color: #{$bg-color};
+  --el-bg-color-page: #{$bg-color-page};
+  --el-bg-color-overlay: #{$bg-color-overlay};
+
+  // 组件尺寸
+  --el-component-size-large: 40px;
+  --el-component-size: 32px;
+  --el-component-size-small: 24px;
+
+  // 字体
+  --el-font-family: #{$font-family-primary};
+  --el-font-size-base: #{$font-size-base};
+  --el-font-size-large: #{$font-size-large};
+  --el-font-size-medium: #{$font-size-medium};
+  --el-font-size-small: #{$font-size-small};
+  --el-font-size-extra-small: #{$font-size-extra-small};
+
+  // 圆角
+  --el-border-radius-base: #{$border-radius-base};
+  --el-border-radius-small: #{$border-radius-sm};
+  --el-border-radius-round: #{$border-radius-circle};
+
+  // 阴影
+  --el-box-shadow: #{$box-shadow-base};
+  --el-box-shadow-light: #{$box-shadow-light};
+  --el-box-shadow-dark: #{$box-shadow-dark};
+
+  // 动画时长
+  --el-transition-duration: #{$transition-duration-base};
+  --el-transition-duration-fast: #{$transition-duration-fast};
+}
+
+// 暗色主题变量
+:global(.dark) {
+  --el-bg-color: #{$dark-bg-color};
+  --el-bg-color-page: #{$dark-bg-color-light};
+  --el-bg-color-overlay: #{$dark-bg-color-soft};
+  --el-text-color-primary: #{$dark-text-color-primary};
+  --el-text-color-regular: #{$dark-text-color-regular};
+  --el-text-color-secondary: #{$dark-text-color-secondary};
+  --el-border-color: #{$dark-border-color};
+  --el-border-color-light: #{$dark-border-color};
+  --el-border-color-lighter: #{$dark-border-color};
+  --el-border-color-extra-light: #{$dark-border-color};
+}
+
+// ===== 自定义组件样式 =====
+
+// 页面标题
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+  padding-bottom: $spacing-md;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  
+  .title-text {
+    font-size: $font-size-large;
+    font-weight: $font-weight-semibold;
+    color: var(--el-text-color-primary);
+  }
+  
+  .title-desc {
+    font-size: $font-size-small;
+    color: var(--el-text-color-secondary);
+    margin-left: auto;
+  }
+}
+
+// 页面容器
+.page-container {
+  padding: $spacing-lg;
+  min-height: calc(100vh - #{$header-height});
+  
+  &.with-tabs {
+    min-height: calc(100vh - #{$header-height} - #{$tags-view-height});
+  }
+}
+
+// 内容区域
+.content-area {
+  background: var(--el-bg-color);
+  border-radius: var(--el-border-radius-base);
+  box-shadow: var(--el-box-shadow-light);
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  
+  &.no-padding {
+    padding: 0;
+  }
+  
+  &.compact {
+    padding: $spacing-md;
+  }
+}
+
+// 工具栏
+.toolbar {
+  @include flex-between;
+  margin-bottom: $spacing-md;
+  padding: $spacing-md 0;
+  
+  .toolbar-left,
+  .toolbar-right {
+    @include flex-y-center;
+    gap: $spacing-sm;
+  }
+  
+  .toolbar-title {
+    font-size: $font-size-medium;
+    font-weight: $font-weight-medium;
+    color: var(--el-text-color-primary);
+  }
+}
+
+// 搜索表单
+.search-form {
+  background: var(--el-bg-color);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: var(--el-border-radius-base);
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  
+  .el-form-item {
+    margin-bottom: $spacing-md;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  .form-actions {
+    @include flex-y-center;
+    gap: $spacing-sm;
+    margin-top: $spacing-md;
+    padding-top: $spacing-md;
+    border-top: 1px solid var(--el-border-color-extra-light);
+  }
+}
+
+// 数据表格增强
+.data-table {
+  .el-table {
+    border-radius: var(--el-border-radius-base);
+    overflow: hidden;
+    
+    .el-table__header {
+      th {
+        background: var(--el-fill-color-light);
+        font-weight: $font-weight-medium;
+        color: var(--el-text-color-primary);
+      }
+    }
+    
+    .el-table__row {
+      @include transition(background-color);
+      
+      &:hover {
+        background: var(--el-fill-color-light);
+      }
+    }
+  }
+  
+  .table-pagination {
+    @include flex-between;
+    margin-top: $spacing-lg;
+    padding: $spacing-md 0;
+    
+    .pagination-info {
+      font-size: $font-size-small;
+      color: var(--el-text-color-secondary);
+    }
+  }
+}
+
+// 状态标签
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: var(--el-border-radius-small);
+  font-size: $font-size-small;
+  font-weight: $font-weight-medium;
+  
+  &.status-online {
+    background: var(--el-color-success-light-9);
+    color: var(--el-color-success);
+    border: 1px solid var(--el-color-success-light-7);
+  }
+  
+  &.status-offline {
+    background: var(--el-color-warning-light-9);
+    color: var(--el-color-warning);
+    border: 1px solid var(--el-color-warning-light-7);
+  }
+  
+  &.status-error {
+    background: var(--el-color-danger-light-9);
+    color: var(--el-color-danger);
+    border: 1px solid var(--el-color-danger-light-7);
+  }
+  
+  &.status-pending {
+    background: var(--el-color-info-light-9);
+    color: var(--el-color-info);
+    border: 1px solid var(--el-color-info-light-7);
+  }
+  
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+}
+
+// 操作按钮组
+.action-buttons {
+  @include flex-y-center;
+  gap: $spacing-xs;
+  
+  .el-button {
+    @include transition(all);
+    
+    &.is-link {
+      padding: $spacing-xs;
+      
+      &:hover {
+        background: var(--el-color-primary-light-9);
+      }
+    }
+  }
+}
+
+// 空状态
+.empty-state {
+  @include flex-column-center;
+  padding: $spacing-5xl $spacing-lg;
+  color: var(--el-text-color-secondary);
+  
+  .empty-icon {
+    font-size: 64px;
+    color: var(--el-text-color-placeholder);
+    margin-bottom: $spacing-lg;
+  }
+  
+  .empty-text {
+    font-size: $font-size-medium;
+    margin-bottom: $spacing-md;
+  }
+  
+  .empty-desc {
+    font-size: $font-size-small;
+    color: var(--el-text-color-placeholder);
+    margin-bottom: $spacing-lg;
+  }
+}
+
+// 加载状态
+.loading-wrapper {
+  position: relative;
+  min-height: 200px;
+  
+  .loading-overlay {
+    @include absolute-full;
+    @include flex-center;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(2px);
+    z-index: 100;
+    
+    .loading-content {
+      @include flex-column-center;
+      gap: $spacing-md;
+      
+      .loading-text {
+        font-size: $font-size-small;
+        color: var(--el-text-color-secondary);
+      }
+    }
+  }
+}
+
+// 卡片样式增强
+.card {
+  @include card-style;
+  @include transition(box-shadow);
+  
+  &.hoverable {
+    @include hover-effect {
+      box-shadow: var(--el-box-shadow-dark);
+    }
+  }
+  
+  .card-header {
+    @include flex-between;
+    margin-bottom: $spacing-lg;
+    padding-bottom: $spacing-md;
+    border-bottom: 1px solid var(--el-border-color-extra-light);
+    
+    .card-title {
+      font-size: $font-size-medium;
+      font-weight: $font-weight-medium;
+      color: var(--el-text-color-primary);
+    }
+    
+    .card-extra {
+      @include flex-y-center;
+      gap: $spacing-sm;
+    }
+  }
+  
+  .card-body {
+    &.no-padding {
+      margin: 0 (-$spacing-lg);
+    }
+  }
+  
+  .card-footer {
+    margin-top: $spacing-lg;
+    padding-top: $spacing-md;
+    border-top: 1px solid var(--el-border-color-extra-light);
+  }
+}
+
+// 统计卡片
+.stat-card {
+  @include card-style;
+  text-align: center;
+  
+  .stat-icon {
+    font-size: 32px;
+    margin-bottom: $spacing-md;
+    
+    &.primary { color: var(--el-color-primary); }
+    &.success { color: var(--el-color-success); }
+    &.warning { color: var(--el-color-warning); }
+    &.danger { color: var(--el-color-danger); }
+  }
+  
+  .stat-value {
+    font-size: $font-size-extra-large;
+    font-weight: $font-weight-bold;
+    color: var(--el-text-color-primary);
+    margin-bottom: $spacing-xs;
+  }
+  
+  .stat-label {
+    font-size: $font-size-small;
+    color: var(--el-text-color-secondary);
+  }
+  
+  .stat-change {
+    margin-top: $spacing-sm;
+    font-size: $font-size-small;
+    
+    &.positive {
+      color: var(--el-color-success);
+    }
+    
+    &.negative {
+      color: var(--el-color-danger);
+    }
+  }
+}
+
+// 图表容器
+.chart-container {
+  position: relative;
+  
+  .chart-header {
+    @include flex-between;
+    margin-bottom: $spacing-lg;
+    
+    .chart-title {
+      font-size: $font-size-medium;
+      font-weight: $font-weight-medium;
+      color: var(--el-text-color-primary);
+    }
+    
+    .chart-actions {
+      @include flex-y-center;
+      gap: $spacing-sm;
+    }
+  }
+  
+  .chart-content {
+    min-height: 300px;
+  }
+  
+  .chart-legend {
+    @include flex-center;
+    gap: $spacing-lg;
+    margin-top: $spacing-md;
+    
+    .legend-item {
+      @include flex-y-center;
+      gap: $spacing-xs;
+      font-size: $font-size-small;
+      
+      .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+      }
+    }
+  }
+}
+
+// 侧边栏样式
+.sidebar {
+  width: $sidebar-width;
+  background: var(--el-bg-color);
+  border-right: 1px solid var(--el-border-color-light);
+  @include transition(width);
+  
+  &.collapsed {
+    width: $sidebar-width-collapsed;
+  }
+  
+  .sidebar-header {
+    height: $header-height;
+    @include flex-center;
+    border-bottom: 1px solid var(--el-border-color-light);
+    
+    .logo {
+      height: 32px;
+      @include transition(all);
+    }
+  }
+  
+  .sidebar-content {
+    height: calc(100vh - #{$header-height});
+    overflow-y: auto;
+    @include scrollbar(4px);
+  }
+}
+
+// 主内容区域
+.main-content {
+  flex: 1;
+  min-width: 0;
+  @include transition(margin-left);
+  
+  &.sidebar-collapsed {
+    margin-left: $sidebar-width-collapsed;
+  }
+  
+  &.sidebar-expanded {
+    margin-left: $sidebar-width;
+  }
+}
+
+// 面包屑导航增强
+.breadcrumb {
+  .el-breadcrumb__item {
+    .el-breadcrumb__inner {
+      @include transition(color);
+      
+      &:hover {
+        color: var(--el-color-primary);
+      }
+    }
+  }
+}
+
+// 标签页增强
+.tags-view {
+  height: $tags-view-height;
+  background: var(--el-bg-color);
+  border-bottom: 1px solid var(--el-border-color-light);
+  @include flex-y-center;
+  padding: 0 $spacing-md;
+  overflow-x: auto;
+  @include scrollbar(0);
+  
+  .tags-view-item {
+    @include flex-y-center;
+    gap: $spacing-xs;
+    padding: $spacing-xs $spacing-md;
+    margin-right: $spacing-xs;
+    background: var(--el-fill-color-light);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: var(--el-border-radius-small);
+    font-size: $font-size-small;
+    color: var(--el-text-color-regular);
+    white-space: nowrap;
+    cursor: pointer;
+    @include transition(all);
+    
+    &:hover {
+      background: var(--el-color-primary-light-9);
+      color: var(--el-color-primary);
+    }
+    
+    &.active {
+      background: var(--el-color-primary);
+      color: white;
+      border-color: var(--el-color-primary);
+    }
+    
+    .close-icon {
+      @include click-effect;
+      border-radius: 50%;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+    }
+  }
+}

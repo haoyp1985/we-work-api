@@ -1,0 +1,526 @@
+# WeWork Platform - Refactored Infrastructure
+# Docker Compose 配置文件
+# Version: 2.0.0
+
+version: '3.8'
+
+services:
+  # ================================
+  # 数据存储层
+  # ================================
+  
+  # MySQL 主数据库
+  mysql:
+    image: mysql:8.0
+    container_name: wework-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-wework_root_2024}
+      MYSQL_DATABASE: saas_unified_core
+      MYSQL_USER: ${MYSQL_USER:-wework_app}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-wework_app_2024}
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/conf/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./database/init:/docker-entrypoint-initdb.d
+      - ./logs/mysql:/var/log/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+      - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO
+    networks:
+      - wework-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Redis 缓存
+  redis:
+    image: redis:7.0-alpine
+    container_name: wework-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - redis_data:/data
+      - ./cache/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./logs/redis:/var/log/redis
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - wework-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 3s
+      retries: 5
+
+  # InfluxDB 时序数据库
+  influxdb:
+    image: influxdb:2.7
+    container_name: wework-influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USERNAME:-admin}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD:-wework_influx_2024}
+      DOCKER_INFLUXDB_INIT_ORG: wework-platform
+      DOCKER_INFLUXDB_INIT_BUCKET: monitoring
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN:-wework_token_2024}
+      TZ: Asia/Shanghai
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+      - influxdb_config:/etc/influxdb2
+      - ./logs/influxdb:/var/log/influxdb
+    networks:
+      - wework-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/ping"]
+      timeout: 3s
+      retries: 5
+
+  # ================================
+  # 服务治理层
+  # ================================
+  
+  # Nacos 注册中心和配置中心
+  nacos:
+    image: nacos/nacos-server:v2.2.0
+    container_name: wework-nacos
+    restart: unless-stopped
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    environment:
+      MODE: standalone
+      SPRING_DATASOURCE_PLATFORM: mysql
+      MYSQL_SERVICE_HOST: mysql
+      MYSQL_SERVICE_PORT: 3306
+      MYSQL_SERVICE_DB_NAME: nacos_config
+      MYSQL_SERVICE_USER: ${MYSQL_USER:-wework_app}
+      MYSQL_SERVICE_PASSWORD: ${MYSQL_PASSWORD:-wework_app_2024}
+      MYSQL_SERVICE_DB_PARAM: characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false&serverTimezone=Asia/Shanghai
+      NACOS_AUTH_ENABLE: true
+      NACOS_AUTH_TOKEN: ${NACOS_AUTH_TOKEN:-wework_nacos_token_2024}
+      NACOS_AUTH_IDENTITY_KEY: ${NACOS_AUTH_KEY:-serverIdentity}
+      NACOS_AUTH_IDENTITY_VALUE: ${NACOS_AUTH_VALUE:-security}
+      TZ: Asia/Shanghai
+    volumes:
+      - nacos_data:/home/nacos/data
+      - nacos_logs:/home/nacos/logs
+    networks:
+      - wework-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8848/nacos/v1/console/health/readiness"]
+      timeout: 3s
+      retries: 5
+
+  # RocketMQ NameServer
+  rocketmq-namesrv:
+    image: apache/rocketmq:5.1.0
+    container_name: wework-rocketmq-namesrv
+    restart: unless-stopped
+    ports:
+      - "9876:9876"
+    environment:
+      JAVA_OPT_EXT: -Duser.home=/home/rocketmq -Xms512m -Xmx512m -Xmn256m
+      TZ: Asia/Shanghai
+    volumes:
+      - rocketmq_namesrv_logs:/home/rocketmq/logs
+      - rocketmq_namesrv_store:/home/rocketmq/store
+    command: ["sh", "mqnamesrv"]
+    networks:
+      - wework-network
+    healthcheck:
+      test: ["CMD", "telnet", "localhost", "9876"]
+      timeout: 3s
+      retries: 5
+
+  # RocketMQ Broker
+  rocketmq-broker:
+    image: apache/rocketmq:5.1.0
+    container_name: wework-rocketmq-broker
+    restart: unless-stopped
+    ports:
+      - "10909:10909"
+      - "10911:10911"
+    environment:
+      JAVA_OPT_EXT: -Duser.home=/home/rocketmq -Xms1g -Xmx1g -Xmn512m
+      NAMESRV_ADDR: rocketmq-namesrv:9876
+      TZ: Asia/Shanghai
+    volumes:
+      - rocketmq_broker_logs:/home/rocketmq/logs
+      - rocketmq_broker_store:/home/rocketmq/store
+      - ./messaging/broker.conf:/home/rocketmq/rocketmq-5.1.0/conf/broker.conf
+    command: ["sh", "mqbroker", "-c", "/home/rocketmq/rocketmq-5.1.0/conf/broker.conf"]
+    networks:
+      - wework-network
+    depends_on:
+      rocketmq-namesrv:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "telnet", "localhost", "10911"]
+      timeout: 3s
+      retries: 5
+
+  # ================================
+  # 监控体系
+  # ================================
+  
+  # Prometheus 监控
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: wework-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - prometheus_data:/prometheus
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus/rules:/etc/prometheus/rules
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    networks:
+      - wework-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/"]
+      timeout: 3s
+      retries: 5
+
+  # Grafana 可视化
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: wework-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-wework_grafana_2024}
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel
+      TZ: Asia/Shanghai
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - wework-network
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      timeout: 3s
+      retries: 5
+
+  # Jaeger 链路追踪
+  jaeger:
+    image: jaegertracing/all-in-one:1.47
+    container_name: wework-jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "14250:14250"  # gRPC
+      - "14268:14268"  # HTTP
+    environment:
+      COLLECTOR_OTLP_ENABLED: true
+      TZ: Asia/Shanghai
+    volumes:
+      - jaeger_data:/badger
+    networks:
+      - wework-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:16686/"]
+      timeout: 3s
+      retries: 5
+
+  # ================================
+  # 应用服务层
+  # ================================
+  
+  # Gateway Service
+  gateway-service:
+    build:
+      context: ../../backend-refactor
+      dockerfile: gateway-service/Dockerfile
+    container_name: wework-gateway
+    restart: unless-stopped
+    ports:
+      - "18080:18080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      NACOS_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql:3306
+      REDIS_HOST: redis:6379
+      ROCKETMQ_NAMESRV_ADDR: rocketmq-namesrv:9876
+      TZ: Asia/Shanghai
+    volumes:
+      - ./logs/gateway:/app/logs
+    networks:
+      - wework-network
+    depends_on:
+      nacos:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:18080/actuator/health"]
+      timeout: 10s
+      retries: 5
+
+  # User Service
+  user-service:
+    build:
+      context: ../../backend-refactor
+      dockerfile: user-service/Dockerfile
+    container_name: wework-user-service
+    restart: unless-stopped
+    ports:
+      - "18081:18081"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      NACOS_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql:3306
+      REDIS_HOST: redis:6379
+      TZ: Asia/Shanghai
+    volumes:
+      - ./logs/user-service:/app/logs
+    networks:
+      - wework-network
+    depends_on:
+      nacos:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:18081/actuator/health"]
+      timeout: 10s
+      retries: 5
+
+  # Account Service
+  account-service:
+    build:
+      context: ../../backend-refactor
+      dockerfile: account-service/Dockerfile
+    container_name: wework-account-service
+    restart: unless-stopped
+    ports:
+      - "18082:18082"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      NACOS_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql:3306
+      REDIS_HOST: redis:6379
+      ROCKETMQ_NAMESRV_ADDR: rocketmq-namesrv:9876
+      TZ: Asia/Shanghai
+    volumes:
+      - ./logs/account-service:/app/logs
+    networks:
+      - wework-network
+    depends_on:
+      nacos:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rocketmq-broker:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:18082/actuator/health"]
+      timeout: 10s
+      retries: 5
+
+  # Message Service
+  message-service:
+    build:
+      context: ../../backend-refactor
+      dockerfile: message-service/Dockerfile
+    container_name: wework-message-service
+    restart: unless-stopped
+    ports:
+      - "18083:18083"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      NACOS_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql:3306
+      REDIS_HOST: redis:6379
+      ROCKETMQ_NAMESRV_ADDR: rocketmq-namesrv:9876
+      TZ: Asia/Shanghai
+    volumes:
+      - ./logs/message-service:/app/logs
+    networks:
+      - wework-network
+    depends_on:
+      nacos:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rocketmq-broker:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:18083/actuator/health"]
+      timeout: 10s
+      retries: 5
+
+  # AI Agent Service
+  ai-agent-service:
+    build:
+      context: ../../backend-refactor
+      dockerfile: ai-agent-service/Dockerfile
+    container_name: wework-ai-agent-service
+    restart: unless-stopped
+    ports:
+      - "18086:18086"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      NACOS_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql:3306
+      REDIS_HOST: redis:6379
+      ROCKETMQ_NAMESRV_ADDR: rocketmq-namesrv:9876
+      TZ: Asia/Shanghai
+    volumes:
+      - ./logs/ai-agent-service:/app/logs
+    networks:
+      - wework-network
+    depends_on:
+      nacos:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rocketmq-broker:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:18086/actuator/health"]
+      timeout: 10s
+      retries: 5
+
+  # Monitor Service
+  monitor-service:
+    build:
+      context: ../../backend-refactor
+      dockerfile: monitor-service/Dockerfile
+    container_name: wework-monitor-service
+    restart: unless-stopped
+    ports:
+      - "18084:18084"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      NACOS_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql:3306
+      REDIS_HOST: redis:6379
+      INFLUXDB_URL: http://influxdb:8086
+      INFLUXDB_TOKEN: ${INFLUXDB_TOKEN:-wework_token_2024}
+      TZ: Asia/Shanghai
+    volumes:
+      - ./logs/monitor-service:/app/logs
+    networks:
+      - wework-network
+    depends_on:
+      nacos:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      influxdb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:18084/actuator/health"]
+      timeout: 10s
+      retries: 5
+
+  # ================================
+  # 前端应用
+  # ================================
+  
+  # Admin Web
+  admin-web:
+    build:
+      context: ../../frontend-refactor/admin-web
+      dockerfile: Dockerfile
+    container_name: wework-admin-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ./logs/nginx:/var/log/nginx
+    networks:
+      - wework-network
+    depends_on:
+      - gateway-service
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      timeout: 3s
+      retries: 5
+
+# ================================
+# 网络配置
+# ================================
+networks:
+  wework-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ================================
+# 数据卷配置
+# ================================
+volumes:
+  # 数据库存储
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  influxdb_data:
+    driver: local
+  influxdb_config:
+    driver: local
+  
+  # 服务注册和消息队列
+  nacos_data:
+    driver: local
+  nacos_logs:
+    driver: local
+  rocketmq_namesrv_logs:
+    driver: local
+  rocketmq_namesrv_store:
+    driver: local
+  rocketmq_broker_logs:
+    driver: local
+  rocketmq_broker_store:
+    driver: local
+  
+  # 监控数据
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  jaeger_data:
+    driver: local

@@ -1,0 +1,1615 @@
+---
+alwaysApply: true
+---
+
+# ⚙️ 运维脚本和自动化规则
+
+## 📐 脚本开发规范
+
+### 1. Shell脚本标准模板
+```bash
+#!/bin/bash
+
+# =================================================================
+# WeWork Platform - [脚本功能描述]
+# 作者: [作者名称]
+# 版本: 1.0.0
+# 创建: 2024-01-15
+# 用途: [详细用途说明]
+# =================================================================
+
+# 严格模式
+set -euo pipefail
+
+# 全局变量
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+readonly LOG_FILE="/tmp/$(basename "$0" .sh).log"
+readonly PID_FILE="/tmp/$(basename "$0" .sh).pid"
+
+# 颜色输出
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[1;33m'
+readonly BLUE='\033[0;34m'
+readonly PURPLE='\033[0;35m'
+readonly CYAN='\033[0;36m'
+readonly NC='\033[0m' # No Color
+
+# 日志函数
+log_info() {
+    echo -e "${GREEN}[INFO]${NC} $(date '+%Y-%m-%d %H:%M:%S') $*" | tee -a "$LOG_FILE"
+}
+
+log_warn() {
+    echo -e "${YELLOW}[WARN]${NC} $(date '+%Y-%m-%d %H:%M:%S') $*" | tee -a "$LOG_FILE"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $(date '+%Y-%m-%d %H:%M:%S') $*" | tee -a "$LOG_FILE"
+}
+
+log_debug() {
+    if [[ "${DEBUG:-false}" == "true" ]]; then
+        echo -e "${BLUE}[DEBUG]${NC} $(date '+%Y-%m-%d %H:%M:%S') $*" | tee -a "$LOG_FILE"
+    fi
+}
+
+# 错误处理
+cleanup() {
+    local exit_code=$?
+    if [[ -f "$PID_FILE" ]]; then
+        rm -f "$PID_FILE"
+    fi
+    if [[ $exit_code -ne 0 ]]; then
+        log_error "脚本执行失败，退出码: $exit_code"
+    fi
+    exit $exit_code
+}
+
+# 设置陷阱
+trap cleanup EXIT
+trap 'log_error "脚本被中断"; exit 130' INT
+trap 'log_error "脚本被终止"; exit 143' TERM
+
+# 检查依赖
+check_dependencies() {
+    local deps=("docker" "docker-compose" "curl" "jq")
+    for dep in "${deps[@]}"; do
+        if ! command -v "$dep" &> /dev/null; then
+            log_error "依赖 $dep 未安装"
+            exit 1
+        fi
+    done
+}
+
+# 检查是否已运行
+check_running() {
+    if [[ -f "$PID_FILE" ]]; then
+        local pid=$(cat "$PID_FILE")
+        if kill -0 "$pid" 2>/dev/null; then
+            log_error "脚本已在运行，PID: $pid"
+            exit 1
+        else
+            rm -f "$PID_FILE"
+        fi
+    fi
+    echo $$ > "$PID_FILE"
+}
+
+# 显示帮助
+show_help() {
+    cat << EOF
+使用方法: $(basename "$0") [选项] [命令]
+
+选项:
+  -h, --help      显示帮助信息
+  -v, --verbose   详细输出
+  -d, --debug     调试模式
+
+命令:
+  start           启动服务
+  stop            停止服务
+  restart         重启服务
+  status          检查状态
+
+示例:
+  $(basename "$0") start
+  $(basename "$0") --debug status
+
+EOF
+}
+
+# 主函数
+main() {
+    log_info "开始执行脚本: $(basename "$0")"
+    
+    # 检查依赖和运行状态
+    check_dependencies
+    check_running
+    
+    # 脚本主要逻辑
+    case "${1:-}" in
+        start)
+            start_service
+            ;;
+        stop)
+            stop_service
+            ;;
+        restart)
+            restart_service
+            ;;
+        status)
+            check_status
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        *)
+            log_error "未知命令: $*"
+            show_help
+            exit 1
+            ;;
+    esac
+    
+    log_info "脚本执行完成"
+}
+
+# 参数解析
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -v|--verbose)
+            set -x
+            shift
+            ;;
+        -d|--debug)
+            DEBUG=true
+            shift
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+# 执行主函数
+main "$@"
+```
+
+## 🚀 服务管理脚本规范
+
+### 1. 统一服务管理脚本
+```bash
+# ✅ manage-services.sh 核心功能结构
+#!/bin/bash
+
+# 服务配置 (格式: key:service-name:port)
+SERVICES=(
+    "gateway:gateway-service:18080"
+    "account:account-service:18081" 
+    "message:message-service:18082"
+    "monitor:monitor-service:18083"
+)
+
+# 获取服务信息
+get_service_info() {
+    local service_key=$1
+    for service_info in "${SERVICES[@]}"; do
+        IFS=':' read -r key name port <<< "$service_info"
+        if [[ "$key" == "$service_key" ]]; then
+            echo "$name:$port"
+            return 0
+        fi
+    done
+    return 1
+}
+
+# 构建服务
+build_service() {
+    local service_key=$1
+    local service_info
+    service_info=$(get_service_info "$service_key")
+    if [[ $? -ne 0 ]]; then
+        log_error "未知服务: $service_key"
+        return 1
+    fi
+    
+    IFS=':' read -r service_name port <<< "$service_info"
+    local service_path="$BACKEND_PATH/$service_name"
+    
+    if [[ ! -d "$service_path" ]]; then
+        log_error "服务目录不存在: $service_path"
+        return 1
+    fi
+    
+    log_info "构建服务: $service_name"
+    
+    cd "$service_path"
+    
+    # 清理和构建
+    mvn clean package -DskipTests -q
+    if [[ $? -eq 0 ]]; then
+        log_info "✅ 服务构建成功: $service_name"
+    else
+        log_error "❌ 服务构建失败: $service_name"
+        return 1
+    fi
+}
+
+# 启动服务
+start_service() {
+    local service_key=$1
+    local service_info
+    service_info=$(get_service_info "$service_key")
+    if [[ $? -ne 0 ]]; then
+        log_error "未知服务: $service_key"
+        return 1
+    fi
+    
+    IFS=':' read -r service_name port <<< "$service_info"
+    
+    # 检查端口是否被占用
+    if netstat -tulnp 2>/dev/null | grep -q ":$port "; then
+        log_warn "端口 $port 已被占用，尝试停止现有进程"
+        stop_service "$service_key"
+        sleep 2
+    fi
+    
+    local service_path="$BACKEND_PATH/$service_name"
+    local jar_file="$service_path/target/$service_name.jar"
+    
+    if [[ ! -f "$jar_file" ]]; then
+        log_warn "JAR文件不存在，尝试构建: $jar_file"
+        build_service "$service_key"
+    fi
+    
+    log_info "启动服务: $service_name (端口: $port)"
+    
+    # 设置JVM参数
+    local java_opts="-Xms256m -Xmx512m -XX:+UseG1GC"
+    java_opts="$java_opts -Dspring.profiles.active=${PROFILE:-dev}"
+    java_opts="$java_opts -Dserver.port=$port"
+    
+    # 后台启动服务
+    nohup java $java_opts -jar "$jar_file" \
+        > "/tmp/$service_name.log" 2>&1 &
+    
+    local pid=$!
+    echo $pid > "/tmp/$service_name.pid"
+    
+    log_info "服务启动中，PID: $pid"
+    
+    # 等待服务启动
+    local max_attempts=30
+    local attempt=0
+    while [[ $attempt -lt $max_attempts ]]; do
+        if curl -sf "http://localhost:$port/actuator/health" >/dev/null 2>&1; then
+            log_info "✅ 服务启动成功: $service_name"
+            return 0
+        fi
+        ((attempt++))
+        sleep 2
+    done
+    
+    log_error "❌ 服务启动超时: $service_name"
+    return 1
+}
+
+# 停止服务
+stop_service() {
+    local service_key=$1
+    local service_info
+    service_info=$(get_service_info "$service_key")
+    if [[ $? -ne 0 ]]; then
+        log_error "未知服务: $service_key"
+        return 1
+    fi
+    
+    IFS=':' read -r service_name port <<< "$service_info"
+    local pid_file="/tmp/$service_name.pid"
+    
+    if [[ -f "$pid_file" ]]; then
+        local pid=$(cat "$pid_file")
+        if kill -0 "$pid" 2>/dev/null; then
+            log_info "停止服务: $service_name (PID: $pid)"
+            kill "$pid"
+            
+            # 等待进程结束
+            local max_attempts=10
+            local attempt=0
+            while [[ $attempt -lt $max_attempts ]]; do
+                if ! kill -0 "$pid" 2>/dev/null; then
+                    break
+                fi
+                ((attempt++))
+                sleep 1
+            done
+            
+            # 强制杀死
+            if kill -0 "$pid" 2>/dev/null; then
+                log_warn "强制停止服务: $service_name"
+                kill -9 "$pid"
+            fi
+            
+            rm -f "$pid_file"
+            log_info "✅ 服务已停止: $service_name"
+        else
+            log_warn "PID文件存在但进程不存在，清理PID文件"
+            rm -f "$pid_file"
+        fi
+    else
+        # 通过端口查找进程
+        local pids
+        pids=$(lsof -ti:$port 2>/dev/null)
+        if [[ -n "$pids" ]]; then
+            log_info "通过端口停止服务: $service_name (端口: $port)"
+            echo "$pids" | xargs kill
+            log_info "✅ 服务已停止: $service_name"
+        else
+            log_warn "服务未运行: $service_name"
+        fi
+    fi
+}
+
+# 检查服务状态
+check_service_status() {
+    local service_key=$1
+    local service_info
+    service_info=$(get_service_info "$service_key")
+    if [[ $? -ne 0 ]]; then
+        echo "UNKNOWN"
+        return 1
+    fi
+    
+    IFS=':' read -r service_name port <<< "$service_info"
+    
+    # 检查健康端点
+    if curl -sf "http://localhost:$port/actuator/health" >/dev/null 2>&1; then
+        echo "RUNNING"
+    else
+        echo "STOPPED"
+    fi
+}
+```
+
+## 🐳 基础设施管理脚本
+
+### 1. 基础设施启动脚本
+```bash
+# ✅ start-infrastructure.sh 核心逻辑
+start_infrastructure() {
+    log_info "🚀 启动企业微信管理平台基础设施..."
+    
+    # 检查Docker
+    if ! docker info >/dev/null 2>&1; then
+        log_error "❌ Docker未运行，请先启动Docker"
+        exit 1
+    fi
+    
+    cd "$PROJECT_ROOT/infrastructure/docker"
+    
+    # 创建必要目录
+    create_directories
+    
+    # 设置项目名称
+    local project_name="wework-platform"
+    
+    # 拉取镜像
+    log_info "📥 拉取最新镜像..."
+    docker-compose -p "$project_name" pull
+    
+    # 启动核心服务
+    start_core_services "$project_name"
+    
+    # 启动监控服务
+    start_monitoring_services "$project_name"
+    
+    # 启动应用服务  
+    start_application_services "$project_name"
+    
+    # 验证服务状态
+    verify_services
+    
+    log_info "✅ 基础设施启动完成"
+}
+
+create_directories() {
+    log_info "📁 创建必要目录..."
+    
+    local dirs=(
+        "monitoring/grafana/provisioning/dashboards"
+        "monitoring/grafana/provisioning/datasources"
+        "logs"
+        "database/data"
+        "messaging/rocketmq/logs"
+        "messaging/rocketmq/store"
+    )
+    
+    for dir in "${dirs[@]}"; do
+        mkdir -p "$dir"
+        log_debug "创建目录: $dir"
+    done
+}
+
+start_core_services() {
+    local project_name=$1
+    
+    log_info "🗄️ 启动核心数据服务..."
+    docker-compose -p "$project_name" up -d mysql redis influxdb
+    
+    log_info "⏳ 等待数据库启动..."
+    wait_for_service "mysql" "3306" 60
+    wait_for_service "redis" "6379" 30
+    wait_for_service "influxdb" "8086" 30
+}
+
+start_monitoring_services() {
+    local project_name=$1
+    
+    log_info "📊 启动监控服务..."
+    docker-compose -p "$project_name" up -d prometheus grafana elasticsearch kibana logstash
+    
+    log_info "⏳ 等待监控服务启动..."
+    wait_for_service "prometheus" "9090" 30
+    wait_for_service "grafana" "3000" 30
+}
+
+wait_for_service() {
+    local service_name=$1
+    local port=$2
+    local timeout=${3:-30}
+    local attempt=0
+    
+    log_info "等待服务启动: $service_name (端口: $port)"
+    
+    while [[ $attempt -lt $timeout ]]; do
+        if docker-compose ps | grep -q "$service_name.*Up"; then
+            if nc -z localhost "$port" 2>/dev/null; then
+                log_info "✅ 服务启动成功: $service_name"
+                return 0
+            fi
+        fi
+        ((attempt++))
+        sleep 2
+        echo -n "."
+    done
+    
+    echo
+    log_error "❌ 服务启动超时: $service_name"
+    return 1
+}
+
+verify_services() {
+    log_info "🔍 验证服务状态..."
+    
+    local services=(
+        "mysql:3306:MySQL数据库"
+        "redis:6379:Redis缓存"
+        "prometheus:9090:Prometheus监控"
+        "grafana:3000:Grafana仪表板"
+    )
+    
+    for service_info in "${services[@]}"; do
+        IFS=':' read -r service port desc <<< "$service_info"
+        
+        if nc -z localhost "$port" 2>/dev/null; then
+            log_info "✅ $desc 运行正常 (端口: $port)"
+        else
+            log_warn "⚠️ $desc 可能未正常启动 (端口: $port)"
+        fi
+    done
+}
+```
+
+### 2. 健康检查脚本
+```bash
+# ✅ check-services.sh 健康检查逻辑
+check_all_services() {
+    log_info "🔍 开始全面健康检查..."
+    
+    local overall_status="HEALTHY"
+    
+    # 检查基础设施
+    check_infrastructure_health
+    local infra_status=$?
+    
+    # 检查应用服务
+    check_application_health  
+    local app_status=$?
+    
+    # 检查外部依赖
+    check_external_dependencies
+    local ext_status=$?
+    
+    if [[ $infra_status -ne 0 || $app_status -ne 0 || $ext_status -ne 0 ]]; then
+        overall_status="UNHEALTHY"
+    fi
+    
+    # 生成健康报告
+    generate_health_report "$overall_status"
+    
+    log_info "健康检查完成，总体状态: $overall_status"
+    
+    if [[ "$overall_status" == "UNHEALTHY" ]]; then
+        exit 1
+    fi
+}
+
+check_infrastructure_health() {
+    log_info "检查基础设施健康状态..."
+    
+    local services=(
+        "mysql:3306:MySQL"
+        "redis:6379:Redis" 
+        "nacos:8848:Nacos"
+        "rocketmq:9876:RocketMQ NameServer"
+    )
+    
+    local failed_services=0
+    
+    for service_info in "${services[@]}"; do
+        IFS=':' read -r service port name <<< "$service_info"
+        
+        if check_port_health "localhost" "$port"; then
+            log_info "✅ $name 健康"
+        else
+            log_error "❌ $name 不健康 (端口: $port)"
+            ((failed_services++))
+        fi
+    done
+    
+    return $failed_services
+}
+
+check_application_health() {
+    log_info "检查应用服务健康状态..."
+    
+    local services=(
+        "gateway-service:18080:/actuator/health"
+        "account-service:18081:/actuator/health"
+        "message-service:18082:/actuator/health"
+    )
+    
+    local failed_services=0
+    
+    for service_info in "${services[@]}"; do
+        IFS=':' read -r service port endpoint <<< "$service_info"
+        
+        local health_url="http://localhost:$port$endpoint"
+        if check_http_health "$health_url"; then
+            log_info "✅ $service 健康"
+        else
+            log_error "❌ $service 不健康"
+            ((failed_services++))
+        fi
+    done
+    
+    return $failed_services
+}
+
+check_port_health() {
+    local host=$1
+    local port=$2
+    nc -z "$host" "$port" 2>/dev/null
+}
+
+check_http_health() {
+    local url=$1
+    local response
+    response=$(curl -sf "$url" 2>/dev/null)
+    
+    if [[ $? -eq 0 ]]; then
+        # 检查响应内容
+        if echo "$response" | grep -q '"status":"UP"'; then
+            return 0
+        fi
+    fi
+    
+    return 1
+}
+
+generate_health_report() {
+    local overall_status=$1
+    local report_file="/tmp/health-report-$(date +%Y%m%d_%H%M%S).json"
+    
+    cat > "$report_file" << EOF
+{
+  "timestamp": "$(date -Iseconds)",
+  "overall_status": "$overall_status",
+  "infrastructure": {
+    "mysql": "$(check_port_health localhost 3306 && echo "UP" || echo "DOWN")",
+    "redis": "$(check_port_health localhost 6379 && echo "UP" || echo "DOWN")",
+    "nacos": "$(check_port_health localhost 8848 && echo "UP" || echo "DOWN")"
+  },
+  "applications": {
+    "gateway": "$(check_http_health "http://localhost:18080/actuator/health" && echo "UP" || echo "DOWN")",
+    "account": "$(check_http_health "http://localhost:18081/actuator/health" && echo "UP" || echo "DOWN")",
+    "message": "$(check_http_health "http://localhost:18082/actuator/health" && echo "UP" || echo "DOWN")"
+  },
+  "system": {
+    "disk_usage": "$(df -h / | awk 'NR==2 {print $5}')",
+    "memory_usage": "$(free -m | awk 'NR==2{printf "%.1f%%", $3*100/$2}')",
+    "load_average": "$(uptime | awk -F'load average:' '{print $2}')"
+  }
+}
+EOF
+    
+    log_info "健康报告生成: $report_file"
+    
+    # 如果配置了webhook，发送报告
+    if [[ -n "${HEALTH_WEBHOOK_URL:-}" ]]; then
+        curl -sf -X POST "$HEALTH_WEBHOOK_URL" \
+             -H "Content-Type: application/json" \
+             -d "@$report_file" || true
+    fi
+}
+```
+
+## 🔄 CI/CD脚本规范
+
+### 1. 构建脚本标准
+```bash
+# ✅ build-service.sh 模板
+build_service() {
+    local service_name=$1
+    local version=${2:-"latest"}
+    local environment=${3:-"dev"}
+    
+    log_info "构建服务: $service_name, 版本: $version, 环境: $environment"
+    
+    local service_path="$PROJECT_ROOT/backend/$service_name"
+    if [[ ! -d "$service_path" ]]; then
+        log_error "服务目录不存在: $service_path"
+        return 1
+    fi
+    
+    cd "$service_path"
+    
+    # 清理
+    log_info "清理旧构建..."
+    mvn clean -q
+    
+    # 运行测试
+    if [[ "${SKIP_TESTS:-false}" != "true" ]]; then
+        log_info "运行单元测试..."
+        mvn test -q
+        if [[ $? -ne 0 ]]; then
+            log_error "单元测试失败"
+            return 1
+        fi
+    fi
+    
+    # 打包
+    log_info "打包应用..."
+    mvn package -DskipTests -q
+    if [[ $? -ne 0 ]]; then
+        log_error "打包失败"
+        return 1
+    fi
+    
+    # 构建Docker镜像
+    log_info "构建Docker镜像..."
+    local image_tag="wework/$service_name:$version-$environment"
+    
+    docker build -t "$image_tag" .
+    if [[ $? -eq 0 ]]; then
+        log_info "✅ Docker镜像构建成功: $image_tag"
+        
+        # 推送镜像（如果配置了registry）
+        if [[ -n "${DOCKER_REGISTRY:-}" ]]; then
+            push_image "$image_tag"
+        fi
+    else
+        log_error "❌ Docker镜像构建失败"
+        return 1
+    fi
+}
+
+push_image() {
+    local image_tag=$1
+    local registry_tag="$DOCKER_REGISTRY/$image_tag"
+    
+    log_info "推送镜像到registry: $registry_tag"
+    
+    docker tag "$image_tag" "$registry_tag"
+    docker push "$registry_tag"
+    
+    if [[ $? -eq 0 ]]; then
+        log_info "✅ 镜像推送成功: $registry_tag"
+    else
+        log_error "❌ 镜像推送失败"
+        return 1
+    fi
+}
+```
+
+### 2. 部署脚本规范
+```bash
+# ✅ deploy-service.sh 部署逻辑
+deploy_service() {
+    local service_name=$1
+    local version=$2
+    local environment=$3
+    local namespace=${4:-"wework-$environment"}
+    
+    log_info "部署服务: $service_name, 版本: $version, 环境: $environment"
+    
+    # 验证部署前置条件
+    verify_deployment_prerequisites "$environment"
+    
+    # 更新镜像版本
+    update_deployment_image "$service_name" "$version" "$environment" "$namespace"
+    
+    # 等待部署完成
+    wait_for_deployment "$service_name" "$namespace"
+    
+    # 验证部署结果
+    verify_deployment "$service_name" "$namespace"
+    
+    log_info "✅ 服务部署完成: $service_name"
+}
+
+verify_deployment_prerequisites() {
+    local environment=$1
+    
+    # 检查kubectl连接
+    if ! kubectl cluster-info >/dev/null 2>&1; then
+        log_error "无法连接到Kubernetes集群"
+        return 1
+    fi
+    
+    # 检查命名空间
+    if ! kubectl get namespace "wework-$environment" >/dev/null 2>&1; then
+        log_info "创建命名空间: wework-$environment"
+        kubectl create namespace "wework-$environment"
+    fi
+    
+    # 检查ConfigMap和Secret
+    check_k8s_configs "$environment"
+}
+
+update_deployment_image() {
+    local service_name=$1
+    local version=$2
+    local environment=$3
+    local namespace=$4
+    
+    local deployment_name="$service_name-deployment"
+    local image_name="$DOCKER_REGISTRY/wework/$service_name:$version-$environment"
+    
+    log_info "更新部署镜像: $deployment_name -> $image_name"
+    
+    kubectl set image "deployment/$deployment_name" \
+            "$service_name=$image_name" \
+            -n "$namespace"
+}
+
+wait_for_deployment() {
+    local service_name=$1
+    local namespace=$2
+    local timeout=${3:-300}
+    
+    log_info "等待部署完成: $service_name"
+    
+    kubectl rollout status "deployment/$service_name-deployment" \
+            -n "$namespace" \
+            --timeout="${timeout}s"
+}
+```
+
+**规则总结**:
+- 统一使用Shell脚本模板，包含完整的错误处理和日志记录
+- 服务管理脚本支持构建、启动、停止、状态检查等完整生命周期
+- 基础设施脚本实现自动化部署和健康检查
+- CI/CD脚本支持多环境部署和回滚机制
+- 所有脚本必须支持参数验证和帮助信息# ⚙️ 运维脚本和自动化规则
+
+## 📐 脚本开发规范
+
+### 1. Shell脚本标准模板
+```bash
+#!/bin/bash
+
+# =================================================================
+# WeWork Platform - [脚本功能描述]
+# 作者: [作者名称]
+# 版本: 1.0.0
+# 创建: 2024-01-15
+# 用途: [详细用途说明]
+# =================================================================
+
+# 严格模式
+set -euo pipefail
+
+# 全局变量
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+readonly LOG_FILE="/tmp/$(basename "$0" .sh).log"
+readonly PID_FILE="/tmp/$(basename "$0" .sh).pid"
+
+# 颜色输出
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[1;33m'
+readonly BLUE='\033[0;34m'
+readonly PURPLE='\033[0;35m'
+readonly CYAN='\033[0;36m'
+readonly NC='\033[0m' # No Color
+
+# 日志函数
+log_info() {
+    echo -e "${GREEN}[INFO]${NC} $(date '+%Y-%m-%d %H:%M:%S') $*" | tee -a "$LOG_FILE"
+}
+
+log_warn() {
+    echo -e "${YELLOW}[WARN]${NC} $(date '+%Y-%m-%d %H:%M:%S') $*" | tee -a "$LOG_FILE"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $(date '+%Y-%m-%d %H:%M:%S') $*" | tee -a "$LOG_FILE"
+}
+
+log_debug() {
+    if [[ "${DEBUG:-false}" == "true" ]]; then
+        echo -e "${BLUE}[DEBUG]${NC} $(date '+%Y-%m-%d %H:%M:%S') $*" | tee -a "$LOG_FILE"
+    fi
+}
+
+# 错误处理
+cleanup() {
+    local exit_code=$?
+    if [[ -f "$PID_FILE" ]]; then
+        rm -f "$PID_FILE"
+    fi
+    if [[ $exit_code -ne 0 ]]; then
+        log_error "脚本执行失败，退出码: $exit_code"
+    fi
+    exit $exit_code
+}
+
+# 设置陷阱
+trap cleanup EXIT
+trap 'log_error "脚本被中断"; exit 130' INT
+trap 'log_error "脚本被终止"; exit 143' TERM
+
+# 检查依赖
+check_dependencies() {
+    local deps=("docker" "docker-compose" "curl" "jq")
+    for dep in "${deps[@]}"; do
+        if ! command -v "$dep" &> /dev/null; then
+            log_error "依赖 $dep 未安装"
+            exit 1
+        fi
+    done
+}
+
+# 检查是否已运行
+check_running() {
+    if [[ -f "$PID_FILE" ]]; then
+        local pid=$(cat "$PID_FILE")
+        if kill -0 "$pid" 2>/dev/null; then
+            log_error "脚本已在运行，PID: $pid"
+            exit 1
+        else
+            rm -f "$PID_FILE"
+        fi
+    fi
+    echo $$ > "$PID_FILE"
+}
+
+# 显示帮助
+show_help() {
+    cat << EOF
+使用方法: $(basename "$0") [选项] [命令]
+
+选项:
+  -h, --help      显示帮助信息
+  -v, --verbose   详细输出
+  -d, --debug     调试模式
+
+命令:
+  start           启动服务
+  stop            停止服务
+  restart         重启服务
+  status          检查状态
+
+示例:
+  $(basename "$0") start
+  $(basename "$0") --debug status
+
+EOF
+}
+
+# 主函数
+main() {
+    log_info "开始执行脚本: $(basename "$0")"
+    
+    # 检查依赖和运行状态
+    check_dependencies
+    check_running
+    
+    # 脚本主要逻辑
+    case "${1:-}" in
+        start)
+            start_service
+            ;;
+        stop)
+            stop_service
+            ;;
+        restart)
+            restart_service
+            ;;
+        status)
+            check_status
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        *)
+            log_error "未知命令: $*"
+            show_help
+            exit 1
+            ;;
+    esac
+    
+    log_info "脚本执行完成"
+}
+
+# 参数解析
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -v|--verbose)
+            set -x
+            shift
+            ;;
+        -d|--debug)
+            DEBUG=true
+            shift
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+# 执行主函数
+main "$@"
+```
+
+## 🚀 服务管理脚本规范
+
+### 1. 统一服务管理脚本
+```bash
+# ✅ manage-services.sh 核心功能结构
+#!/bin/bash
+
+# 服务配置 (格式: key:service-name:port)
+SERVICES=(
+    "gateway:gateway-service:18080"
+    "account:account-service:18081" 
+    "message:message-service:18082"
+    "monitor:monitor-service:18083"
+)
+
+# 获取服务信息
+get_service_info() {
+    local service_key=$1
+    for service_info in "${SERVICES[@]}"; do
+        IFS=':' read -r key name port <<< "$service_info"
+        if [[ "$key" == "$service_key" ]]; then
+            echo "$name:$port"
+            return 0
+        fi
+    done
+    return 1
+}
+
+# 构建服务
+build_service() {
+    local service_key=$1
+    local service_info
+    service_info=$(get_service_info "$service_key")
+    if [[ $? -ne 0 ]]; then
+        log_error "未知服务: $service_key"
+        return 1
+    fi
+    
+    IFS=':' read -r service_name port <<< "$service_info"
+    local service_path="$BACKEND_PATH/$service_name"
+    
+    if [[ ! -d "$service_path" ]]; then
+        log_error "服务目录不存在: $service_path"
+        return 1
+    fi
+    
+    log_info "构建服务: $service_name"
+    
+    cd "$service_path"
+    
+    # 清理和构建
+    mvn clean package -DskipTests -q
+    if [[ $? -eq 0 ]]; then
+        log_info "✅ 服务构建成功: $service_name"
+    else
+        log_error "❌ 服务构建失败: $service_name"
+        return 1
+    fi
+}
+
+# 启动服务
+start_service() {
+    local service_key=$1
+    local service_info
+    service_info=$(get_service_info "$service_key")
+    if [[ $? -ne 0 ]]; then
+        log_error "未知服务: $service_key"
+        return 1
+    fi
+    
+    IFS=':' read -r service_name port <<< "$service_info"
+    
+    # 检查端口是否被占用
+    if netstat -tulnp 2>/dev/null | grep -q ":$port "; then
+        log_warn "端口 $port 已被占用，尝试停止现有进程"
+        stop_service "$service_key"
+        sleep 2
+    fi
+    
+    local service_path="$BACKEND_PATH/$service_name"
+    local jar_file="$service_path/target/$service_name.jar"
+    
+    if [[ ! -f "$jar_file" ]]; then
+        log_warn "JAR文件不存在，尝试构建: $jar_file"
+        build_service "$service_key"
+    fi
+    
+    log_info "启动服务: $service_name (端口: $port)"
+    
+    # 设置JVM参数
+    local java_opts="-Xms256m -Xmx512m -XX:+UseG1GC"
+    java_opts="$java_opts -Dspring.profiles.active=${PROFILE:-dev}"
+    java_opts="$java_opts -Dserver.port=$port"
+    
+    # 后台启动服务
+    nohup java $java_opts -jar "$jar_file" \
+        > "/tmp/$service_name.log" 2>&1 &
+    
+    local pid=$!
+    echo $pid > "/tmp/$service_name.pid"
+    
+    log_info "服务启动中，PID: $pid"
+    
+    # 等待服务启动
+    local max_attempts=30
+    local attempt=0
+    while [[ $attempt -lt $max_attempts ]]; do
+        if curl -sf "http://localhost:$port/actuator/health" >/dev/null 2>&1; then
+            log_info "✅ 服务启动成功: $service_name"
+            return 0
+        fi
+        ((attempt++))
+        sleep 2
+    done
+    
+    log_error "❌ 服务启动超时: $service_name"
+    return 1
+}
+
+# 停止服务
+stop_service() {
+    local service_key=$1
+    local service_info
+    service_info=$(get_service_info "$service_key")
+    if [[ $? -ne 0 ]]; then
+        log_error "未知服务: $service_key"
+        return 1
+    fi
+    
+    IFS=':' read -r service_name port <<< "$service_info"
+    local pid_file="/tmp/$service_name.pid"
+    
+    if [[ -f "$pid_file" ]]; then
+        local pid=$(cat "$pid_file")
+        if kill -0 "$pid" 2>/dev/null; then
+            log_info "停止服务: $service_name (PID: $pid)"
+            kill "$pid"
+            
+            # 等待进程结束
+            local max_attempts=10
+            local attempt=0
+            while [[ $attempt -lt $max_attempts ]]; do
+                if ! kill -0 "$pid" 2>/dev/null; then
+                    break
+                fi
+                ((attempt++))
+                sleep 1
+            done
+            
+            # 强制杀死
+            if kill -0 "$pid" 2>/dev/null; then
+                log_warn "强制停止服务: $service_name"
+                kill -9 "$pid"
+            fi
+            
+            rm -f "$pid_file"
+            log_info "✅ 服务已停止: $service_name"
+        else
+            log_warn "PID文件存在但进程不存在，清理PID文件"
+            rm -f "$pid_file"
+        fi
+    else
+        # 通过端口查找进程
+        local pids
+        pids=$(lsof -ti:$port 2>/dev/null)
+        if [[ -n "$pids" ]]; then
+            log_info "通过端口停止服务: $service_name (端口: $port)"
+            echo "$pids" | xargs kill
+            log_info "✅ 服务已停止: $service_name"
+        else
+            log_warn "服务未运行: $service_name"
+        fi
+    fi
+}
+
+# 检查服务状态
+check_service_status() {
+    local service_key=$1
+    local service_info
+    service_info=$(get_service_info "$service_key")
+    if [[ $? -ne 0 ]]; then
+        echo "UNKNOWN"
+        return 1
+    fi
+    
+    IFS=':' read -r service_name port <<< "$service_info"
+    
+    # 检查健康端点
+    if curl -sf "http://localhost:$port/actuator/health" >/dev/null 2>&1; then
+        echo "RUNNING"
+    else
+        echo "STOPPED"
+    fi
+}
+```
+
+## 🐳 基础设施管理脚本
+
+### 1. 基础设施启动脚本
+```bash
+# ✅ start-infrastructure.sh 核心逻辑
+start_infrastructure() {
+    log_info "🚀 启动企业微信管理平台基础设施..."
+    
+    # 检查Docker
+    if ! docker info >/dev/null 2>&1; then
+        log_error "❌ Docker未运行，请先启动Docker"
+        exit 1
+    fi
+    
+    cd "$PROJECT_ROOT/infrastructure/docker"
+    
+    # 创建必要目录
+    create_directories
+    
+    # 设置项目名称
+    local project_name="wework-platform"
+    
+    # 拉取镜像
+    log_info "📥 拉取最新镜像..."
+    docker-compose -p "$project_name" pull
+    
+    # 启动核心服务
+    start_core_services "$project_name"
+    
+    # 启动监控服务
+    start_monitoring_services "$project_name"
+    
+    # 启动应用服务  
+    start_application_services "$project_name"
+    
+    # 验证服务状态
+    verify_services
+    
+    log_info "✅ 基础设施启动完成"
+}
+
+create_directories() {
+    log_info "📁 创建必要目录..."
+    
+    local dirs=(
+        "monitoring/grafana/provisioning/dashboards"
+        "monitoring/grafana/provisioning/datasources"
+        "logs"
+        "database/data"
+        "messaging/rocketmq/logs"
+        "messaging/rocketmq/store"
+    )
+    
+    for dir in "${dirs[@]}"; do
+        mkdir -p "$dir"
+        log_debug "创建目录: $dir"
+    done
+}
+
+start_core_services() {
+    local project_name=$1
+    
+    log_info "🗄️ 启动核心数据服务..."
+    docker-compose -p "$project_name" up -d mysql redis influxdb
+    
+    log_info "⏳ 等待数据库启动..."
+    wait_for_service "mysql" "3306" 60
+    wait_for_service "redis" "6379" 30
+    wait_for_service "influxdb" "8086" 30
+}
+
+start_monitoring_services() {
+    local project_name=$1
+    
+    log_info "📊 启动监控服务..."
+    docker-compose -p "$project_name" up -d prometheus grafana elasticsearch kibana logstash
+    
+    log_info "⏳ 等待监控服务启动..."
+    wait_for_service "prometheus" "9090" 30
+    wait_for_service "grafana" "3000" 30
+}
+
+wait_for_service() {
+    local service_name=$1
+    local port=$2
+    local timeout=${3:-30}
+    local attempt=0
+    
+    log_info "等待服务启动: $service_name (端口: $port)"
+    
+    while [[ $attempt -lt $timeout ]]; do
+        if docker-compose ps | grep -q "$service_name.*Up"; then
+            if nc -z localhost "$port" 2>/dev/null; then
+                log_info "✅ 服务启动成功: $service_name"
+                return 0
+            fi
+        fi
+        ((attempt++))
+        sleep 2
+        echo -n "."
+    done
+    
+    echo
+    log_error "❌ 服务启动超时: $service_name"
+    return 1
+}
+
+verify_services() {
+    log_info "🔍 验证服务状态..."
+    
+    local services=(
+        "mysql:3306:MySQL数据库"
+        "redis:6379:Redis缓存"
+        "prometheus:9090:Prometheus监控"
+        "grafana:3000:Grafana仪表板"
+    )
+    
+    for service_info in "${services[@]}"; do
+        IFS=':' read -r service port desc <<< "$service_info"
+        
+        if nc -z localhost "$port" 2>/dev/null; then
+            log_info "✅ $desc 运行正常 (端口: $port)"
+        else
+            log_warn "⚠️ $desc 可能未正常启动 (端口: $port)"
+        fi
+    done
+}
+```
+
+### 2. 健康检查脚本
+```bash
+# ✅ check-services.sh 健康检查逻辑
+check_all_services() {
+    log_info "🔍 开始全面健康检查..."
+    
+    local overall_status="HEALTHY"
+    
+    # 检查基础设施
+    check_infrastructure_health
+    local infra_status=$?
+    
+    # 检查应用服务
+    check_application_health  
+    local app_status=$?
+    
+    # 检查外部依赖
+    check_external_dependencies
+    local ext_status=$?
+    
+    if [[ $infra_status -ne 0 || $app_status -ne 0 || $ext_status -ne 0 ]]; then
+        overall_status="UNHEALTHY"
+    fi
+    
+    # 生成健康报告
+    generate_health_report "$overall_status"
+    
+    log_info "健康检查完成，总体状态: $overall_status"
+    
+    if [[ "$overall_status" == "UNHEALTHY" ]]; then
+        exit 1
+    fi
+}
+
+check_infrastructure_health() {
+    log_info "检查基础设施健康状态..."
+    
+    local services=(
+        "mysql:3306:MySQL"
+        "redis:6379:Redis" 
+        "nacos:8848:Nacos"
+        "rocketmq:9876:RocketMQ NameServer"
+    )
+    
+    local failed_services=0
+    
+    for service_info in "${services[@]}"; do
+        IFS=':' read -r service port name <<< "$service_info"
+        
+        if check_port_health "localhost" "$port"; then
+            log_info "✅ $name 健康"
+        else
+            log_error "❌ $name 不健康 (端口: $port)"
+            ((failed_services++))
+        fi
+    done
+    
+    return $failed_services
+}
+
+check_application_health() {
+    log_info "检查应用服务健康状态..."
+    
+    local services=(
+        "gateway-service:18080:/actuator/health"
+        "account-service:18081:/actuator/health"
+        "message-service:18082:/actuator/health"
+    )
+    
+    local failed_services=0
+    
+    for service_info in "${services[@]}"; do
+        IFS=':' read -r service port endpoint <<< "$service_info"
+        
+        local health_url="http://localhost:$port$endpoint"
+        if check_http_health "$health_url"; then
+            log_info "✅ $service 健康"
+        else
+            log_error "❌ $service 不健康"
+            ((failed_services++))
+        fi
+    done
+    
+    return $failed_services
+}
+
+check_port_health() {
+    local host=$1
+    local port=$2
+    nc -z "$host" "$port" 2>/dev/null
+}
+
+check_http_health() {
+    local url=$1
+    local response
+    response=$(curl -sf "$url" 2>/dev/null)
+    
+    if [[ $? -eq 0 ]]; then
+        # 检查响应内容
+        if echo "$response" | grep -q '"status":"UP"'; then
+            return 0
+        fi
+    fi
+    
+    return 1
+}
+
+generate_health_report() {
+    local overall_status=$1
+    local report_file="/tmp/health-report-$(date +%Y%m%d_%H%M%S).json"
+    
+    cat > "$report_file" << EOF
+{
+  "timestamp": "$(date -Iseconds)",
+  "overall_status": "$overall_status",
+  "infrastructure": {
+    "mysql": "$(check_port_health localhost 3306 && echo "UP" || echo "DOWN")",
+    "redis": "$(check_port_health localhost 6379 && echo "UP" || echo "DOWN")",
+    "nacos": "$(check_port_health localhost 8848 && echo "UP" || echo "DOWN")"
+  },
+  "applications": {
+    "gateway": "$(check_http_health "http://localhost:18080/actuator/health" && echo "UP" || echo "DOWN")",
+    "account": "$(check_http_health "http://localhost:18081/actuator/health" && echo "UP" || echo "DOWN")",
+    "message": "$(check_http_health "http://localhost:18082/actuator/health" && echo "UP" || echo "DOWN")"
+  },
+  "system": {
+    "disk_usage": "$(df -h / | awk 'NR==2 {print $5}')",
+    "memory_usage": "$(free -m | awk 'NR==2{printf "%.1f%%", $3*100/$2}')",
+    "load_average": "$(uptime | awk -F'load average:' '{print $2}')"
+  }
+}
+EOF
+    
+    log_info "健康报告生成: $report_file"
+    
+    # 如果配置了webhook，发送报告
+    if [[ -n "${HEALTH_WEBHOOK_URL:-}" ]]; then
+        curl -sf -X POST "$HEALTH_WEBHOOK_URL" \
+             -H "Content-Type: application/json" \
+             -d "@$report_file" || true
+    fi
+}
+```
+
+## 🔄 CI/CD脚本规范
+
+### 1. 构建脚本标准
+```bash
+# ✅ build-service.sh 模板
+build_service() {
+    local service_name=$1
+    local version=${2:-"latest"}
+    local environment=${3:-"dev"}
+    
+    log_info "构建服务: $service_name, 版本: $version, 环境: $environment"
+    
+    local service_path="$PROJECT_ROOT/backend/$service_name"
+    if [[ ! -d "$service_path" ]]; then
+        log_error "服务目录不存在: $service_path"
+        return 1
+    fi
+    
+    cd "$service_path"
+    
+    # 清理
+    log_info "清理旧构建..."
+    mvn clean -q
+    
+    # 运行测试
+    if [[ "${SKIP_TESTS:-false}" != "true" ]]; then
+        log_info "运行单元测试..."
+        mvn test -q
+        if [[ $? -ne 0 ]]; then
+            log_error "单元测试失败"
+            return 1
+        fi
+    fi
+    
+    # 打包
+    log_info "打包应用..."
+    mvn package -DskipTests -q
+    if [[ $? -ne 0 ]]; then
+        log_error "打包失败"
+        return 1
+    fi
+    
+    # 构建Docker镜像
+    log_info "构建Docker镜像..."
+    local image_tag="wework/$service_name:$version-$environment"
+    
+    docker build -t "$image_tag" .
+    if [[ $? -eq 0 ]]; then
+        log_info "✅ Docker镜像构建成功: $image_tag"
+        
+        # 推送镜像（如果配置了registry）
+        if [[ -n "${DOCKER_REGISTRY:-}" ]]; then
+            push_image "$image_tag"
+        fi
+    else
+        log_error "❌ Docker镜像构建失败"
+        return 1
+    fi
+}
+
+push_image() {
+    local image_tag=$1
+    local registry_tag="$DOCKER_REGISTRY/$image_tag"
+    
+    log_info "推送镜像到registry: $registry_tag"
+    
+    docker tag "$image_tag" "$registry_tag"
+    docker push "$registry_tag"
+    
+    if [[ $? -eq 0 ]]; then
+        log_info "✅ 镜像推送成功: $registry_tag"
+    else
+        log_error "❌ 镜像推送失败"
+        return 1
+    fi
+}
+```
+
+### 2. 部署脚本规范
+```bash
+# ✅ deploy-service.sh 部署逻辑
+deploy_service() {
+    local service_name=$1
+    local version=$2
+    local environment=$3
+    local namespace=${4:-"wework-$environment"}
+    
+    log_info "部署服务: $service_name, 版本: $version, 环境: $environment"
+    
+    # 验证部署前置条件
+    verify_deployment_prerequisites "$environment"
+    
+    # 更新镜像版本
+    update_deployment_image "$service_name" "$version" "$environment" "$namespace"
+    
+    # 等待部署完成
+    wait_for_deployment "$service_name" "$namespace"
+    
+    # 验证部署结果
+    verify_deployment "$service_name" "$namespace"
+    
+    log_info "✅ 服务部署完成: $service_name"
+}
+
+verify_deployment_prerequisites() {
+    local environment=$1
+    
+    # 检查kubectl连接
+    if ! kubectl cluster-info >/dev/null 2>&1; then
+        log_error "无法连接到Kubernetes集群"
+        return 1
+    fi
+    
+    # 检查命名空间
+    if ! kubectl get namespace "wework-$environment" >/dev/null 2>&1; then
+        log_info "创建命名空间: wework-$environment"
+        kubectl create namespace "wework-$environment"
+    fi
+    
+    # 检查ConfigMap和Secret
+    check_k8s_configs "$environment"
+}
+
+update_deployment_image() {
+    local service_name=$1
+    local version=$2
+    local environment=$3
+    local namespace=$4
+    
+    local deployment_name="$service_name-deployment"
+    local image_name="$DOCKER_REGISTRY/wework/$service_name:$version-$environment"
+    
+    log_info "更新部署镜像: $deployment_name -> $image_name"
+    
+    kubectl set image "deployment/$deployment_name" \
+            "$service_name=$image_name" \
+            -n "$namespace"
+}
+
+wait_for_deployment() {
+    local service_name=$1
+    local namespace=$2
+    local timeout=${3:-300}
+    
+    log_info "等待部署完成: $service_name"
+    
+    kubectl rollout status "deployment/$service_name-deployment" \
+            -n "$namespace" \
+            --timeout="${timeout}s"
+}
+```
+
+**规则总结**:
+- 统一使用Shell脚本模板，包含完整的错误处理和日志记录
+- 服务管理脚本支持构建、启动、停止、状态检查等完整生命周期
+- 基础设施脚本实现自动化部署和健康检查
+- CI/CD脚本支持多环境部署和回滚机制
+- 所有脚本必须支持参数验证和帮助信息

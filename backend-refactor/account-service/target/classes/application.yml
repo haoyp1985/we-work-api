@@ -1,0 +1,130 @@
+server:
+  port: ${SERVER_PORT:8082}
+  servlet:
+    context-path: /account-service
+
+spring:
+  application:
+    name: account-service
+  
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/wework_platform?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:123456}
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      pool-name: AccountServiceHikariPool
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    database: ${REDIS_DATABASE:2}
+    timeout: 5000ms
+    lettuce:
+      pool:
+        max-active: 20
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+        namespace: ${NACOS_NAMESPACE:dev}
+
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=30m
+
+# MyBatis-Plus配置
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.wework.platform.account.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+    lazy-loading-enabled: true
+    multiple-result-sets-enabled: true
+    use-column-label: true
+    use-generated-keys: true
+    default-executor-type: reuse
+    default-statement-timeout: 25000
+  global-config:
+    db-config:
+      id-type: assign_id
+      logic-delete-field: deletedAt
+      logic-delete-value: now()
+      logic-not-delete-value: null
+      insert-strategy: not_null
+      update-strategy: not_null
+      select-strategy: not_empty
+
+# 日志配置
+logging:
+  level:
+    com.wework.platform.account: DEBUG
+    org.springframework.cloud: INFO
+    com.alibaba.nacos: INFO
+    com.baomidou.mybatisplus: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId}] %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId}] %logger{36} - %msg%n"
+  file:
+    name: logs/account-service.log
+
+# 监控配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# 业务配置
+app:
+  account:
+    # 账号配置
+    max-accounts-per-tenant: ${MAX_ACCOUNTS_PER_TENANT:100}
+    login-timeout: ${LOGIN_TIMEOUT:300}
+    heartbeat-interval: ${HEARTBEAT_INTERVAL:30}
+    
+    # 联系人同步配置
+    sync:
+      batch-size: ${SYNC_BATCH_SIZE:100}
+      max-retry: ${SYNC_MAX_RETRY:3}
+      timeout: ${SYNC_TIMEOUT:30}
+    
+    # 企微API配置
+    wework:
+      api-base-url: ${WEWORK_API_BASE_URL:http://localhost:9999}
+      timeout: ${WEWORK_API_TIMEOUT:30}
+      retry: ${WEWORK_API_RETRY:3}
+
+# Swagger文档配置
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+  info:
+    title: Account Service API
+    description: 企微账号管理服务接口文档
+    version: 2.0.0

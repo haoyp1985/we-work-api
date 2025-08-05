@@ -1,0 +1,121 @@
+server:
+  port: ${PORT:8084}
+  servlet:
+    context-path: /task-service
+
+spring:
+  application:
+    name: task-service
+  profiles:
+    active: ${PROFILE:dev}
+  
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:wework_platform}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:123456}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      pool-name: TaskServiceHikariPool
+  
+  # Redis配置
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    database: ${REDIS_DATABASE:0}
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 200
+        max-wait: -1ms
+        max-idle: 10
+        min-idle: 0
+
+# MyBatis-Plus配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+    lazy-loading-enabled: true
+    auto-mapping-behavior: partial
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: assign_id
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  mapper-locations: classpath*:mapper/**/*.xml
+
+# 任务服务配置
+app:
+  task:
+    # 任务执行器配置
+    executor:
+      core-pool-size: 10
+      max-pool-size: 50
+      queue-capacity: 1000
+      keep-alive-seconds: 60
+      thread-name-prefix: task-executor-
+      rejection-policy: CallerRunsPolicy
+      await-termination-seconds: 60
+      
+    # 调度器配置
+    scheduler:
+      enabled: true
+      scan-interval: 10000
+      batch-size: 100
+      retry-interval: 30000
+      max-retry-count: 3
+      concurrent-limit: 20
+      
+    # 分布式锁配置
+    distributed-lock:
+      redis:
+        enabled: true
+        key-prefix: "task:lock:"
+        default-expire-time: 300000
+        retry-count: 3
+        retry-interval: 1000
+      database:
+        enabled: true
+        table-name: task_locks
+        expire-time: 600000
+        
+    # 任务清理配置
+    cleanup:
+      enabled: true
+      retention-days: 30
+      cleanup-interval: 86400000
+      batch-size: 1000
+
+# 监控配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# 日志配置
+logging:
+  level:
+    com.wework.platform.task: DEBUG
+    org.springframework.cloud: INFO
+    com.alibaba.nacos: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+  file:
+    name: logs/task-service.log

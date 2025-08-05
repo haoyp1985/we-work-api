@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: account-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+        namespace: ${NACOS_NAMESPACE:dev}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+      config:
+        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+        namespace: ${NACOS_NAMESPACE:dev}
+        group: ${NACOS_GROUP:DEFAULT_GROUP}
+        file-extension: yml
+        shared-configs:
+          - data-id: database-config-${spring.profiles.active}.yml
+            group: ${NACOS_GROUP:DEFAULT_GROUP}
+            refresh: true
+          - data-id: redis-config-${spring.profiles.active}.yml
+            group: ${NACOS_GROUP:DEFAULT_GROUP}
+            refresh: true
+          - data-id: common-config-${spring.profiles.active}.yml
+            group: ${NACOS_GROUP:DEFAULT_GROUP}
+            refresh: true
