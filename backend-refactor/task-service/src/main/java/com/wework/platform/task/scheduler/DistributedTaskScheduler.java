@@ -25,6 +25,7 @@ import org.springframework.stereotype.Component;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -267,8 +268,8 @@ public class DistributedTaskScheduler implements ApplicationRunner {
                 .taskId(task.getId())
                 .tenantId(task.getTenantId())
                 .definitionId(task.getDefinitionId())
-                .instanceName(task.getInstanceName())
-                .parameters(definition.getParameters())
+                .instanceName(task.getId()) // 使用任务实例ID作为实例名称
+                .parameters(Map.of("executionParams", definition.getExecutionParams() != null ? definition.getExecutionParams() : "")) // 将执行参数包装为Map
                 .retryCount(task.getRetryCount())
                 .maxRetryCount(definition.getMaxRetryCount())
                 .executionNode(nodeId)

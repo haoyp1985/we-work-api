@@ -84,7 +84,7 @@ public class TaskExecutionServiceImpl implements TaskExecutionService {
             
             try {
                 // 尝试获取分布式锁，避免重复执行
-                if (!distributedLock.tryLock(lockKey, lockValue, 300)) {
+                if (!distributedLock.tryLock(lockKey, lockValue, 300, TimeUnit.SECONDS)) {
                     log.warn("无法获取任务执行锁，任务可能已在其他节点执行: instanceId={}", taskInstance.getId());
                     return TaskResult.failure("无法获取执行锁，任务可能已在执行");
                 }
@@ -92,7 +92,7 @@ public class TaskExecutionServiceImpl implements TaskExecutionService {
                 return doExecuteTask(taskInstance);
                 
             } finally {
-                distributedLock.unlock(lockKey, lockValue);
+                distributedLock.releaseLock(lockKey, lockValue);
             }
         }, executor);
     }
@@ -257,10 +257,12 @@ public class TaskExecutionServiceImpl implements TaskExecutionService {
             
             // 标记任务完成
             if (result.isSuccess()) {
-                taskInstanceService.markTaskComplete(instanceId, "SUCCESS", result.getResult(), null, null);
+                String resultStr = result.getResult() != null ? result.getResult().toString() : null;
+                taskInstanceService.markTaskComplete(instanceId, "SUCCESS", resultStr, null, null);
                 log.info("任务执行成功: instanceId={}", instanceId);
             } else {
-                taskInstanceService.markTaskComplete(instanceId, "FAILED", result.getResult(), 
+                String resultStr = result.getResult() != null ? result.getResult().toString() : null;
+                taskInstanceService.markTaskComplete(instanceId, "FAILED", resultStr, 
                                                    result.getErrorMessage(), null);
                 log.warn("任务执行失败: instanceId={}, error={}", instanceId, result.getErrorMessage());
             }
@@ -297,7 +299,63 @@ public class TaskExecutionServiceImpl implements TaskExecutionService {
         context.setTenantId(taskInstance.getTenantId());
         context.setExecutionParams(taskInstance.getExecutionParams());
         context.setRetryCount(taskInstance.getRetryCount());
-        context.setLogger(new TaskLogger(taskInstance.getId()));
+        // 创建简单的TaskLogger实现
+        context.setLogger(new TaskLogger() {
+            @Override
+            public void info(String message) {
+                log.info("[Task:{}] {}", taskInstance.getId(), message);
+            }
+            
+            @Override
+            public void info(String format, Object... args) {
+                log.info("[Task:{}] " + format, taskInstance.getId(), args);
+            }
+            
+            @Override
+            public void warn(String message) {
+                log.warn("[Task:{}] {}", taskInstance.getId(), message);
+            }
+            
+            @Override
+            public void warn(String format, Object... args) {
+                log.warn("[Task:{}] " + format, taskInstance.getId(), args);
+            }
+            
+            @Override
+            public void error(String message) {
+                log.error("[Task:{}] {}", taskInstance.getId(), message);
+            }
+            
+            @Override
+            public void error(String message, Exception exception) {
+                log.error("[Task:{}] {}", taskInstance.getId(), message, exception);
+            }
+            
+            @Override
+            public void error(String format, Object... args) {
+                log.error("[Task:{}] " + format, taskInstance.getId(), args);
+            }
+            
+            @Override
+            public void debug(String message) {
+                log.debug("[Task:{}] {}", taskInstance.getId(), message);
+            }
+            
+            @Override
+            public void debug(String format, Object... args) {
+                log.debug("[Task:{}] " + format, taskInstance.getId(), args);
+            }
+            
+            @Override
+            public void progress(int percent, String message) {
+                log.info("[Task:{}] Progress: {}% - {}", taskInstance.getId(), percent, message);
+            }
+            
+            @Override
+            public void step(String stepName, String stepDescription) {
+                log.info("[Task:{}] Step: {} - {}", taskInstance.getId(), stepName, stepDescription);
+            }
+        });
         context.setStartTime(LocalDateTime.now());
         return context;
     }

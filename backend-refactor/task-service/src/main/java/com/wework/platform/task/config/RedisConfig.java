@@ -68,8 +68,6 @@ public class RedisConfig {
                 .setTimeout(redisTimeout)
                 .setRetryAttempts(3)
                 .setRetryInterval(1500)
-                .setReconnectionTimeout(3000)
-                .setFailedAttempts(3)
                 .setPingConnectionInterval(1000)
                 .setKeepAlive(true);
 

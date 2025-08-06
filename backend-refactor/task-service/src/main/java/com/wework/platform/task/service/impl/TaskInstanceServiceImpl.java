@@ -77,7 +77,7 @@ public class TaskInstanceServiceImpl implements TaskInstanceService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
 
-        return PageResult.of(records, result.getTotal().longValue(), pageQuery.getPageNum(), pageQuery.getPageSize());
+        return PageResult.of(records, result.getTotal(), pageQuery.getPageNum().longValue(), pageQuery.getPageSize().longValue());
     }
 
     @Override
