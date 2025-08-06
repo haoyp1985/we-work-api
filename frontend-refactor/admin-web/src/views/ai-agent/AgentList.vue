@@ -11,7 +11,8 @@ import {
   Switch,
   Setting,
   ChatDotRound,
-  DataBoard
+  DataBoard,
+  Document
 } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import * as agentApi from '@/api/agent'
@@ -133,6 +134,11 @@ const handleEdit = (row: Agent) => {
 // 查看详情
 const handleView = (row: Agent) => {
   router.push(`/ai-agent/detail/${row.id}`)
+}
+
+// 版本管理
+const handleVersions = (row: Agent) => {
+  router.push(`/ai-agent/${row.id}/versions`)
 }
 
 // 删除智能体
@@ -379,6 +385,15 @@ onMounted(() => {
                 @click="handleEdit(row)"
               >
                 编辑
+              </el-button>
+
+              <el-button 
+                type="primary" 
+                size="small" 
+                :icon="Document"
+                @click="handleVersions(row)"
+              >
+                版本
               </el-button>
 
               <el-button 

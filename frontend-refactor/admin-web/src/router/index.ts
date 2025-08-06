@@ -216,6 +216,16 @@ const staticRoutes: RouteRecordRaw[] = [
           hideInMenu: true,
         },
       },
+      {
+        path: ":id/versions",
+        name: "AgentVersions",
+        component: () => import("@/views/ai-agent/AgentVersions.vue"),
+        meta: {
+          title: "版本管理",
+          permissions: ["ai-agent:version"],
+          hideInMenu: true,
+        },
+      },
     ],
   },
   {
