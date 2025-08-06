@@ -56,7 +56,12 @@ public enum TaskStatus {
     /**
      * 已删除
      */
-    DELETED("DELETED", "已删除");
+    DELETED("DELETED", "已删除"),
+
+    /**
+     * 等待重试
+     */
+    WAITING_RETRY("WAITING_RETRY", "等待重试");
 
     /**
      * 状态码

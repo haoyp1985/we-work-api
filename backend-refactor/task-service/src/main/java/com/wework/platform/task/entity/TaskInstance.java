@@ -177,4 +177,67 @@ public class TaskInstance {
     public TaskStatus getStatus() {
         return this.executionStatus;
     }
+
+    /**
+     * 获取ID（Lombok生成的方法别名）
+     */
+    public String getId() {
+        return this.instanceId;
+    }
+
+    /**
+     * 获取执行节点
+     */
+    public String getExecutionNode() {
+        return this.executionNode;
+    }
+
+    /**
+     * 设置执行节点
+     */
+    public void setExecutionNode(String executionNode) {
+        this.executionNode = executionNode;
+    }
+
+    /**
+     * 获取实例名称
+     */
+    public String getInstanceName() {
+        return this.instanceName;
+    }
+
+    /**
+     * 获取重试次数
+     */
+    public Integer getRetryCount() {
+        return this.retryCount;
+    }
+
+    /**
+     * 设置下次重试时间
+     */
+    public void setNextRetryTime(LocalDateTime nextRetryTime) {
+        this.nextRetryTime = nextRetryTime;
+    }
+
+    /**
+     * 设置错误信息
+     */
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    /**
+     * 设置开始时间
+     */
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    /**
+     * 设置结束时间
+     */
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
 }

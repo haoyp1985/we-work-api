@@ -177,4 +177,32 @@ public class TaskDefinition {
     public void setHandlerClass(String handlerClass) {
         this.taskClass = handlerClass;
     }
+
+    /**
+     * 获取ID（Lombok生成的方法别名）
+     */
+    public String getId() {
+        return this.definitionId;
+    }
+
+    /**
+     * 获取参数
+     */
+    public String getParameters() {
+        return this.defaultParameters;
+    }
+
+    /**
+     * 获取最大重试次数
+     */
+    public Integer getMaxRetryCount() {
+        return this.maxRetryCount;
+    }
+
+    /**
+     * 获取重试间隔秒数
+     */
+    public Integer getRetryIntervalSeconds() {
+        return this.retryIntervalSeconds;
+    }
 }
