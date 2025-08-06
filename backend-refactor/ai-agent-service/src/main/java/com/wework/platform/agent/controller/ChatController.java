@@ -165,7 +165,7 @@ public class ChatController {
 
     @GetMapping("/conversations/{conversationId}/context")
     @Operation(summary = "获取会话上下文", description = "获取指定会话的上下文信息")
-    public ApiResult<ChatRequest> getConversationContext(
+    public ApiResult<Object> getConversationContext(
             @Parameter(description = "租户ID", required = true)
             @RequestHeader("X-Tenant-Id") @NotBlank String tenantId,
             

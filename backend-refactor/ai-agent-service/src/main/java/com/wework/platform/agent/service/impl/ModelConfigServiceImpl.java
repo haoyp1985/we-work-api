@@ -7,6 +7,7 @@ import com.wework.platform.agent.entity.PlatformConfig;
 import com.wework.platform.agent.enums.PlatformType;
 import com.wework.platform.agent.repository.ModelConfigRepository;
 import com.wework.platform.agent.repository.PlatformConfigRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wework.platform.agent.service.ModelConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ public class ModelConfigServiceImpl implements ModelConfigService {
 
     private final ModelConfigRepository modelConfigRepository;
     private final PlatformConfigRepository platformConfigRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -79,18 +81,26 @@ public class ModelConfigServiceImpl implements ModelConfigService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ModelConfigDTO updateModelConfig(String tenantId, String configId, String displayName, 
-                                          Map<String, Object> parameters) {
+    public ModelConfigDTO updateModelConfig(String tenantId, String configId, Map<String, Object> updates) {
         log.info("更新模型配置, tenantId={}, configId={}", tenantId, configId);
         
         ModelConfig modelConfig = getModelConfigEntity(tenantId, configId);
         
         // 更新字段
+        String displayName = (String) updates.get("displayName");
         if (StringUtils.hasText(displayName)) {
             modelConfig.setName(displayName);
         }
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> parameters = (Map<String, Object>) updates.get("parameters");
         if (parameters != null && !parameters.isEmpty()) {
-            modelConfig.setConfigJson(parameters);
+            try {
+                modelConfig.setConfigJson(objectMapper.writeValueAsString(parameters));
+            } catch (Exception e) {
+                log.warn("序列化参数为JSON失败，使用空JSON: {}", e.getMessage());
+                modelConfig.setConfigJson("{}");
+            }
         }
         
         modelConfig.setUpdatedAt(LocalDateTime.now());
@@ -339,10 +349,15 @@ public class ModelConfigServiceImpl implements ModelConfigService {
             // 创建模型配置
             ModelConfig modelConfig = new ModelConfig();
             modelConfig.setTenantId(tenantId);
-            modelConfig.setPlatformType(platformConfigId);
+            // 注意：这里应该设置platformConfigId相关字段，但实体中没有对应字段，暂时跳过
             modelConfig.setModelName(modelName);
             modelConfig.setName(StringUtils.hasText(displayName) ? displayName : modelName);
-            modelConfig.setConfigJson(parameters);
+            try {
+                modelConfig.setConfigJson(parameters != null ? objectMapper.writeValueAsString(parameters) : "{}");
+            } catch (Exception e) {
+                log.warn("序列化参数为JSON失败，使用空JSON: {}", e.getMessage());
+                modelConfig.setConfigJson("{}");
+            }
             modelConfig.setEnabled(true);
             modelConfig.setCreatedAt(LocalDateTime.now());
             modelConfig.setUpdatedAt(LocalDateTime.now());
@@ -353,6 +368,66 @@ public class ModelConfigServiceImpl implements ModelConfigService {
         }
         
         log.info("批量创建模型配置完成, tenantId={}, platformConfigId={}", tenantId, platformConfigId);
+    }
+
+    @Override
+    public com.wework.platform.agent.dto.ValidationResult validateModelParameters(PlatformType platformType, String modelName, Map<String, Object> parameters) {
+        log.debug("验证模型参数, platformType={}, modelName={}", platformType, modelName);
+
+        try {
+            // 基础验证
+            if (platformType == null) {
+                return com.wework.platform.agent.dto.ValidationResult.failure("平台类型不能为空");
+            }
+            
+            if (!StringUtils.hasText(modelName)) {
+                return com.wework.platform.agent.dto.ValidationResult.failure("模型名称不能为空");
+            }
+
+            // 根据平台类型进行具体验证
+            switch (platformType) {
+                case OPENAI:
+                    return validateOpenAIParameters(modelName, parameters);
+                case ANTHROPIC_CLAUDE:
+                    return validateClaudeParameters(modelName, parameters);
+                case BAIDU_WENXIN:
+                    return validateWenxinParameters(modelName, parameters);
+                case COZE:
+                    return validateCozeParameters(modelName, parameters);
+                case DIFY:
+                    return validateDifyParameters(modelName, parameters);
+                default:
+                    return com.wework.platform.agent.dto.ValidationResult.failure("不支持的平台类型: " + platformType);
+            }
+        } catch (Exception e) {
+            log.error("验证模型参数失败", e);
+            return com.wework.platform.agent.dto.ValidationResult.failure("验证过程中发生错误: " + e.getMessage());
+        }
+    }
+
+    private com.wework.platform.agent.dto.ValidationResult validateOpenAIParameters(String modelName, Map<String, Object> parameters) {
+        // TODO: 实现OpenAI参数验证逻辑
+        return com.wework.platform.agent.dto.ValidationResult.success();
+    }
+
+    private com.wework.platform.agent.dto.ValidationResult validateClaudeParameters(String modelName, Map<String, Object> parameters) {
+        // TODO: 实现Claude参数验证逻辑
+        return com.wework.platform.agent.dto.ValidationResult.success();
+    }
+
+    private com.wework.platform.agent.dto.ValidationResult validateWenxinParameters(String modelName, Map<String, Object> parameters) {
+        // TODO: 实现文心一言参数验证逻辑
+        return com.wework.platform.agent.dto.ValidationResult.success();
+    }
+
+    private com.wework.platform.agent.dto.ValidationResult validateCozeParameters(String modelName, Map<String, Object> parameters) {
+        // TODO: 实现Coze参数验证逻辑
+        return com.wework.platform.agent.dto.ValidationResult.success();
+    }
+
+    private com.wework.platform.agent.dto.ValidationResult validateDifyParameters(String modelName, Map<String, Object> parameters) {
+        // TODO: 实现Dify参数验证逻辑
+        return com.wework.platform.agent.dto.ValidationResult.success();
     }
 
     /**

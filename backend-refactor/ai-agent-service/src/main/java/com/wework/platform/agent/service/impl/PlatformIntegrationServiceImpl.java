@@ -86,9 +86,9 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
                     return testDashScopeConnection(platformConfig);
                 case OPENAI:
                     return testOpenAIConnection(platformConfig);
-                case CLAUDE:
+                case ANTHROPIC_CLAUDE:
                     return testClaudeConnection(platformConfig);
-                case WENXIN:
+                case BAIDU_WENXIN:
                     return testWenxinConnection(platformConfig);
                 default:
                     log.warn("不支持的平台类型连接测试: {}", platformConfig.getPlatformType());
@@ -675,8 +675,8 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         return true;
     }
 
-    private PlatformIntegrationService.ModelInfo createModelInfo(String id, String name, boolean available, int maxTokens) {
-        PlatformIntegrationService.ModelInfo modelInfo = new PlatformIntegrationService.ModelInfo();
+    private ModelInfo createModelInfo(String id, String name, boolean available, int maxTokens) {
+        ModelInfo modelInfo = new ModelInfo();
         modelInfo.setId(id);
         modelInfo.setName(name);
         modelInfo.setAvailable(available);

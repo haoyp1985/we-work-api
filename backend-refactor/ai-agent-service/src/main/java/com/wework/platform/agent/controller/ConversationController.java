@@ -123,13 +123,16 @@ public class ConversationController {
             @Parameter(description = "租户ID", required = true)
             @RequestHeader("X-Tenant-Id") @NotBlank String tenantId,
             
+            @Parameter(description = "用户ID", required = true)
+            @RequestHeader("X-User-Id") @NotBlank String userId,
+            
             @Parameter(description = "会话ID", required = true)
             @PathVariable @NotBlank String conversationId) {
         
-        log.info("删除会话, tenantId={}, conversationId={}", tenantId, conversationId);
+        log.info("删除会话, tenantId={}, userId={}, conversationId={}", tenantId, userId, conversationId);
         
         try {
-            conversationService.deleteConversation(tenantId, conversationId);
+            conversationService.deleteConversation(tenantId, userId, conversationId);
             
             log.info("会话删除成功, conversationId={}", conversationId);
             return ApiResult.success();
@@ -147,13 +150,16 @@ public class ConversationController {
             @Parameter(description = "租户ID", required = true)
             @RequestHeader("X-Tenant-Id") @NotBlank String tenantId,
             
+            @Parameter(description = "用户ID", required = true)
+            @RequestHeader("X-User-Id") @NotBlank String userId,
+            
             @Parameter(description = "会话ID", required = true)
             @PathVariable @NotBlank String conversationId) {
         
-        log.debug("获取会话详情, tenantId={}, conversationId={}", tenantId, conversationId);
+        log.debug("获取会话详情, tenantId={}, userId={}, conversationId={}", tenantId, userId, conversationId);
         
         try {
-            ConversationDTO conversation = conversationService.getConversation(tenantId, conversationId);
+            ConversationDTO conversation = conversationService.getConversation(tenantId, userId, conversationId);
             
             return ApiResult.success(conversation);
             

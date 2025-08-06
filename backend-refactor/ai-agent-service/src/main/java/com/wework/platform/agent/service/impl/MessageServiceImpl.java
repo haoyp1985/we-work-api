@@ -584,6 +584,44 @@ public class MessageServiceImpl implements MessageService {
         }
     }
 
+    @Override
+    @Transactional
+    public Integer batchDeleteMessages(String tenantId, String conversationId, List<String> messageIds) {
+        log.info("批量删除消息, tenantId={}, conversationId={}, messageIds={}", tenantId, conversationId, messageIds);
+
+        if (messageIds == null || messageIds.isEmpty()) {
+            log.warn("消息ID列表为空，无需删除");
+            return 0;
+        }
+
+        // 验证会话是否存在
+        validateConversation(tenantId, conversationId);
+
+        // 批量逻辑删除消息
+        int deletedCount = 0;
+        LocalDateTime now = LocalDateTime.now();
+        
+        for (String messageId : messageIds) {
+            Message message = messageRepository.selectOne(
+                new LambdaQueryWrapper<Message>()
+                    .eq(Message::getId, messageId)
+                    .eq(Message::getTenantId, tenantId)
+                    .eq(Message::getConversationId, conversationId)
+                    .ne(Message::getStatus, MessageStatus.DELETED)
+            );
+
+            if (message != null) {
+                message.setStatus(MessageStatus.DELETED);
+                message.setUpdatedAt(now);
+                messageRepository.updateById(message);
+                deletedCount++;
+            }
+        }
+
+        log.info("批量删除消息完成, conversationId={}, 删除数量={}", conversationId, deletedCount);
+        return deletedCount;
+    }
+
     /**
      * 转换为DTO
      */

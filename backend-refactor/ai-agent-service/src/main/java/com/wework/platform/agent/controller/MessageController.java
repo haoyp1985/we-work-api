@@ -222,7 +222,7 @@ public class MessageController {
 
     @GetMapping("/search")
     @Operation(summary = "搜索消息", description = "根据关键字搜索消息")
-    public ApiResult<List<MessageDTO>> searchMessages(
+    public ApiResult<PageResult<MessageDTO>> searchMessages(
             @Parameter(description = "租户ID", required = true)
             @RequestHeader("X-Tenant-Id") @NotBlank String tenantId,
             

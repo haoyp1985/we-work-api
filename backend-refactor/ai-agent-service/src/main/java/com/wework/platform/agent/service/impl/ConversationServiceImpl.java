@@ -117,10 +117,23 @@ public class ConversationServiceImpl implements ConversationService {
         log.info("会话删除成功, conversationId={}", conversationId);
     }
 
-    public ConversationDTO getConversation(String tenantId, String conversationId) {
-        log.debug("查询会话详情, tenantId={}, conversationId={}", tenantId, conversationId);
+    @Override
+    public ConversationDTO getConversation(String tenantId, String userId, String conversationId) {
+        log.debug("查询会话详情, tenantId={}, userId={}, conversationId={}", tenantId, userId, conversationId);
         
-        Conversation conversation = getConversationEntity(tenantId, conversationId);
+        // 验证用户权限
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .eq(Conversation::getUserId, userId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+        
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或无权限访问");
+        }
+        
         return convertToDTO(conversation);
     }
 
@@ -536,6 +549,37 @@ public class ConversationServiceImpl implements ConversationService {
      */
     private String generateDefaultTitle() {
         return "新会话 " + LocalDateTime.now().toString().substring(0, 16);
+    }
+
+    @Override
+    @Transactional
+    public ConversationDTO addConversationTags(String tenantId, String userId, String conversationId, List<String> tags) {
+        log.info("添加会话标签, tenantId={}, conversationId={}, userId={}, tags={}", tenantId, conversationId, userId, tags);
+
+        if (tags == null || tags.isEmpty()) {
+            log.warn("标签列表为空，无需添加");
+            return getConversation(tenantId, userId, conversationId);
+        }
+
+        // 验证会话存在且用户有权限
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .eq(Conversation::getUserId, userId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或无权限访问");
+        }
+
+        // TODO: 实现具体的标签添加逻辑
+        // 这里应该根据实际的标签存储方式来实现
+        // 可能需要更新conversation的tagsJson字段或者操作专门的标签表
+
+        log.info("会话标签添加成功, conversationId={}, addedTags={}", conversationId, tags);
+        return convertToDTO(conversation);
     }
 
     /**

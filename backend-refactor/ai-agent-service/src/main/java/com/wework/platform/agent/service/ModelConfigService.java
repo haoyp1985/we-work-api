@@ -221,6 +221,16 @@ public interface ModelConfigService {
     boolean hasModelConfig(String tenantId, String platformConfigId);
 
     /**
+     * 验证模型参数
+     *
+     * @param platformType 平台类型
+     * @param modelName    模型名称
+     * @param parameters   参数配置
+     * @return 验证结果
+     */
+    com.wework.platform.agent.dto.ValidationResult validateModelParameters(PlatformType platformType, String modelName, Map<String, Object> parameters);
+
+    /**
      * 获取模型配置使用统计
      *
      * @param tenantId 租户ID
@@ -255,17 +265,6 @@ public interface ModelConfigService {
      * @return 模型列表
      */
     List<AvailableModel> getAvailableModels(PlatformType platformType);
-
-    /**
-     * 验证模型配置参数
-     *
-     * @param platformType 平台类型
-     * @param modelName    模型名称
-     * @param parameters   参数
-     * @return 验证结果
-     */
-    ValidationResult validateModelParameters(PlatformType platformType, String modelName, 
-                                           Map<String, Object> parameters);
 
     /**
      * 模型测试结果

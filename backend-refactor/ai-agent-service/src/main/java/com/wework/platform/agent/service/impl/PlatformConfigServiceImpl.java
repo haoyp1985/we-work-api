@@ -403,4 +403,75 @@ public class PlatformConfigServiceImpl implements PlatformConfigService {
         String suffix = apiKey.substring(apiKey.length() - 4);
         return prefix + "****" + suffix;
     }
+
+    @Override
+    public com.wework.platform.agent.dto.ValidationResult validatePlatformConfig(String tenantId, PlatformType platformType, String apiUrl, String apiKey, String configJson) {
+        log.debug("验证平台配置, tenantId={}, platformType={}", tenantId, platformType);
+
+        try {
+            // 基础验证
+            if (platformType == null) {
+                return com.wework.platform.agent.dto.ValidationResult.failure("平台类型不能为空");
+            }
+            
+            if (!StringUtils.hasText(apiUrl)) {
+                return com.wework.platform.agent.dto.ValidationResult.failure("API地址不能为空");
+            }
+            
+            if (!StringUtils.hasText(apiKey)) {
+                return com.wework.platform.agent.dto.ValidationResult.failure("API密钥不能为空");
+            }
+
+            // URL格式验证
+            try {
+                new java.net.URL(apiUrl);
+            } catch (java.net.MalformedURLException e) {
+                return com.wework.platform.agent.dto.ValidationResult.failure("API地址格式不正确");
+            }
+
+            // 根据平台类型进行具体验证
+            switch (platformType) {
+                case OPENAI:
+                    return validateOpenAIConfig(apiUrl, apiKey, configJson);
+                case ANTHROPIC_CLAUDE:
+                    return validateClaudeConfig(apiUrl, apiKey, configJson);
+                case BAIDU_WENXIN:
+                    return validateWenxinConfig(apiUrl, apiKey, configJson);
+                case COZE:
+                    return validateCozeConfig(apiUrl, apiKey, configJson);
+                case DIFY:
+                    return validateDifyConfig(apiUrl, apiKey, configJson);
+                default:
+                    return com.wework.platform.agent.dto.ValidationResult.failure("不支持的平台类型: " + platformType);
+            }
+        } catch (Exception e) {
+            log.error("验证平台配置失败", e);
+            return com.wework.platform.agent.dto.ValidationResult.failure("验证过程中发生错误: " + e.getMessage());
+        }
+    }
+
+    private com.wework.platform.agent.dto.ValidationResult validateOpenAIConfig(String apiUrl, String apiKey, String configJson) {
+        // TODO: 实现OpenAI配置验证逻辑
+        return com.wework.platform.agent.dto.ValidationResult.success();
+    }
+
+    private com.wework.platform.agent.dto.ValidationResult validateClaudeConfig(String apiUrl, String apiKey, String configJson) {
+        // TODO: 实现Claude配置验证逻辑
+        return com.wework.platform.agent.dto.ValidationResult.success();
+    }
+
+    private com.wework.platform.agent.dto.ValidationResult validateWenxinConfig(String apiUrl, String apiKey, String configJson) {
+        // TODO: 实现文心一言配置验证逻辑
+        return com.wework.platform.agent.dto.ValidationResult.success();
+    }
+
+    private com.wework.platform.agent.dto.ValidationResult validateCozeConfig(String apiUrl, String apiKey, String configJson) {
+        // TODO: 实现Coze配置验证逻辑
+        return com.wework.platform.agent.dto.ValidationResult.success();
+    }
+
+    private com.wework.platform.agent.dto.ValidationResult validateDifyConfig(String apiUrl, String apiKey, String configJson) {
+        // TODO: 实现Dify配置验证逻辑
+        return com.wework.platform.agent.dto.ValidationResult.success();
+    }
 }

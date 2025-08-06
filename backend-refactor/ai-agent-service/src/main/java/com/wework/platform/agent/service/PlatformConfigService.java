@@ -193,6 +193,18 @@ public interface PlatformConfigService {
     boolean hasPlatformConfig(String tenantId, PlatformType platformType);
 
     /**
+     * 验证平台配置
+     *
+     * @param tenantId     租户ID
+     * @param platformType 平台类型
+     * @param apiUrl       API地址
+     * @param apiKey       API密钥
+     * @param configJson   配置JSON
+     * @return 验证结果
+     */
+    com.wework.platform.agent.dto.ValidationResult validatePlatformConfig(String tenantId, PlatformType platformType, String apiUrl, String apiKey, String configJson);
+
+    /**
      * 获取平台配置使用统计
      *
      * @param tenantId 租户ID
@@ -200,19 +212,6 @@ public interface PlatformConfigService {
      * @return 使用统计
      */
     PlatformConfigUsageStats getPlatformConfigUsageStats(String tenantId, String configId);
-
-    /**
-     * 验证平台配置
-     *
-     * @param tenantId     租户ID
-     * @param platformType 平台类型
-     * @param baseUrl      基础URL
-     * @param apiKey       API密钥
-     * @param configJson   配置JSON
-     * @return 验证结果
-     */
-    ValidationResult validatePlatformConfig(String tenantId, PlatformType platformType, 
-                                           String baseUrl, String apiKey, String configJson);
 
     /**
      * 连接测试结果

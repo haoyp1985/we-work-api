@@ -611,6 +611,14 @@ public class ChatServiceImpl implements ChatService {
             return new HashMap<>();
         }
     }
+
+    @Override
+    @Transactional
+    public void clearConversationHistory(String tenantId, String conversationId) {
+        log.info("清理会话历史, tenantId={}, conversationId={}", tenantId, conversationId);
+        messageService.clearConversationMessages(tenantId, conversationId);
+        log.info("会话历史清理完成, conversationId={}", conversationId);
+    }
     
     private String toJsonString(Map<String, Object> map) {
         try {

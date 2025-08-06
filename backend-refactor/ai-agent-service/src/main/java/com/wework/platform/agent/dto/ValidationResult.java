@@ -38,18 +38,18 @@ public class ValidationResult {
      * 创建成功结果
      */
     public static ValidationResult success() {
-        return ValidationResult.builder()
-            .valid(true)
-            .build();
+        ValidationResult result = new ValidationResult();
+        result.setValid(true);
+        return result;
     }
     
     /**
      * 创建失败结果
      */
     public static ValidationResult failure(String errorMessage) {
-        return ValidationResult.builder()
-            .valid(false)
-            .errorMessage(errorMessage)
-            .build();
+        ValidationResult result = new ValidationResult();
+        result.setValid(false);
+        result.setErrorMessage(errorMessage);
+        return result;
     }
 }

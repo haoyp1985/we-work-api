@@ -106,8 +106,9 @@ public interface PlatformIntegrationService {
      *
      * @param platformConfig 平台配置
      * @param conversationId 会话ID
+     * @return 是否成功
      */
-    void clearConversation(PlatformConfig platformConfig, String conversationId);
+    boolean clearConversation(PlatformConfig platformConfig, String conversationId);
 
     /**
      * 获取模型列表
