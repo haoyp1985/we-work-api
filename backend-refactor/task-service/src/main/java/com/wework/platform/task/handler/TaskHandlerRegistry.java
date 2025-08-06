@@ -354,33 +354,4 @@ public class TaskHandlerRegistry implements ApplicationContextAware, Initializin
                 '}';
     }
 
-    /**
-     * 处理器信息内部类
-     */
-    @lombok.Data
-    @lombok.Builder
-    @lombok.NoArgsConstructor
-    @lombok.AllArgsConstructor
-    public static class HandlerInfo {
-        
-        /**
-         * 处理器名称
-         */
-        private String handlerName;
-        
-        /**
-         * 类名
-         */
-        private String className;
-        
-        /**
-         * 描述
-         */
-        private String description;
-        
-        /**
-         * 版本
-         */
-        private String version;
-    }
 }

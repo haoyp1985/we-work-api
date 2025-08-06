@@ -62,6 +62,18 @@ public class TaskDefinition {
     private String taskClass;
 
     /**
+     * 处理器名称
+     */
+    @TableField("handler_name")
+    private String handlerName;
+
+    /**
+     * 调度类型
+     */
+    @TableField("schedule_type")
+    private String scheduleType;
+
+    /**
      * 任务方法名
      */
     @TableField("task_method")
@@ -114,6 +126,18 @@ public class TaskDefinition {
      */
     @TableField("timeout_seconds")
     private Integer timeoutSeconds;
+
+    /**
+     * 固定间隔(毫秒)
+     */
+    @TableField("fixed_interval")
+    private Long fixedInterval;
+
+    /**
+     * 执行参数(JSON格式)
+     */
+    @TableField("execution_params")
+    private String executionParams;
 
     /**
      * 是否启用
@@ -178,19 +202,9 @@ public class TaskDefinition {
         this.taskClass = handlerClass;
     }
 
-    /**
-     * 获取ID（Lombok生成的方法别名）
-     */
-    public String getId() {
-        return this.definitionId;
-    }
+    // ID字段已由Lombok @Data注解自动生成getter方法
 
-    /**
-     * 获取参数
-     */
-    public String getParameters() {
-        return this.defaultParameters;
-    }
+    // 该实体中没有defaultParameters字段，移除错误方法
 
     /**
      * 获取最大重试次数
@@ -200,9 +214,16 @@ public class TaskDefinition {
     }
 
     /**
-     * 获取重试间隔秒数
+     * 获取重试间隔秒数（使用fixedDelay字段）
      */
     public Integer getRetryIntervalSeconds() {
-        return this.retryIntervalSeconds;
+        return this.fixedDelay;
+    }
+
+    /**
+     * 获取超时时间（用于兼容接口调用）
+     */
+    public Integer getTimeout() {
+        return this.timeoutSeconds;
     }
 }

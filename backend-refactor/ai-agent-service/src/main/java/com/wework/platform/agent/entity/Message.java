@@ -107,4 +107,32 @@ public class Message {
     @Schema(description = "是否删除")
     @TableLogic
     private Boolean deleted;
+
+    /**
+     * 获取消息类型（用于兼容接口调用）
+     */
+    public MessageType getType() {
+        return this.messageType;
+    }
+
+    /**
+     * 设置消息类型（用于兼容接口调用）
+     */
+    public void setType(MessageType type) {
+        this.messageType = type;
+    }
+
+    /**
+     * 设置Token数量（用于兼容接口调用）
+     */
+    public void setTokenCount(Integer tokenCount) {
+        this.tokens = tokenCount;
+    }
+
+    /**
+     * 设置响应时间（用于兼容接口调用）
+     */
+    public void setResponseTime(Long responseTime) {
+        this.processTimeMs = responseTime;
+    }
 }

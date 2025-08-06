@@ -52,6 +52,13 @@ public class Agent {
     @Schema(description = "系统提示词")
     private String systemPrompt;
 
+    @Schema(description = "欢迎消息")
+    private String welcomeMessage;
+
+    @Schema(description = "智能体能力配置JSON")
+    @TableField(typeHandler = com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler.class)
+    private String capabilities;
+
     @Schema(description = "智能体配置JSON")
     @TableField(typeHandler = com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler.class)
     private String configJson;
@@ -83,4 +90,11 @@ public class Agent {
     @Schema(description = "是否删除")
     @TableLogic
     private Boolean deleted;
+
+    /**
+     * 获取外部平台类型（用于兼容接口调用）
+     */
+    public String getExternalPlatformType() {
+        return this.platformType;
+    }
 }

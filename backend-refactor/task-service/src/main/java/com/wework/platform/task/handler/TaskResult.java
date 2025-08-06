@@ -288,4 +288,18 @@ public class TaskResult {
     public Object getData() {
         return this.data;
     }
+
+    /**
+     * 获取结果（用于兼容接口调用）
+     */
+    public Object getResult() {
+        return this.data;
+    }
+
+    /**
+     * 获取错误消息（用于兼容接口调用）
+     */
+    public String getErrorMessage() {
+        return this.message;
+    }
 }

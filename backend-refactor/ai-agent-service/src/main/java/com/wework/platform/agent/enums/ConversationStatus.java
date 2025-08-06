@@ -48,7 +48,12 @@ public enum ConversationStatus {
     /**
      * 异常状态
      */
-    ERROR("ERROR", "异常");
+    ERROR("ERROR", "异常"),
+
+    /**
+     * 已删除
+     */
+    DELETED("DELETED", "已删除");
 
     @EnumValue
     @JsonValue
@@ -81,6 +86,6 @@ public enum ConversationStatus {
      * 是否为结束状态
      */
     public boolean isFinished() {
-        return this == ENDED || this == TIMEOUT || this == ERROR;
+        return this == ENDED || this == TIMEOUT || this == ERROR || this == DELETED;
     }
 }

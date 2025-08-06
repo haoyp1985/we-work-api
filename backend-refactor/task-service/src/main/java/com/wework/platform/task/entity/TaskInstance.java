@@ -178,12 +178,7 @@ public class TaskInstance {
         return this.executionStatus;
     }
 
-    /**
-     * 获取ID（Lombok生成的方法别名）
-     */
-    public String getId() {
-        return this.instanceId;
-    }
+    // 实例名称字段不存在，移除错误的方法
 
     /**
      * 获取执行节点
@@ -239,5 +234,14 @@ public class TaskInstance {
      */
     public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
+    }
+
+    /**
+     * 设置结果数据（存储到executionResult字段）
+     */
+    public void setResultData(Object resultData) {
+        if (resultData != null) {
+            this.executionResult = resultData.toString();
+        }
     }
 }

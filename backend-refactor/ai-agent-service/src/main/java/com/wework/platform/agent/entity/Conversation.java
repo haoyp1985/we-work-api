@@ -49,6 +49,9 @@ public class Conversation {
     @Schema(description = "最后消息时间")
     private LocalDateTime lastMessageAt;
 
+    @Schema(description = "最后一条消息内容")
+    private String lastMessage;
+
     @Schema(description = "消息总数")
     private Integer messageCount;
 

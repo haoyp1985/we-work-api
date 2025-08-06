@@ -129,4 +129,25 @@ public class CallRecord {
     @Schema(description = "是否删除")
     @TableLogic
     private Boolean deleted;
+
+    /**
+     * 设置调用状态（用于兼容接口调用）
+     */
+    public void setStatus(CallStatus status) {
+        this.callStatus = status;
+    }
+
+    /**
+     * 设置响应时间（用于兼容接口调用）
+     */
+    public void setResponseTime(Long responseTime) {
+        this.durationMs = responseTime;
+    }
+
+    /**
+     * 设置Token数量（用于兼容接口调用）
+     */
+    public void setTokenCount(Integer tokenCount) {
+        this.totalTokens = tokenCount;
+    }
 }

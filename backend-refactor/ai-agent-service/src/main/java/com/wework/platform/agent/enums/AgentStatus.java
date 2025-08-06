@@ -53,7 +53,12 @@ public enum AgentStatus {
     /**
      * 异常状态
      */
-    ERROR("ERROR", "异常状态");
+    ERROR("ERROR", "异常状态"),
+
+    /**
+     * 已删除
+     */
+    DELETED("DELETED", "已删除");
 
     @EnumValue
     @JsonValue

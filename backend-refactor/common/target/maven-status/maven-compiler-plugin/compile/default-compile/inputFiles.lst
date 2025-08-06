@@ -8,6 +8,7 @@
 /workspace/backend-refactor/common/src/main/java/com/wework/platform/common/context/TenantContextHolder.java
 /workspace/backend-refactor/common/src/main/java/com/wework/platform/common/security/UserContext.java
 /workspace/backend-refactor/common/src/main/java/com/wework/platform/common/core/base/PageResult.java
+/workspace/backend-refactor/common/src/main/java/com/wework/platform/common/enums/ErrorCode.java
 /workspace/backend-refactor/common/src/main/java/com/wework/platform/common/exception/ResourceNotFoundException.java
 /workspace/backend-refactor/common/src/main/java/com/wework/platform/common/config/MyBatisPlusConfig.java
 /workspace/backend-refactor/common/src/main/java/com/wework/platform/common/enums/ResultCode.java
