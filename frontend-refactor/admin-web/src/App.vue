@@ -1,3 +1,124 @@
+<script setup lang="ts">
+import { computed, onMounted, onUnmounted, watch } from "vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { Loading } from "@element-plus/icons-vue";
+import { useAppStore } from "@/stores/modules/app";
+import { useSettingsStore } from "@/stores/modules/settings";
+import { useTagsViewStore } from "@/stores/modules/tagsView";
+import GlobalMessage from "@/components/global/GlobalMessage.vue";
+import GlobalConfirm from "@/components/global/GlobalConfirm.vue";
+import Watermark from "@/components/global/Watermark.vue";
+import NetworkStatus from "@/components/global/NetworkStatus.vue";
+import Copyright from "@/components/global/Copyright.vue";
+
+// 存储实例
+const appStore = useAppStore();
+const settingsStore = useSettingsStore();
+const tagsViewStore = useTagsViewStore();
+
+// 计算属性
+const cachedViews = computed(() => tagsViewStore.cachedViews);
+const enableWatermark = computed(() => settingsStore.watermark.enabled);
+const watermarkText = computed(() => settingsStore.watermark.text);
+const showCopyright = computed(() => settingsStore.showCopyright);
+
+// 事件处理函数
+const handleResize = () => {
+  appStore.setDevice(window.innerWidth < 768 ? "mobile" : "desktop");
+};
+
+const handleOnline = () => {
+  appStore.setNetworkStatus(true);
+  ElMessage.success("网络连接已恢复");
+};
+
+const handleOffline = () => {
+  appStore.setNetworkStatus(false);
+  ElMessage.warning("网络连接已断开");
+};
+
+const handleVisibilityChange = () => {
+  if (document.hidden) {
+    appStore.setPageVisible(false);
+  } else {
+    appStore.setPageVisible(true);
+    // 页面重新可见时刷新数据
+    appStore.refreshData();
+  }
+};
+
+// 检查浏览器兼容性
+const checkBrowserCompatibility = () => {
+  const isIE = /MSIE|Trident/.test(navigator.userAgent);
+  if (isIE) {
+    ElMessageBox.alert(
+      "检测到您正在使用IE浏览器，建议使用Chrome、Firefox、Safari等现代浏览器以获得更好的体验。",
+      "浏览器兼容性提示",
+      {
+        confirmButtonText: "我知道了",
+        type: "warning",
+      },
+    );
+  }
+};
+
+// 初始化主题
+const initTheme = () => {
+  const theme = settingsStore.theme;
+  document.documentElement.setAttribute("data-theme", theme);
+
+  // 设置CSS变量
+  if (theme === "dark") {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+};
+
+// 生命周期
+onMounted(async () => {
+  // 初始化应用
+  await appStore.initApp();
+
+  // 监听窗口大小变化
+  window.addEventListener("resize", handleResize);
+
+  // 监听网络状态变化
+  window.addEventListener("online", handleOnline);
+  window.addEventListener("offline", handleOffline);
+
+  // 监听可见性变化
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+
+  // 检查浏览器兼容性
+  checkBrowserCompatibility();
+
+  // 初始化主题
+  initTheme();
+});
+
+onUnmounted(() => {
+  // 清理事件监听
+  window.removeEventListener("resize", handleResize);
+  window.removeEventListener("online", handleOnline);
+  window.removeEventListener("offline", handleOffline);
+  document.removeEventListener("visibilitychange", handleVisibilityChange);
+});
+
+// 监听设置变化
+watch(
+  () => settingsStore.theme,
+  (newTheme) => {
+    document.documentElement.setAttribute("data-theme", newTheme);
+    if (newTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  },
+);
+</script>
+
 <template>
   <div id="app" class="app-container">
     <!-- 全局加载条 -->
@@ -7,7 +128,9 @@
           <el-icon class="loading-icon" size="32">
             <Loading />
           </el-icon>
-          <div class="loading-text">{{ appStore.loadingText }}</div>
+          <div class="loading-text">
+            {{ appStore.loadingText }}
+          </div>
         </div>
       </div>
     </Transition>
@@ -37,126 +160,6 @@
     <Copyright v-if="showCopyright" />
   </div>
 </template>
-
-<script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue'
-import { Loading } from '@element-plus/icons-vue'
-import { useAppStore } from '@/stores/modules/app'
-import { useSettingsStore } from '@/stores/modules/settings'
-import { useTagsViewStore } from '@/stores/modules/tagsView'
-import GlobalMessage from '@/components/global/GlobalMessage.vue'
-import GlobalConfirm from '@/components/global/GlobalConfirm.vue'
-import Watermark from '@/components/global/Watermark.vue'
-import NetworkStatus from '@/components/global/NetworkStatus.vue'
-import Copyright from '@/components/global/Copyright.vue'
-
-// 存储实例
-const appStore = useAppStore()
-const settingsStore = useSettingsStore()
-const tagsViewStore = useTagsViewStore()
-
-// 计算属性
-const cachedViews = computed(() => tagsViewStore.cachedViews)
-const enableWatermark = computed(() => settingsStore.watermark.enabled)
-const watermarkText = computed(() => settingsStore.watermark.text)
-const showCopyright = computed(() => settingsStore.showCopyright)
-
-// 生命周期
-onMounted(async () => {
-  // 初始化应用
-  await appStore.initApp()
-  
-  // 监听窗口大小变化
-  window.addEventListener('resize', handleResize)
-  
-  // 监听网络状态变化
-  window.addEventListener('online', handleOnline)
-  window.addEventListener('offline', handleOffline)
-  
-  // 监听可见性变化
-  document.addEventListener('visibilitychange', handleVisibilityChange)
-  
-  // 检查浏览器兼容性
-  checkBrowserCompatibility()
-  
-  // 初始化主题
-  initTheme()
-})
-
-onUnmounted(() => {
-  // 清理事件监听
-  window.removeEventListener('resize', handleResize)
-  window.removeEventListener('online', handleOnline)
-  window.removeEventListener('offline', handleOffline)
-  document.removeEventListener('visibilitychange', handleVisibilityChange)
-})
-
-// 事件处理函数
-const handleResize = () => {
-  appStore.setDevice(window.innerWidth < 768 ? 'mobile' : 'desktop')
-}
-
-const handleOnline = () => {
-  appStore.setNetworkStatus(true)
-  ElMessage.success('网络连接已恢复')
-}
-
-const handleOffline = () => {
-  appStore.setNetworkStatus(false)
-  ElMessage.warning('网络连接已断开')
-}
-
-const handleVisibilityChange = () => {
-  if (document.hidden) {
-    appStore.setPageVisible(false)
-  } else {
-    appStore.setPageVisible(true)
-    // 页面重新可见时刷新数据
-    appStore.refreshData()
-  }
-}
-
-// 检查浏览器兼容性
-const checkBrowserCompatibility = () => {
-  const isIE = /MSIE|Trident/.test(navigator.userAgent)
-  if (isIE) {
-    ElMessageBox.alert(
-      '检测到您正在使用IE浏览器，建议使用Chrome、Firefox、Safari等现代浏览器以获得更好的体验。',
-      '浏览器兼容性提示',
-      {
-        confirmButtonText: '我知道了',
-        type: 'warning'
-      }
-    )
-  }
-}
-
-// 初始化主题
-const initTheme = () => {
-  const theme = settingsStore.theme
-  document.documentElement.setAttribute('data-theme', theme)
-  
-  // 设置CSS变量
-  if (theme === 'dark') {
-    document.documentElement.classList.add('dark')
-  } else {
-    document.documentElement.classList.remove('dark')
-  }
-}
-
-// 监听设置变化
-watch(
-  () => settingsStore.theme,
-  (newTheme) => {
-    document.documentElement.setAttribute('data-theme', newTheme)
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }
-)
-</script>
 
 <style lang="scss" scoped>
 .app-container {

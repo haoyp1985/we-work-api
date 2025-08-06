@@ -5,7 +5,7 @@ import com.wework.platform.agent.enums.AgentType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 /**
@@ -82,4 +82,7 @@ public class UpdateAgentRequest {
 
     @Schema(description = "备注")
     private String remarks;
+
+    @Schema(description = "是否强制更新")
+    private Boolean forceUpdate = false;
 }

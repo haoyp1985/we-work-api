@@ -15,7 +15,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +78,7 @@ public class MessageController {
         
         try {
             PageResult<MessageDTO> result = messageService.getConversationMessages(
-                tenantId, conversationId, pageNum, pageSize);
+                tenantId, conversationId, pageNum, pageSize, true);
             
             return ApiResult.success(result);
             
@@ -222,7 +222,7 @@ public class MessageController {
 
     @GetMapping("/search")
     @Operation(summary = "搜索消息", description = "根据关键字搜索消息")
-    public ApiResult<List<MessageDTO>> searchMessages(
+    public ApiResult<PageResult<MessageDTO>> searchMessages(
             @Parameter(description = "租户ID", required = true)
             @RequestHeader("X-Tenant-Id") @NotBlank String tenantId,
             
@@ -235,9 +235,10 @@ public class MessageController {
         log.debug("搜索消息, tenantId={}, keyword={}, limit={}", tenantId, keyword, limit);
         
         try {
-            List<MessageDTO> messages = messageService.searchMessages(tenantId, keyword, limit);
+            PageResult<MessageDTO> result = messageService.searchMessages(
+                tenantId, null, keyword, null, null, null, 1, limit);
             
-            return ApiResult.success(messages);
+            return ApiResult.success(result);
             
         } catch (Exception e) {
             log.error("搜索消息失败, tenantId={}, keyword={}, error={}", 

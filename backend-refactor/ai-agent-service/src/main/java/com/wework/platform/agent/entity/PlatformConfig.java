@@ -81,4 +81,12 @@ public class PlatformConfig {
     @Schema(description = "是否删除")
     @TableLogic
     private Boolean deleted;
+
+    /**
+     * 获取API URL
+     * 返回baseUrl字段的值
+     */
+    public String getApiUrl() {
+        return this.baseUrl;
+    }
 }

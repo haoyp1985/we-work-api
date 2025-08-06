@@ -198,6 +198,13 @@ public interface TaskDefinitionService {
     TaskDefinitionStatistics getTaskDefinitionStatistics(String tenantId);
 
     /**
+     * 获取所有启用的任务定义（跨租户）
+     * 
+     * @return 启用的任务定义列表
+     */
+    List<TaskDefinition> getAllEnabledTaskDefinitions();
+
+    /**
      * 导出任务定义
      * 
      * @param tenantId 租户ID
@@ -298,4 +305,9 @@ public interface TaskDefinitionService {
             this.errors = errors;
         }
     }
+
+    /**
+     * 验证任务定义
+     */
+    boolean validateTaskDefinition(CreateTaskDefinitionRequest request);
 }

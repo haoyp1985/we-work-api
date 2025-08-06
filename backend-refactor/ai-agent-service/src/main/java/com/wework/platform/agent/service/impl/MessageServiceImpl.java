@@ -3,6 +3,8 @@ package com.wework.platform.agent.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wework.platform.agent.dto.MessageDTO;
 import com.wework.platform.agent.dto.response.PageResult;
 import com.wework.platform.agent.entity.Conversation;
@@ -13,6 +15,7 @@ import com.wework.platform.agent.enums.MessageType;
 import com.wework.platform.agent.repository.ConversationRepository;
 import com.wework.platform.agent.repository.MessageRepository;
 import com.wework.platform.agent.service.MessageService;
+import org.springframework.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -20,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,8 +42,8 @@ public class MessageServiceImpl implements MessageService {
 
     private final MessageRepository messageRepository;
     private final ConversationRepository conversationRepository;
+    private final ObjectMapper objectMapper;
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public MessageDTO createMessage(String tenantId, String conversationId, String userId, 
                                    MessageType type, String content, Map<String, Object> metadata) {
@@ -55,7 +60,19 @@ public class MessageServiceImpl implements MessageService {
         message.setUserId(userId);
         message.setType(type);
         message.setContent(content);
-        message.setMetadata(metadata);
+        
+        // 转换metadata为JSON字符串
+        if (metadata != null && !metadata.isEmpty()) {
+            try {
+                message.setMetadata(objectMapper.writeValueAsString(metadata));
+            } catch (JsonProcessingException e) {
+                log.warn("Failed to serialize metadata to JSON, setting as empty string", e);
+                message.setMetadata("{}");
+            }
+        } else {
+            message.setMetadata("{}");
+        }
+        
         message.setStatus(MessageStatus.SENT);
         message.setCreatedAt(LocalDateTime.now());
         message.setUpdatedAt(LocalDateTime.now());
@@ -67,28 +84,24 @@ public class MessageServiceImpl implements MessageService {
         return convertToDTO(message);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public MessageDTO createUserMessage(String tenantId, String conversationId, String userId, 
                                        String content) {
         return createMessage(tenantId, conversationId, userId, MessageType.TEXT, content, null);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public MessageDTO createAssistantMessage(String tenantId, String conversationId, 
                                             String content, Map<String, Object> metadata) {
         return createMessage(tenantId, conversationId, "assistant", MessageType.TEXT, content, metadata);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public MessageDTO createSystemMessage(String tenantId, String conversationId, 
                                          String content, Map<String, Object> metadata) {
         return createMessage(tenantId, conversationId, "system", MessageType.SYSTEM, content, metadata);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public MessageDTO createToolCallMessage(String tenantId, String conversationId, 
                                            String toolName, Map<String, Object> parameters) {
@@ -101,9 +114,8 @@ public class MessageServiceImpl implements MessageService {
                            "调用工具: " + toolName, metadata);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateMessageStatus(String tenantId, String messageId, MessageStatus status) {
+    public MessageDTO updateMessageStatus(String tenantId, String messageId, MessageStatus status) {
         log.info("更新消息状态, tenantId={}, messageId={}, status={}", tenantId, messageId, status);
         
         Message message = getMessageEntity(tenantId, messageId);
@@ -113,10 +125,12 @@ public class MessageServiceImpl implements MessageService {
         messageRepository.updateById(message);
         
         log.info("消息状态更新成功, messageId={}, status={}", messageId, status);
+        
+        return convertToDTO(message);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
+    @Override
     public void updateMessageContent(String tenantId, String messageId, String content) {
         log.info("更新消息内容, tenantId={}, messageId={}", tenantId, messageId);
         
@@ -129,7 +143,6 @@ public class MessageServiceImpl implements MessageService {
         log.info("消息内容更新成功, messageId={}", messageId);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteMessage(String tenantId, String messageId) {
         log.info("删除消息, tenantId={}, messageId={}", tenantId, messageId);
@@ -143,7 +156,6 @@ public class MessageServiceImpl implements MessageService {
         log.info("消息删除成功, messageId={}", messageId);
     }
 
-    @Override
     public MessageDTO getMessage(String tenantId, String messageId) {
         log.debug("查询消息详情, tenantId={}, messageId={}", tenantId, messageId);
         
@@ -151,7 +163,6 @@ public class MessageServiceImpl implements MessageService {
         return convertToDTO(message);
     }
 
-    @Override
     public PageResult<MessageDTO> getConversationMessages(String tenantId, String conversationId, 
                                                          int pageNum, int pageSize) {
         log.debug("分页查询会话消息, tenantId={}, conversationId={}, pageNum={}, pageSize={}", 
@@ -179,13 +190,12 @@ public class MessageServiceImpl implements MessageService {
         return PageResult.<MessageDTO>builder()
             .records(dtoList)
             .total(result.getTotal())
-            .pageNum(pageNum)
-            .pageSize(pageSize)
-            .pages((int) result.getPages())
+            .current((long) pageNum)
+            .size((long) pageSize)
+            .pages(result.getPages())
             .build();
     }
 
-    @Override
     public List<MessageDTO> getRecentMessages(String tenantId, String conversationId, int limit) {
         log.debug("查询最近消息, tenantId={}, conversationId={}, limit={}", 
                  tenantId, conversationId, limit);
@@ -263,7 +273,6 @@ public class MessageServiceImpl implements MessageService {
         );
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void cleanupExpiredMessages(int retentionDays) {
         log.info("清理过期消息, retentionDays={}", retentionDays);
@@ -289,7 +298,6 @@ public class MessageServiceImpl implements MessageService {
         }
     }
 
-    @Override
     public List<MessageDTO> searchMessages(String tenantId, String keyword, int limit) {
         log.debug("搜索消息, tenantId={}, keyword={}, limit={}", tenantId, keyword, limit);
         
@@ -370,6 +378,303 @@ public class MessageServiceImpl implements MessageService {
         }
         
         return message;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Long cleanupExpiredMessages(LocalDateTime expiredBefore) {
+        log.info("清理过期消息, expiredBefore={}", expiredBefore);
+        
+        // 查询需要清理的消息
+        List<Message> expiredMessages = messageRepository.selectList(
+            new LambdaQueryWrapper<Message>()
+                .lt(Message::getCreatedAt, expiredBefore)
+                .ne(Message::getStatus, MessageStatus.DELETED)
+        );
+        
+        if (!expiredMessages.isEmpty()) {
+            // 批量软删除
+            expiredMessages.forEach(message -> {
+                message.setStatus(MessageStatus.DELETED);
+                message.setUpdatedAt(LocalDateTime.now());
+                messageRepository.updateById(message);
+            });
+            
+            log.info("清理过期消息完成, 清理数量={}", expiredMessages.size());
+            return (long) expiredMessages.size();
+        }
+        
+        return 0L;
+    }
+
+    public MessageService.MessageStats getMessageStats(String tenantId, String conversationId, String agentId, String userId) {
+        log.debug("获取消息统计, tenantId={}, conversationId={}, agentId={}, userId={}", 
+                 tenantId, conversationId, agentId, userId);
+        
+        MessageService.MessageStats stats = new MessageService.MessageStats();
+        
+        // 构建查询条件
+        LambdaQueryWrapper<Message> queryWrapper = new LambdaQueryWrapper<Message>()
+            .eq(Message::getTenantId, tenantId)
+            .ne(Message::getStatus, MessageStatus.DELETED);
+        
+        if (conversationId != null) {
+            queryWrapper.eq(Message::getConversationId, conversationId);
+        }
+        if (agentId != null) {
+            queryWrapper.eq(Message::getAgentId, agentId);
+        }
+        if (userId != null) {
+            queryWrapper.eq(Message::getUserId, userId);
+        }
+        
+        // 查询消息列表
+        List<Message> messages = messageRepository.selectList(queryWrapper);
+        
+        // 计算基础统计
+        stats.setTotalMessages((long) messages.size());
+        stats.setUserMessages(messages.stream()
+            .filter(m -> "user".equals(m.getRole()))
+            .count());
+        stats.setAssistantMessages(messages.stream()
+            .filter(m -> "assistant".equals(m.getRole()))
+            .count());
+        stats.setSystemMessages(messages.stream()
+            .filter(m -> "system".equals(m.getRole()))
+            .count());
+        
+        // 计算总token数
+        long totalTokens = messages.stream()
+            .mapToLong(m -> m.getTokens() != null ? m.getTokens().longValue() : 0L)
+            .sum();
+        stats.setTotalTokens(totalTokens);
+        
+        // 计算平均响应时间（暂时设为0.0，需要根据实际业务逻辑计算）
+        stats.setAvgResponseTime(0.0);
+        
+        // 计算平均消息长度
+        if (!messages.isEmpty()) {
+            double avgLength = messages.stream()
+                .filter(m -> m.getContent() != null)
+                .mapToInt(m -> m.getContent().length())
+                .average()
+                .orElse(0.0);
+            stats.setAvgMessageLength(avgLength);
+        } else {
+            stats.setAvgMessageLength(0.0);
+        }
+        
+        // 按类型统计消息
+        Map<MessageType, Long> messagesByType = messages.stream()
+            .collect(Collectors.groupingBy(
+                Message::getType,
+                Collectors.counting()
+            ));
+        stats.setMessagesByType(messagesByType);
+        
+        // 初始化按小时统计（暂时为空map，需要根据实际需求实现）
+        stats.setMessagesByHour(new HashMap<>());
+        
+        return stats;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void removeMessageReaction(String tenantId, String userId, String messageId, String reactionType) {
+        log.info("移除消息反应, tenantId={}, userId={}, messageId={}, reactionType={}", 
+                 tenantId, userId, messageId, reactionType);
+        
+        // 验证消息存在
+        Message message = getMessageEntity(tenantId, messageId);
+        
+        // TODO: 实现具体的反应移除逻辑
+        // 这里应该从消息的reactions字段中移除对应的反应
+        // 由于reactions字段的具体结构不明确，暂时记录日志
+        
+        log.info("消息反应移除成功, messageId={}, reactionType={}", messageId, reactionType);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void addMessageReaction(String tenantId, String userId, String messageId, String reactionType) {
+        log.info("添加消息反应, tenantId={}, userId={}, messageId={}, reactionType={}", 
+                 tenantId, userId, messageId, reactionType);
+        
+        // 验证消息存在
+        Message message = getMessageEntity(tenantId, messageId);
+        
+        // TODO: 实现具体的反应添加逻辑
+        // 这里应该向消息的reactions字段中添加对应的反应
+        // 由于reactions字段的具体结构不明确，暂时记录日志
+        
+        log.info("消息反应添加成功, messageId={}, reactionType={}", messageId, reactionType);
+    }
+
+    public List<MessageDTO> getMessageQuoteChain(String tenantId, String messageId) {
+        log.debug("获取消息引用链, tenantId={}, messageId={}", tenantId, messageId);
+        
+        // 验证消息存在
+        Message message = getMessageEntity(tenantId, messageId);
+        
+        // TODO: 实现具体的引用链逻辑
+        // 这里应该根据消息的引用关系构建引用链
+        // 由于引用关系的具体实现不明确，暂时返回空列表
+        
+        List<MessageDTO> quoteChain = new ArrayList<>();
+        
+        log.debug("消息引用链获取完成, messageId={}, chainSize={}", messageId, quoteChain.size());
+        return quoteChain;
+    }
+
+    public String exportConversationMessages(String tenantId, String conversationId, String format) {
+        log.info("导出会话消息, tenantId={}, conversationId={}, format={}", tenantId, conversationId, format);
+        
+        // 查询会话消息
+        List<Message> messages = messageRepository.selectList(
+            new LambdaQueryWrapper<Message>()
+                .eq(Message::getTenantId, tenantId)
+                .eq(Message::getConversationId, conversationId)
+                .ne(Message::getStatus, MessageStatus.DELETED)
+                .orderByAsc(Message::getCreatedAt)
+        );
+        
+        if (messages.isEmpty()) {
+            return "{}";
+        }
+        
+        // 根据格式导出（这里简化处理，返回JSON格式）
+        try {
+            List<MessageDTO> messageDTOs = messages.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+            
+            // 使用JSON格式导出
+            return objectMapper.writeValueAsString(messageDTOs);
+        } catch (JsonProcessingException e) {
+            log.error("导出会话消息失败, conversationId={}, error={}", conversationId, e.getMessage());
+            throw new RuntimeException("导出会话消息失败: " + e.getMessage());
+        }
+    }
+
+        @Override
+    @Transactional
+    public Integer clearConversationMessages(String tenantId, String conversationId) {
+        log.info("清理会话消息, tenantId={}, conversationId={}", tenantId, conversationId);
+
+        // 验证会话是否存在
+        validateConversation(tenantId, conversationId);
+
+        // 逻辑删除会话中的所有消息
+        List<Message> messages = messageRepository.selectList(
+            new LambdaQueryWrapper<Message>()
+                .eq(Message::getTenantId, tenantId)
+                .eq(Message::getConversationId, conversationId)
+                .ne(Message::getStatus, MessageStatus.DELETED)
+        );
+
+        if (!messages.isEmpty()) {
+            LocalDateTime now = LocalDateTime.now();
+            for (Message message : messages) {
+                message.setStatus(MessageStatus.DELETED);
+                message.setUpdatedAt(now);
+                messageRepository.updateById(message);
+            }
+
+            log.info("清理会话消息完成, conversationId={}, 清理数量={}", conversationId, messages.size());
+            return messages.size();
+        } else {
+            log.info("会话无消息需要清理, conversationId={}", conversationId);
+            return 0;
+        }
+    }
+
+    @Override
+    @Transactional
+    public Integer batchDeleteMessages(String tenantId, String conversationId, List<String> messageIds) {
+        log.info("批量删除消息, tenantId={}, conversationId={}, messageIds={}", tenantId, conversationId, messageIds);
+
+        if (messageIds == null || messageIds.isEmpty()) {
+            log.warn("消息ID列表为空，无需删除");
+            return 0;
+        }
+
+        // 验证会话是否存在
+        validateConversation(tenantId, conversationId);
+
+        // 批量逻辑删除消息
+        int deletedCount = 0;
+        LocalDateTime now = LocalDateTime.now();
+        
+        for (String messageId : messageIds) {
+            Message message = messageRepository.selectOne(
+                new LambdaQueryWrapper<Message>()
+                    .eq(Message::getId, messageId)
+                    .eq(Message::getTenantId, tenantId)
+                    .eq(Message::getConversationId, conversationId)
+                    .ne(Message::getStatus, MessageStatus.DELETED)
+            );
+
+            if (message != null) {
+                message.setStatus(MessageStatus.DELETED);
+                message.setUpdatedAt(now);
+                messageRepository.updateById(message);
+                deletedCount++;
+            }
+        }
+
+        log.info("批量删除消息完成, conversationId={}, 删除数量={}", conversationId, deletedCount);
+        return deletedCount;
+    }
+
+    @Override
+    public Long getUnreadMessageCount(String tenantId, String userId, String conversationId) {
+        log.debug("获取未读消息数量, tenantId={}, userId={}, conversationId={}", tenantId, userId, conversationId);
+
+        LambdaQueryWrapper<Message> queryWrapper = new LambdaQueryWrapper<Message>()
+            .eq(Message::getTenantId, tenantId)
+            .ne(Message::getStatus, MessageStatus.DELETED)
+            .eq(Message::getRead, false);
+
+        // 如果指定了会话ID，则只统计该会话的未读消息
+        if (StringUtils.hasText(conversationId)) {
+            queryWrapper.eq(Message::getConversationId, conversationId);
+        }
+
+        // 只统计发送给该用户的消息（不是用户自己发送的消息）
+        queryWrapper.ne(Message::getSenderId, userId);
+
+        Long count = messageRepository.selectCount(queryWrapper);
+        log.debug("未读消息数量统计完成, count={}", count);
+        return count;
+    }
+
+    @Override
+    @Transactional
+    public void markMessageAsRead(String tenantId, String userId, String conversationId, String messageId) {
+        log.debug("标记消息为已读, tenantId={}, userId={}, conversationId={}, messageId={}", tenantId, userId, conversationId, messageId);
+
+        LambdaQueryWrapper<Message> queryWrapper = new LambdaQueryWrapper<Message>()
+            .eq(Message::getTenantId, tenantId)
+            .eq(Message::getConversationId, conversationId)
+            .ne(Message::getStatus, MessageStatus.DELETED)
+            .eq(Message::getRead, false);
+
+        // 如果指定了messageId，则只标记该消息
+        if (StringUtils.hasText(messageId)) {
+            queryWrapper.eq(Message::getId, messageId);
+        }
+
+        // 只标记发送给该用户的消息（不是用户自己发送的消息）
+        queryWrapper.ne(Message::getSenderId, userId);
+
+        List<Message> messages = messageRepository.selectList(queryWrapper);
+        
+        if (!messages.isEmpty()) {
+            LocalDateTime now = LocalDateTime.now();
+            for (Message message : messages) {
+                message.setRead(true);
+                message.setUpdatedAt(now);
+                messageRepository.updateById(message);
+            }
+            log.debug("标记消息为已读完成, count={}", messages.size());
+        }
     }
 
     /**

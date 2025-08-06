@@ -188,4 +188,11 @@ public class TaskLog {
                 .logTime(LocalDateTime.now())
                 .build();
     }
+
+    /**
+     * 设置执行节点
+     */
+    public void setExecutionNode(String executionNode) {
+        this.executionNode = executionNode;
+    }
 }

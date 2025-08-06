@@ -12,8 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -95,8 +96,15 @@ public class PlatformConfigController {
         log.info("更新平台配置, tenantId={}, configId={}", tenantId, configId);
         
         try {
+            // 合并更新参数
+            Map<String, Object> updates = new HashMap<>();
+            if (name != null) updates.put("name", name);
+            if (apiUrl != null) updates.put("apiUrl", apiUrl);
+            if (apiKey != null) updates.put("apiKey", apiKey);
+            if (config != null) updates.putAll(config);
+            
             PlatformConfigDTO platformConfig = platformConfigService.updatePlatformConfig(
-                tenantId, configId, name, apiUrl, apiKey, config);
+                tenantId, configId, updates);
             
             log.info("平台配置更新成功, configId={}", configId);
             return ApiResult.success(platformConfig);

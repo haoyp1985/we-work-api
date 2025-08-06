@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,6 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-    @Override
     public ChatResponse callPlatform(PlatformConfig platformConfig, ModelConfig modelConfig, 
                                    ChatRequest request) {
         log.info("调用外部平台, platformType={}, modelName={}", 
@@ -49,9 +49,9 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
                     return callDashScope(platformConfig, modelConfig, request);
                 case OPENAI:
                     return callOpenAI(platformConfig, modelConfig, request);
-                case CLAUDE:
+                case ANTHROPIC_CLAUDE:
                     return callClaude(platformConfig, modelConfig, request);
-                case WENXIN:
+                case BAIDU_WENXIN:
                     return callWenxin(platformConfig, modelConfig, request);
                 default:
                     throw new UnsupportedOperationException("不支持的平台类型: " + platformConfig.getPlatformType());
@@ -67,14 +67,12 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         }
     }
 
-    @Override
     public CompletableFuture<ChatResponse> callPlatformAsync(PlatformConfig platformConfig, 
                                                            ModelConfig modelConfig, 
                                                            ChatRequest request) {
         return CompletableFuture.supplyAsync(() -> callPlatform(platformConfig, modelConfig, request));
     }
 
-    @Override
     public boolean testConnection(PlatformConfig platformConfig) {
         log.info("测试平台连接, platformType={}", platformConfig.getPlatformType());
         
@@ -88,9 +86,9 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
                     return testDashScopeConnection(platformConfig);
                 case OPENAI:
                     return testOpenAIConnection(platformConfig);
-                case CLAUDE:
+                case ANTHROPIC_CLAUDE:
                     return testClaudeConnection(platformConfig);
-                case WENXIN:
+                case BAIDU_WENXIN:
                     return testWenxinConnection(platformConfig);
                 default:
                     log.warn("不支持的平台类型连接测试: {}", platformConfig.getPlatformType());
@@ -103,7 +101,6 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         }
     }
 
-    @Override
     public List<String> getSupportedModels(PlatformConfig platformConfig) {
         log.info("获取支持的模型列表, platformType={}", platformConfig.getPlatformType());
         
@@ -117,9 +114,9 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
                     return getDashScopeModels(platformConfig);
                 case OPENAI:
                     return getOpenAIModels(platformConfig);
-                case CLAUDE:
+                case ANTHROPIC_CLAUDE:
                     return getClaudeModels(platformConfig);
-                case WENXIN:
+                case BAIDU_WENXIN:
                     return getWenxinModels(platformConfig);
                 default:
                     log.warn("不支持的平台类型: {}", platformConfig.getPlatformType());
@@ -435,7 +432,7 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         // TODO: 解析Coze响应
         return ChatResponse.builder()
             .success(true)
-            .message("Coze响应")
+            .content("Coze响应")
             .timestamp(LocalDateTime.now())
             .build();
     }
@@ -444,7 +441,7 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         // TODO: 解析Dify响应
         return ChatResponse.builder()
             .success(true)
-            .message("Dify响应")
+            .content("Dify响应")
             .timestamp(LocalDateTime.now())
             .build();
     }
@@ -453,7 +450,7 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         // TODO: 解析阿里百炼响应
         return ChatResponse.builder()
             .success(true)
-            .message("阿里百炼响应")
+            .content("阿里百炼响应")
             .timestamp(LocalDateTime.now())
             .build();
     }
@@ -462,7 +459,7 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         // TODO: 解析OpenAI响应
         return ChatResponse.builder()
             .success(true)
-            .message("OpenAI响应")
+            .content("OpenAI响应")
             .timestamp(LocalDateTime.now())
             .build();
     }
@@ -471,7 +468,7 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         // TODO: 解析Claude响应
         return ChatResponse.builder()
             .success(true)
-            .message("Claude响应")
+            .content("Claude响应")
             .timestamp(LocalDateTime.now())
             .build();
     }
@@ -480,7 +477,7 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         // TODO: 解析文心一言响应
         return ChatResponse.builder()
             .success(true)
-            .message("文心一言响应")
+            .content("文心一言响应")
             .timestamp(LocalDateTime.now())
             .build();
     }
@@ -498,5 +495,303 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         return List.of(
             Map.of("role", "user", "content", request.getMessage())
         );
+    }
+
+    public Double calculateCost(Integer inputTokens, Integer outputTokens, String modelName) {
+        log.debug("计算费用, inputTokens={}, outputTokens={}, modelName={}", 
+                 inputTokens, outputTokens, modelName);
+        
+        if (inputTokens == null || outputTokens == null || modelName == null) {
+            return 0.0;
+        }
+        
+        // 定义不同模型的价格（每1000个token的费用，单位：USD）
+        Map<String, Map<String, Double>> modelPricing = Map.of(
+            "gpt-3.5-turbo", Map.of("input", 0.0015, "output", 0.002),
+            "gpt-4", Map.of("input", 0.03, "output", 0.06),
+            "gpt-4-turbo", Map.of("input", 0.01, "output", 0.03),
+            "claude-3-haiku", Map.of("input", 0.00025, "output", 0.00125),
+            "claude-3-sonnet", Map.of("input", 0.003, "output", 0.015),
+            "claude-3-opus", Map.of("input", 0.015, "output", 0.075)
+        );
+        
+        // 获取模型价格，如果没有找到则使用默认价格
+        Map<String, Double> pricing = modelPricing.getOrDefault(
+            modelName.toLowerCase(), 
+            Map.of("input", 0.001, "output", 0.002) // 默认价格
+        );
+        
+        // 计算费用
+        double inputCost = (inputTokens / 1000.0) * pricing.get("input");
+        double outputCost = (outputTokens / 1000.0) * pricing.get("output");
+        double totalCost = inputCost + outputCost;
+        
+        log.debug("费用计算完成, inputCost={}, outputCost={}, totalCost={}", 
+                 inputCost, outputCost, totalCost);
+        
+        return totalCost;
+    }
+
+    public Integer estimateTokens(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return 0;
+        }
+        
+        // 简单的Token估算算法
+        // 通常1个英文单词约等于1.3个token，1个中文字符约等于2个token
+        String trimmedText = text.trim();
+        
+        // 统计中文字符数
+        int chineseChars = 0;
+        int englishWords = 0;
+        
+        for (char c : trimmedText.toCharArray()) {
+            if (c >= 0x4e00 && c <= 0x9fff) { // Unicode中文范围
+                chineseChars++;
+            }
+        }
+        
+        // 统计英文单词数（简单按空格分割）
+        String[] words = trimmedText.split("\\s+");
+        for (String word : words) {
+            if (word.matches("[a-zA-Z0-9]+")) {
+                englishWords++;
+            }
+        }
+        
+        // 计算预估token数
+        int estimatedTokens = (int) (chineseChars * 2 + englishWords * 1.3);
+        
+        // 加上一些基础token（标点符号等）
+        estimatedTokens += trimmedText.length() - chineseChars - englishWords * 5; // 估算其他字符
+        
+        log.debug("Token估算完成, text length={}, estimatedTokens={}", trimmedText.length(), estimatedTokens);
+        
+        return Math.max(1, estimatedTokens); // 至少1个token
+    }
+
+    public PlatformIntegrationService.PlatformCapabilities getCapabilities() {
+        log.debug("获取平台功能信息");
+        
+        PlatformIntegrationService.PlatformCapabilities capabilities = new PlatformIntegrationService.PlatformCapabilities();
+        
+        // 设置平台支持的功能
+        capabilities.setSupportsChat(true);
+        capabilities.setSupportsWorkflow(true);
+        capabilities.setSupportsStream(true);
+        capabilities.setSupportsTools(true);
+        capabilities.setSupportsImages(true);
+        capabilities.setSupportsAudio(false); // 暂不支持音频
+        capabilities.setSupportsVideo(false); // 暂不支持视频
+        capabilities.setSupportsFiles(true);
+        
+        // 设置支持的语言
+        capabilities.setSupportedLanguages(List.of("zh-CN", "en-US", "ja-JP", "ko-KR"));
+        
+        log.debug("平台功能信息获取完成");
+        return capabilities;
+    }
+
+    public List<PlatformIntegrationService.ModelInfo> getAvailableModels(PlatformConfig platformConfig) {
+        log.debug("获取可用模型列表, platformType={}", platformConfig.getPlatformType());
+        
+        List<PlatformIntegrationService.ModelInfo> models = new ArrayList<>();
+        
+        // 根据平台类型返回预定义的模型列表
+        switch (platformConfig.getPlatformType()) {
+            case OPENAI:
+                models.add(createModelInfo("gpt-3.5-turbo", "GPT-3.5 Turbo", true, 4096));
+                models.add(createModelInfo("gpt-4", "GPT-4", true, 8192));
+                models.add(createModelInfo("gpt-4-turbo", "GPT-4 Turbo", true, 128000));
+                break;
+            case ANTHROPIC_CLAUDE:
+                models.add(createModelInfo("claude-3-haiku", "Claude 3 Haiku", true, 200000));
+                models.add(createModelInfo("claude-3-sonnet", "Claude 3 Sonnet", true, 200000));
+                models.add(createModelInfo("claude-3-opus", "Claude 3 Opus", true, 200000));
+                break;
+            case ALIBABA_DASHSCOPE:
+                models.add(createModelInfo("qwen-turbo", "通义千问-Turbo", true, 6000));
+                models.add(createModelInfo("qwen-plus", "通义千问-Plus", true, 30000));
+                break;
+            case BAIDU_WENXIN:
+                models.add(createModelInfo("ernie-bot", "文心一言", true, 5120));
+                models.add(createModelInfo("ernie-bot-turbo", "文心一言-Turbo", true, 5120));
+                break;
+            default:
+                models.add(createModelInfo("default-model", "默认模型", true, 4096));
+                break;
+        }
+        
+        log.debug("获取可用模型列表完成, count={}", models.size());
+        return models;
+    }
+
+    @Override
+    public boolean clearConversation(PlatformConfig platformConfig, String conversationId) {
+        log.info("清理平台会话, platformType={}, conversationId={}", platformConfig.getPlatformType(), conversationId);
+        
+        try {
+            switch (platformConfig.getPlatformType()) {
+                case OPENAI:
+                    // OpenAI 无需显式清理会话，每次请求都是独立的
+                    log.debug("OpenAI平台无需清理会话");
+                    return true;
+                    
+                case ANTHROPIC_CLAUDE:
+                    // Claude 无需显式清理会话，每次请求都是独立的
+                    log.debug("Claude平台无需清理会话");
+                    return true;
+                    
+                case BAIDU_WENXIN:
+                    // 文心一言 无需显式清理会话，每次请求都是独立的
+                    log.debug("文心一言平台无需清理会话");
+                    return true;
+                    
+                case COZE:
+                    return clearCozeConversation(platformConfig, conversationId);
+                    
+                case DIFY:
+                    return clearDifyConversation(platformConfig, conversationId);
+                    
+                default:
+                    log.warn("未知的平台类型: {}", platformConfig.getPlatformType());
+                    return false;
+            }
+        } catch (Exception e) {
+            log.error("清理平台会话失败, conversationId={}", conversationId, e);
+            return false;
+        }
+    }
+
+    private boolean clearCozeConversation(PlatformConfig platformConfig, String conversationId) {
+        // TODO: 实现Coze平台会话清理逻辑
+        log.debug("Coze平台会话清理暂未实现, conversationId={}", conversationId);
+        return true;
+    }
+
+    private boolean clearDifyConversation(PlatformConfig platformConfig, String conversationId) {
+        // TODO: 实现Dify平台会话清理逻辑
+        log.debug("Dify平台会话清理暂未实现, conversationId={}", conversationId);
+        return true;
+    }
+
+    @Override
+    public java.util.List<Map<String, Object>> getConversationHistory(PlatformConfig platformConfig, String conversationId, Integer limit) {
+        log.info("获取平台会话历史, platformType={}, conversationId={}, limit={}", platformConfig.getPlatformType(), conversationId, limit);
+
+        try {
+            switch (platformConfig.getPlatformType()) {
+                case OPENAI:
+                    return getOpenAIConversationHistory(platformConfig, conversationId, limit);
+                case ANTHROPIC_CLAUDE:
+                    return getClaudeConversationHistory(platformConfig, conversationId, limit);
+                case BAIDU_WENXIN:
+                    return getWenxinConversationHistory(platformConfig, conversationId, limit);
+                case COZE:
+                    return getCozeConversationHistory(platformConfig, conversationId, limit);
+                case DIFY:
+                    return getDifyConversationHistory(platformConfig, conversationId, limit);
+                default:
+                    log.warn("不支持的平台类型: {}", platformConfig.getPlatformType());
+                    return new java.util.ArrayList<>();
+            }
+        } catch (Exception e) {
+            log.error("获取平台会话历史失败, conversationId={}", conversationId, e);
+            return new java.util.ArrayList<>();
+        }
+    }
+
+    private java.util.List<Map<String, Object>> getOpenAIConversationHistory(PlatformConfig platformConfig, String conversationId, Integer limit) {
+        // TODO: 实现OpenAI会话历史获取逻辑
+        log.debug("OpenAI平台会话历史获取暂未实现, conversationId={}", conversationId);
+        return new java.util.ArrayList<>();
+    }
+
+    private java.util.List<Map<String, Object>> getClaudeConversationHistory(PlatformConfig platformConfig, String conversationId, Integer limit) {
+        // TODO: 实现Claude会话历史获取逻辑
+        log.debug("Claude平台会话历史获取暂未实现, conversationId={}", conversationId);
+        return new java.util.ArrayList<>();
+    }
+
+    private java.util.List<Map<String, Object>> getWenxinConversationHistory(PlatformConfig platformConfig, String conversationId, Integer limit) {
+        // TODO: 实现文心一言会话历史获取逻辑
+        log.debug("文心一言平台会话历史获取暂未实现, conversationId={}", conversationId);
+        return new java.util.ArrayList<>();
+    }
+
+    private java.util.List<Map<String, Object>> getCozeConversationHistory(PlatformConfig platformConfig, String conversationId, Integer limit) {
+        // TODO: 实现Coze会话历史获取逻辑
+        log.debug("Coze平台会话历史获取暂未实现, conversationId={}", conversationId);
+        return new java.util.ArrayList<>();
+    }
+
+    private java.util.List<Map<String, Object>> getDifyConversationHistory(PlatformConfig platformConfig, String conversationId, Integer limit) {
+        // TODO: 实现Dify会话历史获取逻辑
+        log.debug("Dify平台会话历史获取暂未实现, conversationId={}", conversationId);
+        return new java.util.ArrayList<>();
+    }
+
+    @Override
+    public void stopGeneration(PlatformConfig platformConfig, String conversationId, String requestId) {
+        log.info("停止生成, platformType={}, conversationId={}, requestId={}", platformConfig.getPlatformType(), conversationId, requestId);
+
+        try {
+            switch (platformConfig.getPlatformType()) {
+                case OPENAI:
+                    stopOpenAIGeneration(platformConfig, conversationId, requestId);
+                    break;
+                case ANTHROPIC_CLAUDE:
+                    stopClaudeGeneration(platformConfig, conversationId, requestId);
+                    break;
+                case BAIDU_WENXIN:
+                    stopWenxinGeneration(platformConfig, conversationId, requestId);
+                    break;
+                case COZE:
+                    stopCozeGeneration(platformConfig, conversationId, requestId);
+                    break;
+                case DIFY:
+                    stopDifyGeneration(platformConfig, conversationId, requestId);
+                    break;
+                default:
+                    log.warn("不支持的平台类型停止生成: {}", platformConfig.getPlatformType());
+                    break;
+            }
+        } catch (Exception e) {
+            log.error("停止生成失败, conversationId={}, requestId={}", conversationId, requestId, e);
+        }
+    }
+
+    private void stopOpenAIGeneration(PlatformConfig platformConfig, String conversationId, String requestId) {
+        // TODO: 实现OpenAI停止生成逻辑
+        log.debug("OpenAI平台停止生成暂未实现, conversationId={}, requestId={}", conversationId, requestId);
+    }
+
+    private void stopClaudeGeneration(PlatformConfig platformConfig, String conversationId, String requestId) {
+        // TODO: 实现Claude停止生成逻辑
+        log.debug("Claude平台停止生成暂未实现, conversationId={}, requestId={}", conversationId, requestId);
+    }
+
+    private void stopWenxinGeneration(PlatformConfig platformConfig, String conversationId, String requestId) {
+        // TODO: 实现文心一言停止生成逻辑
+        log.debug("文心一言平台停止生成暂未实现, conversationId={}, requestId={}", conversationId, requestId);
+    }
+
+    private void stopCozeGeneration(PlatformConfig platformConfig, String conversationId, String requestId) {
+        // TODO: 实现Coze停止生成逻辑
+        log.debug("Coze平台停止生成暂未实现, conversationId={}, requestId={}", conversationId, requestId);
+    }
+
+    private void stopDifyGeneration(PlatformConfig platformConfig, String conversationId, String requestId) {
+        // TODO: 实现Dify停止生成逻辑
+        log.debug("Dify平台停止生成暂未实现, conversationId={}, requestId={}", conversationId, requestId);
+    }
+
+    private ModelInfo createModelInfo(String id, String name, boolean available, int maxTokens) {
+        ModelInfo modelInfo = new ModelInfo();
+        modelInfo.setId(id);
+        modelInfo.setName(name);
+        modelInfo.setAvailable(available);
+        modelInfo.setMaxTokens(maxTokens);
+        return modelInfo;
     }
 }

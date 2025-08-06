@@ -1,6 +1,7 @@
 package com.wework.platform.task.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.wework.platform.common.enums.TaskStatus;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -43,7 +44,7 @@ public class TaskInstance {
      * CANCELLED: 已取消
      */
     @TableField("execution_status")
-    private String executionStatus;
+    private TaskStatus executionStatus;
 
     /**
      * 开始执行时间
@@ -148,4 +149,94 @@ public class TaskInstance {
     @Version
     @TableField("version")
     private Integer version;
+
+    /**
+     * 获取任务定义ID（用于兼容接口调用）
+     */
+    public String getDefinitionId() {
+        return this.taskDefinitionId;
+    }
+
+    /**
+     * 设置任务定义ID（用于兼容接口调用）
+     */
+    public void setDefinitionId(String definitionId) {
+        this.taskDefinitionId = definitionId;
+    }
+
+    /**
+     * 设置执行状态（用于兼容接口调用）
+     */
+    public void setStatus(TaskStatus status) {
+        this.executionStatus = status;
+    }
+
+    /**
+     * 获取执行状态（用于兼容接口调用）
+     */
+    public TaskStatus getStatus() {
+        return this.executionStatus;
+    }
+
+    // 实例名称字段不存在，移除错误的方法
+
+    /**
+     * 获取执行节点
+     */
+    public String getExecutionNode() {
+        return this.executionNode;
+    }
+
+    /**
+     * 设置执行节点
+     */
+    public void setExecutionNode(String executionNode) {
+        this.executionNode = executionNode;
+    }
+
+    // 实例名称字段不存在于TaskInstance实体中，移除错误方法
+
+    /**
+     * 获取重试次数
+     */
+    public Integer getRetryCount() {
+        return this.retryCount;
+    }
+
+    /**
+     * 设置下次重试时间
+     */
+    public void setNextRetryTime(LocalDateTime nextRetryTime) {
+        this.nextRetryTime = nextRetryTime;
+    }
+
+    /**
+     * 设置错误信息
+     */
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    /**
+     * 设置开始时间
+     */
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    /**
+     * 设置结束时间
+     */
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    /**
+     * 设置结果数据（存储到executionResult字段）
+     */
+    public void setResultData(Object resultData) {
+        if (resultData != null) {
+            this.executionResult = resultData.toString();
+        }
+    }
 }

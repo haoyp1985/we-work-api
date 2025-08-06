@@ -412,4 +412,25 @@ public class TaskContext {
                 ", executionNode='" + executionNode + '\'' +
                 '}';
     }
+
+    /**
+     * 设置实例ID（用于兼容接口调用）
+     */
+    public void setInstanceId(String instanceId) {
+        this.taskId = instanceId;
+    }
+
+    /**
+     * 设置任务定义ID（用于兼容接口调用）
+     */
+    public void setTaskDefinitionId(String taskDefinitionId) {
+        this.definitionId = taskDefinitionId;
+    }
+
+    /**
+     * 设置执行参数（用于兼容接口调用）
+     */
+    public void setExecutionParams(String executionParams) {
+        this.parameters = Map.of("executionParams", executionParams);
+    }
 }

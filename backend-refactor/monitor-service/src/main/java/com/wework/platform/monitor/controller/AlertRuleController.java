@@ -1,7 +1,7 @@
 package com.wework.platform.monitor.controller;
 
-import com.wework.platform.common.dto.PageResult;
-import com.wework.platform.common.dto.Result;
+import com.wework.platform.common.core.base.PageResult;
+import com.wework.platform.common.core.base.Result;
 import com.wework.platform.common.enums.AlertLevel;
 import com.wework.platform.common.enums.AlertStatus;
 import com.wework.platform.monitor.dto.AlertRuleDTO;
@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.List;
 
 /**

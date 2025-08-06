@@ -56,7 +56,7 @@ public class TaskExecutionEvent extends ApplicationEvent {
         return message;
     }
 
-    public Long getTimestamp() {
+    public Long getEventTimestamp() {
         return timestamp;
     }
 }

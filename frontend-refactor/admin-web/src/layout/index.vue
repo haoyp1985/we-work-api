@@ -1,3 +1,19 @@
+<script setup lang="ts">
+import { computed } from "vue";
+import { storeToRefs } from "pinia";
+import { useAppStore } from "@/stores/modules/app";
+import AppHeader from "./components/AppHeader.vue";
+import AppSidebar from "./components/AppSidebar.vue";
+
+const appStore = useAppStore();
+const { sidebarOpened } = storeToRefs(appStore);
+
+// 侧边栏宽度
+const sidebarWidth = computed(() => {
+  return sidebarOpened.value ? "250px" : "64px";
+});
+</script>
+
 <template>
   <div class="app-layout">
     <el-container>
@@ -26,24 +42,8 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { computed } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useAppStore } from '@/stores/modules/app';
-import AppHeader from './components/AppHeader.vue';
-import AppSidebar from './components/AppSidebar.vue';
-
-const appStore = useAppStore();
-const { sidebarOpened } = storeToRefs(appStore);
-
-// 侧边栏宽度
-const sidebarWidth = computed(() => {
-  return sidebarOpened.value ? '250px' : '64px';
-});
-</script>
-
 <style lang="scss" scoped>
-@import '@/styles/variables.scss';
+@import "@/styles/variables.scss";
 
 .app-layout {
   height: 100vh;
@@ -69,7 +69,7 @@ const sidebarWidth = computed(() => {
   }
 
   .main-content {
-    background: $background-color-base;
+    background: $bg-color-page;
     overflow: auto;
     position: relative;
   }

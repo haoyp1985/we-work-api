@@ -168,7 +168,7 @@ public class MessageTemplateServiceImpl implements MessageTemplateService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
 
-        return PageResult.of(dtoList, result.getTotal(), pageNum, pageSize);
+        return PageResult.of(dtoList, result.getTotal(), pageNum.longValue(), pageSize.longValue());
     }
 
     @Override

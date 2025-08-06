@@ -71,6 +71,42 @@ public interface ChatService {
     void stopGeneration(String tenantId, String userId, String conversationId);
 
     /**
+     * 在会话中聊天
+     *
+     * @param tenantId 租户ID
+     * @param request  聊天请求
+     * @return 聊天响应
+     */
+    ChatResponse chatInConversation(String tenantId, ChatRequest request);
+
+    /**
+     * 流式聊天
+     *
+     * @param tenantId 租户ID
+     * @param request  聊天请求
+     * @return 流式响应
+     */
+    Flux<ChatResponse> streamChat(String tenantId, ChatRequest request);
+
+    /**
+     * 获取会话上下文
+     *
+     * @param tenantId       租户ID
+     * @param conversationId 会话ID
+     * @param limit          限制数量
+     * @return 上下文信息
+     */
+    Object getConversationContext(String tenantId, String conversationId, int limit);
+
+    /**
+     * 清理会话历史
+     *
+     * @param tenantId       租户ID
+     * @param conversationId 会话ID
+     */
+    void clearConversationHistory(String tenantId, String conversationId);
+
+    /**
      * 评价回答
      *
      * @param tenantId  租户ID

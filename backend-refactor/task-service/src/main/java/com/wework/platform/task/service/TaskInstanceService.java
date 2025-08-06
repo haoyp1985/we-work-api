@@ -2,8 +2,8 @@ package com.wework.platform.task.service;
 
 import com.wework.platform.task.dto.TaskInstanceDTO;
 import com.wework.platform.task.entity.TaskInstance;
-import com.wework.platform.common.dto.PageResult;
-import com.wework.platform.common.dto.PageQuery;
+import com.wework.platform.common.core.base.PageResult;
+import com.wework.platform.common.core.base.PageQuery;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -4,9 +4,9 @@ import com.wework.platform.agent.enums.MessageType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +47,18 @@ public class ChatRequest {
 
     @Schema(description = "是否流式响应")
     private Boolean streaming = false;
+
+    @Schema(description = "用户ID")
+    private String userId;
+
+    @Schema(description = "消息内容(兼容字段)")
+    private String message;
+
+    @Schema(description = "会话历史")
+    private List<Map<String, Object>> history;
+
+    @Schema(description = "是否流式输出(兼容字段)")
+    private Boolean stream = false;
 
     @Schema(description = "会话配置覆盖")
     private ConversationConfigOverride configOverride;

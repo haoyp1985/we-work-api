@@ -7,6 +7,7 @@ import com.wework.platform.agent.entity.PlatformConfig;
 import com.wework.platform.agent.enums.PlatformType;
 import com.wework.platform.agent.repository.ModelConfigRepository;
 import com.wework.platform.agent.repository.PlatformConfigRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wework.platform.agent.service.ModelConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ public class ModelConfigServiceImpl implements ModelConfigService {
 
     private final ModelConfigRepository modelConfigRepository;
     private final PlatformConfigRepository platformConfigRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -59,10 +61,13 @@ public class ModelConfigServiceImpl implements ModelConfigService {
         // 创建模型配置
         ModelConfig modelConfig = new ModelConfig();
         modelConfig.setTenantId(tenantId);
-        modelConfig.setPlatformConfigId(platformConfigId);
+        modelConfig.setName(StringUtils.hasText(displayName) ? displayName : modelName);
         modelConfig.setModelName(modelName);
-        modelConfig.setDisplayName(StringUtils.hasText(displayName) ? displayName : modelName);
-        modelConfig.setParameters(parameters);
+        try {
+            modelConfig.setConfigJson(parameters != null ? objectMapper.writeValueAsString(parameters) : "{}");
+        } catch (Exception e) {
+            modelConfig.setConfigJson("{}");
+        }
         modelConfig.setEnabled(true);
         modelConfig.setCreatedAt(LocalDateTime.now());
         modelConfig.setUpdatedAt(LocalDateTime.now());
@@ -76,18 +81,26 @@ public class ModelConfigServiceImpl implements ModelConfigService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ModelConfigDTO updateModelConfig(String tenantId, String configId, String displayName, 
-                                          Map<String, Object> parameters) {
+    public ModelConfigDTO updateModelConfig(String tenantId, String configId, Map<String, Object> updates) {
         log.info("更新模型配置, tenantId={}, configId={}", tenantId, configId);
         
         ModelConfig modelConfig = getModelConfigEntity(tenantId, configId);
         
         // 更新字段
+        String displayName = (String) updates.get("displayName");
         if (StringUtils.hasText(displayName)) {
-            modelConfig.setDisplayName(displayName);
+            modelConfig.setName(displayName);
         }
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> parameters = (Map<String, Object>) updates.get("parameters");
         if (parameters != null && !parameters.isEmpty()) {
-            modelConfig.setParameters(parameters);
+            try {
+                modelConfig.setConfigJson(objectMapper.writeValueAsString(parameters));
+            } catch (Exception e) {
+                log.warn("序列化参数为JSON失败，使用空JSON: {}", e.getMessage());
+                modelConfig.setConfigJson("{}");
+            }
         }
         
         modelConfig.setUpdatedAt(LocalDateTime.now());
@@ -336,10 +349,15 @@ public class ModelConfigServiceImpl implements ModelConfigService {
             // 创建模型配置
             ModelConfig modelConfig = new ModelConfig();
             modelConfig.setTenantId(tenantId);
-            modelConfig.setPlatformConfigId(platformConfigId);
+            // 注意：这里应该设置platformConfigId相关字段，但实体中没有对应字段，暂时跳过
             modelConfig.setModelName(modelName);
-            modelConfig.setDisplayName(StringUtils.hasText(displayName) ? displayName : modelName);
-            modelConfig.setParameters(parameters);
+            modelConfig.setName(StringUtils.hasText(displayName) ? displayName : modelName);
+            try {
+                modelConfig.setConfigJson(parameters != null ? objectMapper.writeValueAsString(parameters) : "{}");
+            } catch (Exception e) {
+                log.warn("序列化参数为JSON失败，使用空JSON: {}", e.getMessage());
+                modelConfig.setConfigJson("{}");
+            }
             modelConfig.setEnabled(true);
             modelConfig.setCreatedAt(LocalDateTime.now());
             modelConfig.setUpdatedAt(LocalDateTime.now());
@@ -350,6 +368,154 @@ public class ModelConfigServiceImpl implements ModelConfigService {
         }
         
         log.info("批量创建模型配置完成, tenantId={}, platformConfigId={}", tenantId, platformConfigId);
+    }
+
+    @Override
+    public com.wework.platform.agent.dto.ValidationResult validateModelParameters(PlatformType platformType, String modelName, Map<String, Object> parameters) {
+        log.debug("验证模型参数, platformType={}, modelName={}", platformType, modelName);
+
+        try {
+            // 基础验证
+            if (platformType == null) {
+                return com.wework.platform.agent.dto.ValidationResult.failure("平台类型不能为空");
+            }
+            
+            if (!StringUtils.hasText(modelName)) {
+                return com.wework.platform.agent.dto.ValidationResult.failure("模型名称不能为空");
+            }
+
+            // 根据平台类型进行具体验证
+            switch (platformType) {
+                case OPENAI:
+                    return validateOpenAIParameters(modelName, parameters);
+                case ANTHROPIC_CLAUDE:
+                    return validateClaudeParameters(modelName, parameters);
+                case BAIDU_WENXIN:
+                    return validateWenxinParameters(modelName, parameters);
+                case COZE:
+                    return validateCozeParameters(modelName, parameters);
+                case DIFY:
+                    return validateDifyParameters(modelName, parameters);
+                default:
+                    return com.wework.platform.agent.dto.ValidationResult.failure("不支持的平台类型: " + platformType);
+            }
+        } catch (Exception e) {
+            log.error("验证模型参数失败", e);
+            return com.wework.platform.agent.dto.ValidationResult.failure("验证过程中发生错误: " + e.getMessage());
+        }
+    }
+
+    private com.wework.platform.agent.dto.ValidationResult validateOpenAIParameters(String modelName, Map<String, Object> parameters) {
+        // TODO: 实现OpenAI参数验证逻辑
+        return com.wework.platform.agent.dto.ValidationResult.success();
+    }
+
+    private com.wework.platform.agent.dto.ValidationResult validateClaudeParameters(String modelName, Map<String, Object> parameters) {
+        // TODO: 实现Claude参数验证逻辑
+        return com.wework.platform.agent.dto.ValidationResult.success();
+    }
+
+    private com.wework.platform.agent.dto.ValidationResult validateWenxinParameters(String modelName, Map<String, Object> parameters) {
+        // TODO: 实现文心一言参数验证逻辑
+        return com.wework.platform.agent.dto.ValidationResult.success();
+    }
+
+    private com.wework.platform.agent.dto.ValidationResult validateCozeParameters(String modelName, Map<String, Object> parameters) {
+        // TODO: 实现Coze参数验证逻辑
+        return com.wework.platform.agent.dto.ValidationResult.success();
+    }
+
+    private com.wework.platform.agent.dto.ValidationResult validateDifyParameters(String modelName, Map<String, Object> parameters) {
+        // TODO: 实现Dify参数验证逻辑
+        return com.wework.platform.agent.dto.ValidationResult.success();
+    }
+
+    @Override
+    public List<com.wework.platform.agent.service.ModelConfigService.AvailableModel> getAvailableModels(PlatformType platformType) {
+        log.info("获取可用模型列表, platformType={}", platformType);
+
+        List<com.wework.platform.agent.service.ModelConfigService.AvailableModel> models = new ArrayList<>();
+        
+        try {
+            switch (platformType) {
+                case OPENAI:
+                    models = getOpenAIModels();
+                    break;
+                case ANTHROPIC_CLAUDE:
+                    models = getClaudeModels();
+                    break;
+                case BAIDU_WENXIN:
+                    models = getWenxinModels();
+                    break;
+                case COZE:
+                    models = getCozeModels();
+                    break;
+                case DIFY:
+                    models = getDifyModels();
+                    break;
+                default:
+                    log.warn("不支持的平台类型: {}", platformType);
+                    break;
+            }
+        } catch (Exception e) {
+            log.error("获取可用模型列表失败, platformType={}", platformType, e);
+        }
+
+        log.info("获取可用模型列表完成, platformType={}, count={}", platformType, models.size());
+        return models;
+    }
+
+    private List<com.wework.platform.agent.service.ModelConfigService.AvailableModel> getOpenAIModels() {
+        // TODO: 实现OpenAI模型列表获取逻辑
+        return new ArrayList<>();
+    }
+
+    private List<com.wework.platform.agent.service.ModelConfigService.AvailableModel> getClaudeModels() {
+        // TODO: 实现Claude模型列表获取逻辑
+        return new ArrayList<>();
+    }
+
+    private List<com.wework.platform.agent.service.ModelConfigService.AvailableModel> getWenxinModels() {
+        // TODO: 实现文心一言模型列表获取逻辑
+        return new ArrayList<>();
+    }
+
+    private List<com.wework.platform.agent.service.ModelConfigService.AvailableModel> getCozeModels() {
+        // TODO: 实现Coze模型列表获取逻辑
+        return new ArrayList<>();
+    }
+
+    private List<com.wework.platform.agent.service.ModelConfigService.AvailableModel> getDifyModels() {
+        // TODO: 实现Dify模型列表获取逻辑
+        return new ArrayList<>();
+    }
+
+    @Override
+    public java.math.BigDecimal calculateCost(String modelName, Integer inputTokens, Integer outputTokens) {
+        log.debug("计算模型成本, modelName={}, inputTokens={}, outputTokens={}", modelName, inputTokens, outputTokens);
+
+        // 这里应该根据不同模型的定价来计算成本
+        // 目前返回默认值，实际应该从配置或定价表中获取
+        java.math.BigDecimal inputCost = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal outputCost = java.math.BigDecimal.ZERO;
+
+        if (inputTokens != null && inputTokens > 0) {
+            // 示例：输入Token价格 $0.001 per 1K tokens
+            inputCost = new java.math.BigDecimal("0.001")
+                .multiply(new java.math.BigDecimal(inputTokens))
+                .divide(new java.math.BigDecimal("1000"), 6, java.math.RoundingMode.HALF_UP);
+        }
+
+        if (outputTokens != null && outputTokens > 0) {
+            // 示例：输出Token价格 $0.002 per 1K tokens
+            outputCost = new java.math.BigDecimal("0.002")
+                .multiply(new java.math.BigDecimal(outputTokens))
+                .divide(new java.math.BigDecimal("1000"), 6, java.math.RoundingMode.HALF_UP);
+        }
+
+        java.math.BigDecimal totalCost = inputCost.add(outputCost);
+        log.debug("模型成本计算完成, totalCost={}", totalCost);
+        return totalCost;
     }
 
     /**

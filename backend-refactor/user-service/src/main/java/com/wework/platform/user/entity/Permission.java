@@ -53,6 +53,12 @@ public class Permission extends BaseEntity {
     private String permissionPath;
 
     /**
+     * 路径（简化名称）
+     */
+    @TableField("path")
+    private String path;
+
+    /**
      * 菜单图标
      */
     @TableField("icon")

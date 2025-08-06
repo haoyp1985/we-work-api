@@ -137,4 +137,48 @@ public class JwtUtils {
         }
         return Math.max(0, (expiration.getTime() - System.currentTimeMillis()) / 1000);
     }
+
+    /**
+     * 获取AccessToken过期时间（秒）
+     */
+    public Long getAccessTokenExpiration() {
+        return expiration;
+    }
+
+    /**
+     * 验证Refresh Token
+     */
+    public boolean validateRefreshToken(String refreshToken) {
+        try {
+            DecodedJWT jwt = decodeJWT(refreshToken);
+            String tokenType = jwt.getClaim("tokenType").asString();
+            return "refresh".equals(tokenType) && !isTokenExpired(refreshToken);
+        } catch (Exception e) {
+            log.error("Refresh token validation failed", e);
+            return false;
+        }
+    }
+
+    /**
+     * 从Refresh Token中获取用户ID
+     */
+    public String getUserIdFromRefreshToken(String refreshToken) {
+        try {
+            if (!validateRefreshToken(refreshToken)) {
+                return null;
+            }
+            DecodedJWT jwt = decodeJWT(refreshToken);
+            return jwt.getSubject();
+        } catch (Exception e) {
+            log.error("Failed to extract user ID from refresh token", e);
+            return null;
+        }
+    }
+
+    /**
+     * 直接解码JWT（内部方法）
+     */
+    private DecodedJWT decodeJWT(String token) {
+        return JWT.decode(token);
+    }
 }

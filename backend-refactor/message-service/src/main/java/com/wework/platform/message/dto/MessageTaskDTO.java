@@ -194,6 +194,11 @@ public class MessageTaskDTO implements Serializable {
     private String remark;
 
     /**
+     * 审核时间
+     */
+    private Long auditTime;
+
+    /**
      * 账号信息
      */
     @Data

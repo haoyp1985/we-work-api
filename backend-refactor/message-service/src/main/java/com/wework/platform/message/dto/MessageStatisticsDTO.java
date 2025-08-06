@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -349,5 +350,48 @@ public class MessageStatisticsDTO implements Serializable {
          * 最后出现时间
          */
         private Long lastOccurTime;
+    }
+
+    /**
+     * 任务统计信息
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TaskStatistics implements Serializable {
+
+        @Serial
+        private static final long serialVersionUID = 1L;
+
+        /**
+         * 总任务数
+         */
+        private Long totalTasks;
+
+        /**
+         * 已完成任务数
+         */
+        private Long completedTasks;
+
+        /**
+         * 失败任务数
+         */
+        private Long failedTasks;
+
+        /**
+         * 总消息数
+         */
+        private Long totalMessages;
+
+        /**
+         * 成功消息数
+         */
+        private Long successMessages;
+
+        /**
+         * 失败消息数
+         */
+        private Long failMessages;
     }
 }

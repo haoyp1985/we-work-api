@@ -3,7 +3,10 @@ package com.wework.platform.agent.dto.response;
 import com.wework.platform.agent.enums.MessageStatus;
 import com.wework.platform.agent.enums.MessageType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,6 +16,9 @@ import java.util.Map;
  * 聊天响应DTO
  */
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Schema(description = "聊天响应")
 public class ChatResponse {
 
@@ -24,6 +30,15 @@ public class ChatResponse {
 
     @Schema(description = "响应消息ID")
     private String responseMessageId;
+
+    @Schema(description = "消息ID(兼容字段)")
+    private String messageId;
+
+    @Schema(description = "请求是否成功")
+    private Boolean success;
+
+    @Schema(description = "时间戳")
+    private LocalDateTime timestamp;
 
     @Schema(description = "智能体ID")
     private String agentId;

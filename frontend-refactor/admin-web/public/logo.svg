@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="45" fill="url(#gradient)" stroke="#fff" stroke-width="2"/>
+  
+  <!-- "W" shape -->
+  <path d="M 25 30 L 30 60 L 35 45 L 40 60 L 45 30" 
+        stroke="#fff" 
+        stroke-width="3" 
+        fill="none" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"/>
+  
+  <!-- "W" shape (second W) -->
+  <path d="M 55 30 L 60 60 L 65 45 L 70 60 L 75 30" 
+        stroke="#fff" 
+        stroke-width="3" 
+        fill="none" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"/>
+        
+  <!-- Decorative dots -->
+  <circle cx="50" cy="75" r="2" fill="#fff" opacity="0.8"/>
+  <circle cx="45" cy="78" r="1.5" fill="#fff" opacity="0.6"/>
+  <circle cx="55" cy="78" r="1.5" fill="#fff" opacity="0.6"/>
+</svg>

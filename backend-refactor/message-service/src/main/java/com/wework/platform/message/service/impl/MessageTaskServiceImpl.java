@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.support.CronSequenceGenerator;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -107,7 +107,7 @@ public class MessageTaskServiceImpl implements MessageTaskService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
 
-        return PageResult.of(dtoList, result.getTotal(), pageNum, pageSize);
+        return PageResult.of(dtoList, result.getTotal(), pageNum.longValue(), pageSize.longValue());
     }
 
     @Override
@@ -616,11 +616,10 @@ public class MessageTaskServiceImpl implements MessageTaskService {
      */
     private LocalDateTime calculateNextExecuteTime(String cronExpression, LocalDateTime startTime) {
         try {
-            CronSequenceGenerator generator = new CronSequenceGenerator(cronExpression);
-            Date baseTime = startTime != null ? 
-                    Date.from(startTime.atZone(java.time.ZoneId.systemDefault()).toInstant()) : new Date();
-            Date nextTime = generator.next(baseTime);
-            return LocalDateTime.ofInstant(nextTime.toInstant(), java.time.ZoneId.systemDefault());
+            CronExpression cron = CronExpression.parse(cronExpression);
+            LocalDateTime baseTime = startTime != null ? startTime : LocalDateTime.now();
+            LocalDateTime nextTime = cron.next(baseTime);
+            return nextTime;
         } catch (Exception e) {
             log.error("计算CRON表达式失败: {}", cronExpression, e);
             return null;

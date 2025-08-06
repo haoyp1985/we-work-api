@@ -1,11 +1,14 @@
 package com.wework.platform.agent.service.impl;
 
+import com.wework.platform.agent.dto.ConversationDTO;
+import com.wework.platform.agent.dto.MessageDTO;
 import com.wework.platform.agent.dto.request.ChatRequest;
 import com.wework.platform.agent.dto.response.ChatResponse;
 import com.wework.platform.agent.entity.*;
 import com.wework.platform.agent.enums.*;
 import com.wework.platform.agent.repository.*;
 import com.wework.platform.agent.service.*;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -443,15 +446,19 @@ public class ChatServiceImpl implements ChatService {
         }
         
         // 创建新会话
-        return conversationService.createConversation(tenantId, userId, request.getAgentId(), null);
+        ConversationDTO conversationDTO = conversationService.createConversation(tenantId, userId, request.getAgentId(), null);
+        // 从数据库重新获取实体
+        return conversationRepository.selectById(conversationDTO.getId());
     }
     
     private Message saveUserMessage(String tenantId, Conversation conversation, Agent agent, 
                                   String userId, ChatRequest request) {
-        return messageService.createMessage(
+        MessageDTO messageDTO = messageService.createMessage(
             tenantId, conversation.getId(), agent.getId(), userId,
             request.getMessageType(), "user", request.getContent()
         );
+        // 从数据库重新获取实体
+        return messageRepository.selectById(messageDTO.getId());
     }
     
     private ChatResponse callExternalPlatform(String tenantId, Agent agent, Conversation conversation,
@@ -485,10 +492,13 @@ public class ChatServiceImpl implements ChatService {
     
     private Message saveAssistantMessage(String tenantId, Conversation conversation, Agent agent,
                                        ChatResponse response, Message userMessage) {
-        Message assistantMessage = messageService.createMessage(
+        MessageDTO messageDTO = messageService.createMessage(
             tenantId, conversation.getId(), agent.getId(), null,
             response.getMessageType(), "assistant", response.getContent()
         );
+        
+        // 从数据库重新获取实体
+        Message assistantMessage = messageRepository.selectById(messageDTO.getId());
         
         // 设置父消息关系
         assistantMessage.setParentMessageId(userMessage.getId());
@@ -601,6 +611,39 @@ public class ChatServiceImpl implements ChatService {
         } catch (Exception e) {
             return new HashMap<>();
         }
+    }
+
+    @Override
+    @Transactional
+    public void clearConversationHistory(String tenantId, String conversationId) {
+        log.info("清理会话历史, tenantId={}, conversationId={}", tenantId, conversationId);
+        messageService.clearConversationMessages(tenantId, conversationId);
+        log.info("会话历史清理完成, conversationId={}", conversationId);
+    }
+
+    @Override
+    public Object getConversationContext(String tenantId, String conversationId, int limit) {
+        log.info("获取会话上下文, tenantId={}, conversationId={}, limit={}", tenantId, conversationId, limit);
+        
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+        );
+        
+        if (conversation == null) {
+            log.warn("会话不存在, conversationId={}", conversationId);
+            return new HashMap<>();
+        }
+        
+        return getConversationContext(conversation);
+    }
+
+    @Override
+    public Flux<ChatResponse> streamChat(String tenantId, ChatRequest request) {
+        log.info("流式聊天, tenantId={}, agentId={}", tenantId, request.getAgentId());
+        String userId = request.getUserId();
+        return chatStream(tenantId, userId, request);
     }
     
     private String toJsonString(Map<String, Object> map) {

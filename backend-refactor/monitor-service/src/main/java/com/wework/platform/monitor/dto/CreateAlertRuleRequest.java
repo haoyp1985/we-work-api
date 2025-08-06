@@ -4,7 +4,7 @@ import com.wework.platform.common.enums.AlertLevel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
 /**

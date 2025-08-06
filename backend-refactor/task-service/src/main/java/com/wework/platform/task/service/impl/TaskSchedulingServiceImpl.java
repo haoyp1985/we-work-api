@@ -2,6 +2,7 @@ package com.wework.platform.task.service.impl;
 
 import com.wework.platform.task.entity.TaskDefinition;
 import com.wework.platform.task.entity.TaskInstance;
+import com.wework.platform.task.lock.DistributedLock;
 import com.wework.platform.task.repository.TaskDefinitionRepository;
 import com.wework.platform.task.scheduler.DistributedTaskScheduler;
 import com.wework.platform.task.service.TaskDefinitionService;
@@ -15,13 +16,14 @@ import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -38,6 +40,7 @@ public class TaskSchedulingServiceImpl implements TaskSchedulingService {
     private final TaskInstanceService taskInstanceService;
     private final DistributedTaskScheduler distributedTaskScheduler;
     private final TaskDefinitionRepository taskDefinitionRepository;
+    private final DistributedLock distributedLock;
 
     @Value("${task.scheduler.scan-interval:30}")
     private int scanIntervalSeconds;
@@ -222,7 +225,8 @@ public class TaskSchedulingServiceImpl implements TaskSchedulingService {
                                                       taskDefinition.getId(), 
                                                       nextExecutionTime.toString());
                         
-                        if (distributedTaskScheduler.trySchedule(lockKey, taskDefinition, nextExecutionTime)) {
+                        if (distributedLock.tryLock(lockKey, "SCHEDULE", 5, TimeUnit.SECONDS)) {
+                            try {
                             TaskInstance instance = taskInstanceService.createTaskInstance(
                                 taskDefinition.getTenantId(),
                                 taskDefinition.getId(),
@@ -232,6 +236,9 @@ public class TaskSchedulingServiceImpl implements TaskSchedulingService {
                             createdCount++;
                             log.debug("创建计划任务实例: taskId={}, instanceId={}, scheduledTime={}", 
                                      taskDefinition.getId(), instance.getId(), nextExecutionTime);
+                            } finally {
+                                distributedLock.releaseLock(lockKey, "SCHEDULE");
+                            }
                         }
                     }
                 } catch (Exception e) {

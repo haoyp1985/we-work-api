@@ -35,10 +35,22 @@ public class User extends BaseEntity {
     private String password;
 
     /**
+     * 密码哈希值
+     */
+    @TableField("password_hash")
+    private String passwordHash;
+
+    /**
      * 真实姓名
      */
     @TableField("real_name")
     private String realName;
+
+    /**
+     * 昵称
+     */
+    @TableField("nickname")
+    private String nickname;
 
     /**
      * 邮箱

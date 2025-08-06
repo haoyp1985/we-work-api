@@ -1,10 +1,12 @@
 package com.wework.platform.task.scheduler;
 
 import com.wework.platform.common.context.TenantContextHolder;
+import com.wework.platform.common.enums.TaskStatus;
 import com.wework.platform.task.entity.TaskDefinition;
 import com.wework.platform.task.entity.TaskInstance;
-import com.wework.platform.task.entity.TaskInstance.TaskStatus;
 import com.wework.platform.task.entity.TaskLog;
+import com.wework.platform.task.handler.TaskContext;
+import com.wework.platform.task.handler.TaskResult;
 import com.wework.platform.task.lock.DistributedLock;
 import com.wework.platform.task.repository.TaskDefinitionRepository;
 import com.wework.platform.task.repository.TaskInstanceRepository;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Component;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -265,8 +268,8 @@ public class DistributedTaskScheduler implements ApplicationRunner {
                 .taskId(task.getId())
                 .tenantId(task.getTenantId())
                 .definitionId(task.getDefinitionId())
-                .instanceName(task.getInstanceName())
-                .parameters(definition.getParameters())
+                .instanceName(task.getId()) // 使用任务实例ID作为实例名称
+                .parameters(Map.of("executionParams", definition.getExecutionParams() != null ? definition.getExecutionParams() : "")) // 将执行参数包装为Map
                 .retryCount(task.getRetryCount())
                 .maxRetryCount(definition.getMaxRetryCount())
                 .executionNode(nodeId)

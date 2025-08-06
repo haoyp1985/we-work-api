@@ -18,6 +18,7 @@ public enum ResultCode {
 
     // ========== 客户端错误 4xx ==========
     BAD_REQUEST(400, "请求参数错误"),
+    PARAM_ERROR(400, "参数错误"),
     UNAUTHORIZED(401, "未授权"),
     FORBIDDEN(403, "权限不足"),
     NOT_FOUND(404, "资源不存在"),

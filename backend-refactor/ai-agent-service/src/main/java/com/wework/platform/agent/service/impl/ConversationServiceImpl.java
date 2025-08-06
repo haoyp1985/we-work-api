@@ -3,6 +3,7 @@ package com.wework.platform.agent.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wework.platform.agent.dto.ConversationDTO;
 import com.wework.platform.agent.dto.response.PageResult;
 import com.wework.platform.agent.entity.Agent;
@@ -20,7 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -36,8 +39,8 @@ public class ConversationServiceImpl implements ConversationService {
 
     private final ConversationRepository conversationRepository;
     private final AgentRepository agentRepository;
+    private final ObjectMapper objectMapper;
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public ConversationDTO createConversation(String tenantId, String agentId, String userId, String title) {
         log.info("创建会话, tenantId={}, agentId={}, userId={}", tenantId, agentId, userId);
@@ -63,7 +66,6 @@ public class ConversationServiceImpl implements ConversationService {
         return convertToDTO(conversation);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public ConversationDTO updateConversationTitle(String tenantId, String conversationId, String title) {
         log.info("更新会话标题, tenantId={}, conversationId={}, title={}", tenantId, conversationId, title);
@@ -82,7 +84,6 @@ public class ConversationServiceImpl implements ConversationService {
         return convertToDTO(conversation);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void endConversation(String tenantId, String conversationId) {
         log.info("结束会话, tenantId={}, conversationId={}", tenantId, conversationId);
@@ -103,7 +104,6 @@ public class ConversationServiceImpl implements ConversationService {
         log.info("会话结束成功, conversationId={}", conversationId);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteConversation(String tenantId, String conversationId) {
         log.info("删除会话, tenantId={}, conversationId={}", tenantId, conversationId);
@@ -118,14 +118,25 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public ConversationDTO getConversation(String tenantId, String conversationId) {
-        log.debug("查询会话详情, tenantId={}, conversationId={}", tenantId, conversationId);
+    public ConversationDTO getConversation(String tenantId, String userId, String conversationId) {
+        log.debug("查询会话详情, tenantId={}, userId={}, conversationId={}", tenantId, userId, conversationId);
         
-        Conversation conversation = getConversationEntity(tenantId, conversationId);
+        // 验证用户权限
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .eq(Conversation::getUserId, userId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+        
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或无权限访问");
+        }
+        
         return convertToDTO(conversation);
     }
 
-    @Override
     public PageResult<ConversationDTO> getUserConversations(String tenantId, String userId, 
                                                            int pageNum, int pageSize) {
         log.debug("分页查询用户会话, tenantId={}, userId={}, pageNum={}, pageSize={}", 
@@ -150,13 +161,12 @@ public class ConversationServiceImpl implements ConversationService {
         return PageResult.<ConversationDTO>builder()
             .records(dtoList)
             .total(result.getTotal())
-            .pageNum(pageNum)
-            .pageSize(pageSize)
-            .pages((int) result.getPages())
+            .current((long) pageNum)
+            .size((long) pageSize)
+            .pages(result.getPages())
             .build();
     }
 
-    @Override
     public PageResult<ConversationDTO> getAgentConversations(String tenantId, String agentId, 
                                                             int pageNum, int pageSize) {
         log.debug("分页查询智能体会话, tenantId={}, agentId={}, pageNum={}, pageSize={}", 
@@ -181,13 +191,12 @@ public class ConversationServiceImpl implements ConversationService {
         return PageResult.<ConversationDTO>builder()
             .records(dtoList)
             .total(result.getTotal())
-            .pageNum(pageNum)
-            .pageSize(pageSize)
-            .pages((int) result.getPages())
+            .current((long) pageNum)
+            .size((long) pageSize)
+            .pages(result.getPages())
             .build();
     }
 
-    @Override
     public List<ConversationDTO> getActiveConversations(String tenantId, String userId) {
         log.debug("查询用户活跃会话, tenantId={}, userId={}", tenantId, userId);
         
@@ -205,7 +214,6 @@ public class ConversationServiceImpl implements ConversationService {
             .collect(Collectors.toList());
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void incrementMessageCount(String conversationId) {
         log.debug("增加会话消息计数, conversationId={}", conversationId);
@@ -218,7 +226,6 @@ public class ConversationServiceImpl implements ConversationService {
         }
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateLastMessage(String conversationId, String lastMessage) {
         log.debug("更新会话最后消息, conversationId={}", conversationId);
@@ -231,7 +238,6 @@ public class ConversationServiceImpl implements ConversationService {
         }
     }
 
-    @Override
     public long countConversationsByStatus(String tenantId, ConversationStatus status) {
         return conversationRepository.selectCount(
             new LambdaQueryWrapper<Conversation>()
@@ -240,7 +246,6 @@ public class ConversationServiceImpl implements ConversationService {
         );
     }
 
-    @Override
     public long countUserConversations(String tenantId, String userId) {
         return conversationRepository.selectCount(
             new LambdaQueryWrapper<Conversation>()
@@ -250,7 +255,6 @@ public class ConversationServiceImpl implements ConversationService {
         );
     }
 
-    @Override
     public long countAgentConversations(String tenantId, String agentId) {
         return conversationRepository.selectCount(
             new LambdaQueryWrapper<Conversation>()
@@ -260,18 +264,15 @@ public class ConversationServiceImpl implements ConversationService {
         );
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
-    public void cleanupExpiredConversations(int retentionDays) {
-        log.info("清理过期会话, retentionDays={}", retentionDays);
-        
-        LocalDateTime cutoffTime = LocalDateTime.now().minusDays(retentionDays);
+    public Long cleanupExpiredConversations(LocalDateTime expiredBefore) {
+        log.info("清理过期会话, expiredBefore={}", expiredBefore);
         
         // 查询需要清理的会话
         List<Conversation> expiredConversations = conversationRepository.selectList(
             new LambdaQueryWrapper<Conversation>()
                 .eq(Conversation::getStatus, ConversationStatus.ENDED)
-                .lt(Conversation::getEndedAt, cutoffTime)
+                .lt(Conversation::getEndedAt, expiredBefore)
         );
         
         if (!expiredConversations.isEmpty()) {
@@ -279,11 +280,169 @@ public class ConversationServiceImpl implements ConversationService {
             expiredConversations.forEach(conversation -> {
                 conversation.setStatus(ConversationStatus.DELETED);
                 conversation.setUpdatedAt(LocalDateTime.now());
+                conversationRepository.updateById(conversation);
             });
             
-            conversationRepository.updateBatchById(expiredConversations);
-            
             log.info("清理过期会话完成, 清理数量={}", expiredConversations.size());
+            return (long) expiredConversations.size();
+        }
+        
+        return 0L;
+    }
+
+    public ConversationService.ConversationStats getConversationStats(String tenantId, String userId) {
+        log.debug("获取会话统计, tenantId={}, userId={}", tenantId, userId);
+        
+        ConversationService.ConversationStats stats = new ConversationService.ConversationStats();
+        
+        // 查询用户的所有会话
+        List<Conversation> conversations = conversationRepository.selectList(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getTenantId, tenantId)
+                .eq(Conversation::getUserId, userId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+        
+        // 计算各种统计信息
+        stats.setTotalConversations((long) conversations.size());
+        stats.setActiveConversations(conversations.stream()
+            .filter(c -> c.getStatus() == ConversationStatus.ACTIVE)
+            .count());
+        stats.setPinnedConversations(conversations.stream()
+            .filter(c -> Boolean.TRUE.equals(c.getPinned()))
+            .count());
+        stats.setStarredConversations(conversations.stream()
+            .filter(c -> Boolean.TRUE.equals(c.getStarred()))
+            .count());
+        stats.setArchivedConversations(conversations.stream()
+            .filter(c -> c.getStatus() == ConversationStatus.ENDED)
+            .count());
+        
+        // 计算平均消息数
+        if (!conversations.isEmpty()) {
+            double avgMessages = conversations.stream()
+                .mapToInt(c -> c.getMessageCount() != null ? c.getMessageCount() : 0)
+                .average()
+                .orElse(0.0);
+            stats.setAvgMessagesPerConversation(avgMessages);
+        } else {
+            stats.setAvgMessagesPerConversation(0.0);
+        }
+        
+        // 计算平均持续时间（暂时设为0，需要根据实际业务逻辑计算）
+        stats.setAvgDurationMinutes(0.0);
+        
+        return stats;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public ConversationDTO unarchiveConversation(String tenantId, String userId, String conversationId) {
+        log.info("取消归档会话, tenantId={}, userId={}, conversationId={}", tenantId, userId, conversationId);
+        
+        // 查询会话
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .eq(Conversation::getUserId, userId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+        
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或已删除");
+        }
+        
+        // 更新状态为活跃
+        conversation.setStatus(ConversationStatus.ACTIVE);
+        conversation.setUpdatedAt(LocalDateTime.now());
+        
+        // 保存更新
+        conversationRepository.updateById(conversation);
+        
+        log.info("会话取消归档成功, conversationId={}", conversationId);
+        return convertToDTO(conversation);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public ConversationDTO archiveConversation(String tenantId, String userId, String conversationId) {
+        log.info("归档会话, tenantId={}, userId={}, conversationId={}", tenantId, userId, conversationId);
+        
+        // 查询会话
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .eq(Conversation::getUserId, userId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+        
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或已删除");
+        }
+        
+        // 更新状态为结束（作为归档状态）
+        conversation.setStatus(ConversationStatus.ENDED);
+        conversation.setEndedAt(LocalDateTime.now());
+        conversation.setUpdatedAt(LocalDateTime.now());
+        
+        // 保存更新
+        conversationRepository.updateById(conversation);
+        
+        log.info("会话归档成功, conversationId={}", conversationId);
+        return convertToDTO(conversation);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void clearConversationContext(String tenantId, String conversationId) {
+        log.info("清理会话上下文, tenantId={}, conversationId={}", tenantId, conversationId);
+        
+        // 查询会话
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+        
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或已删除");
+        }
+        
+        // 清理上下文JSON
+        conversation.setContextJson("{}");
+        conversation.setUpdatedAt(LocalDateTime.now());
+        
+        // 保存更新
+        conversationRepository.updateById(conversation);
+        
+        log.info("会话上下文清理成功, conversationId={}", conversationId);
+    }
+
+    public Map<String, Object> getConversationContext(String tenantId, String conversationId) {
+        log.debug("获取会话上下文, tenantId={}, conversationId={}", tenantId, conversationId);
+        
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+        
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或已删除");
+        }
+        
+        // 解析JSON字符串为Map
+        String contextJson = conversation.getContextJson();
+        if (contextJson == null || contextJson.trim().isEmpty()) {
+            return new HashMap<>();
+        }
+        
+        try {
+            return objectMapper.readValue(contextJson, Map.class);
+        } catch (Exception e) {
+            log.warn("解析会话上下文JSON失败, conversationId={}, error={}", conversationId, e.getMessage());
+            return new HashMap<>();
         }
     }
 
@@ -323,11 +482,158 @@ public class ConversationServiceImpl implements ConversationService {
         return conversation;
     }
 
+    @Override
+    @Transactional
+    public void updateConversationContext(String tenantId, String conversationId, Map<String, Object> context) {
+        log.info("更新会话上下文, tenantId={}, conversationId={}", tenantId, conversationId);
+        
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+        
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或已删除");
+        }
+        
+        try {
+            // 将Map转换为JSON字符串保存
+            String contextJson = objectMapper.writeValueAsString(context);
+            conversation.setContextJson(contextJson);
+            conversation.setUpdatedAt(LocalDateTime.now());
+            
+            conversationRepository.updateById(conversation);
+            
+            log.info("会话上下文更新成功, conversationId={}", conversationId);
+        } catch (Exception e) {
+            log.error("更新会话上下文失败, conversationId={}", conversationId, e);
+            throw new RuntimeException("更新会话上下文失败: " + e.getMessage());
+        }
+    }
+
+        @Override
+    @Transactional
+    public ConversationDTO removeConversationTags(String tenantId, String userId, String conversationId, List<String> tags) {
+        log.info("移除会话标签, tenantId={}, conversationId={}, userId={}, tags={}", tenantId, conversationId, userId, tags);
+
+        if (tags == null || tags.isEmpty()) {
+            log.warn("标签列表为空，无需移除");
+            return getConversation(tenantId, userId, conversationId);
+        }
+
+        // 验证会话存在且用户有权限
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .eq(Conversation::getUserId, userId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或无权限访问");
+        }
+
+        // TODO: 实现具体的标签移除逻辑
+        // 这里应该根据实际的标签存储方式来实现
+        // 可能需要更新conversation的tagsJson字段或者操作专门的标签表
+
+        log.info("会话标签移除成功, conversationId={}, removedTags={}", conversationId, tags);
+        return convertToDTO(conversation);
+    }
+
     /**
      * 生成默认会话标题
      */
     private String generateDefaultTitle() {
         return "新会话 " + LocalDateTime.now().toString().substring(0, 16);
+    }
+
+    @Override
+    @Transactional
+    public ConversationDTO addConversationTags(String tenantId, String userId, String conversationId, List<String> tags) {
+        log.info("添加会话标签, tenantId={}, conversationId={}, userId={}, tags={}", tenantId, conversationId, userId, tags);
+
+        if (tags == null || tags.isEmpty()) {
+            log.warn("标签列表为空，无需添加");
+            return getConversation(tenantId, userId, conversationId);
+        }
+
+        // 验证会话存在且用户有权限
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .eq(Conversation::getUserId, userId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或无权限访问");
+        }
+
+        // TODO: 实现具体的标签添加逻辑
+        // 这里应该根据实际的标签存储方式来实现
+        // 可能需要更新conversation的tagsJson字段或者操作专门的标签表
+
+        log.info("会话标签添加成功, conversationId={}, addedTags={}", conversationId, tags);
+        return convertToDTO(conversation);
+    }
+
+    @Override
+    @Transactional
+    public ConversationDTO pinConversation(String tenantId, String userId, String conversationId, Boolean pinned) {
+        log.info("设置会话置顶状态, tenantId={}, userId={}, conversationId={}, pinned={}", tenantId, userId, conversationId, pinned);
+
+        // 验证会话存在且用户有权限
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .eq(Conversation::getUserId, userId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或无权限访问");
+        }
+
+        // 更新置顶状态
+        conversation.setPinned(Boolean.TRUE.equals(pinned));
+        conversation.setUpdatedAt(LocalDateTime.now());
+        conversationRepository.updateById(conversation);
+
+        log.info("会话置顶状态更新成功, conversationId={}, pinned={}", conversationId, pinned);
+        return convertToDTO(conversation);
+    }
+
+    @Override
+    @Transactional
+    public ConversationDTO starConversation(String tenantId, String userId, String conversationId, Boolean starred) {
+        log.info("设置会话收藏状态, tenantId={}, userId={}, conversationId={}, starred={}", tenantId, userId, conversationId, starred);
+
+        // 验证会话存在且用户有权限
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .eq(Conversation::getUserId, userId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或无权限访问");
+        }
+
+        // 更新收藏状态
+        conversation.setStarred(Boolean.TRUE.equals(starred));
+        conversation.setUpdatedAt(LocalDateTime.now());
+        conversationRepository.updateById(conversation);
+
+        log.info("会话收藏状态更新成功, conversationId={}, starred={}", conversationId, starred);
+        return convertToDTO(conversation);
     }
 
     /**

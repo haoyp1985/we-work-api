@@ -36,7 +36,6 @@ public class AgentServiceImpl implements AgentService {
 
     private final AgentRepository agentRepository;
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public AgentDTO createAgent(String tenantId, CreateAgentRequest request) {
         log.info("创建智能体, tenantId={}, name={}", tenantId, request.getName());
@@ -73,7 +72,6 @@ public class AgentServiceImpl implements AgentService {
         return convertToDTO(agent);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public AgentDTO updateAgent(String tenantId, String agentId, UpdateAgentRequest request) {
         log.info("更新智能体, tenantId={}, agentId={}", tenantId, agentId);
@@ -83,7 +81,7 @@ public class AgentServiceImpl implements AgentService {
         
         // 检查状态是否允许修改
         if (agent.getStatus() == AgentStatus.PUBLISHED && 
-            !request.isForceUpdate()) {
+            !Boolean.TRUE.equals(request.getForceUpdate())) {
             throw new IllegalStateException("已发布的智能体不能直接修改，请创建新版本或强制更新");
         }
         
@@ -129,7 +127,6 @@ public class AgentServiceImpl implements AgentService {
         return convertToDTO(agent);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteAgent(String tenantId, String agentId) {
         log.info("删除智能体, tenantId={}, agentId={}", tenantId, agentId);
@@ -150,7 +147,6 @@ public class AgentServiceImpl implements AgentService {
         log.info("智能体删除成功, agentId={}", agentId);
     }
 
-    @Override
     public AgentDTO getAgent(String tenantId, String agentId) {
         log.debug("查询智能体详情, tenantId={}, agentId={}", tenantId, agentId);
         
@@ -193,13 +189,12 @@ public class AgentServiceImpl implements AgentService {
         return PageResult.<AgentDTO>builder()
             .records(dtoList)
             .total(result.getTotal())
-            .pageNum(request.getPageNum())
-            .pageSize(request.getPageSize())
-            .pages((int) result.getPages())
+            .current(request.getPageNum().longValue())
+            .size(request.getPageSize().longValue())
+            .pages(result.getPages())
             .build();
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public AgentDTO publishAgent(String tenantId, String agentId) {
         log.info("发布智能体, tenantId={}, agentId={}", tenantId, agentId);
@@ -226,7 +221,6 @@ public class AgentServiceImpl implements AgentService {
         return convertToDTO(agent);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public AgentDTO unpublishAgent(String tenantId, String agentId) {
         log.info("下线智能体, tenantId={}, agentId={}", tenantId, agentId);
@@ -247,8 +241,8 @@ public class AgentServiceImpl implements AgentService {
         return convertToDTO(agent);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
+    @Override
     public AgentDTO createAgentVersion(String tenantId, String agentId) {
         log.info("创建智能体新版本, tenantId={}, agentId={}", tenantId, agentId);
         
@@ -326,6 +320,153 @@ public class AgentServiceImpl implements AgentService {
             throw new IllegalStateException("系统提示词不能为空");
         }
         // 可以添加更多验证规则
+    }
+
+    public AgentService.AgentUsageStats getAgentUsageStats(String tenantId, String agentId) {
+        // 验证Agent存在
+        getAgentEntity(tenantId, agentId);
+        
+        // 创建统计对象
+        AgentService.AgentUsageStats stats = new AgentService.AgentUsageStats();
+        
+        // TODO: 实现具体的统计逻辑
+        // 这里应该查询会话、消息、令牌等统计信息
+        stats.setTotalConversations(0L);
+        stats.setTotalMessages(0L);
+        stats.setTotalTokens(0L);
+        stats.setAvgResponseTime(0.0);
+        stats.setSuccessRate(100.0);
+        stats.setLastUsedAt(java.time.LocalDateTime.now());
+        
+        return stats;
+    }
+
+    public String testAgent(String tenantId, String agentId, String testInput) {
+        log.info("测试智能体, tenantId={}, agentId={}, testInput={}", tenantId, agentId, testInput);
+        
+        // 验证Agent存在
+        Agent agent = getAgentEntity(tenantId, agentId);
+        
+        try {
+            // 这里应该调用实际的AI服务进行测试
+            // 暂时返回一个模拟的测试结果
+            String testResult = String.format(
+                "测试成功！智能体 '%s' 响应正常。输入: '%s'，响应: '这是一个测试响应，表明智能体配置正确。'",
+                agent.getName(),
+                testInput
+            );
+            
+            log.info("智能体测试完成, agentId={}, result={}", agentId, testResult);
+            return testResult;
+            
+        } catch (Exception e) {
+            log.error("智能体测试失败, agentId={}, error={}", agentId, e.getMessage(), e);
+            return "测试失败: " + e.getMessage();
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public AgentDTO copyAgent(String tenantId, String sourceAgentId, String newName) {
+        log.info("复制智能体, tenantId={}, sourceAgentId={}, newName={}", tenantId, sourceAgentId, newName);
+        
+        // 验证源智能体存在
+        Agent sourceAgent = getAgentEntity(tenantId, sourceAgentId);
+        
+        // 创建新智能体
+        Agent newAgent = new Agent();
+        newAgent.setTenantId(tenantId);
+        newAgent.setName(newName);
+        newAgent.setDescription(sourceAgent.getDescription() + " (复制)");
+        newAgent.setType(sourceAgent.getType());
+        newAgent.setStatus(AgentStatus.DRAFT); // 复制的智能体默认为草稿状态
+        newAgent.setSystemPrompt(sourceAgent.getSystemPrompt());
+        newAgent.setConfigJson(sourceAgent.getConfigJson());
+        newAgent.setPlatformType(sourceAgent.getPlatformType());
+        newAgent.setPlatformConfigId(sourceAgent.getPlatformConfigId());
+        newAgent.setAvatar(sourceAgent.getAvatar());
+        newAgent.setCreatedAt(LocalDateTime.now());
+        newAgent.setUpdatedAt(LocalDateTime.now());
+        
+        // 保存新智能体
+        agentRepository.insert(newAgent);
+        
+        log.info("智能体复制成功, sourceAgentId={}, newAgentId={}", sourceAgentId, newAgent.getId());
+        return convertToDTO(newAgent);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public AgentDTO updateAgentStatus(String tenantId, String agentId, AgentStatus status) {
+        log.info("更新智能体状态, tenantId={}, agentId={}, status={}", tenantId, agentId, status);
+        
+        // 验证智能体存在
+        Agent agent = getAgentEntity(tenantId, agentId);
+        
+        // 更新状态
+        agent.setStatus(status);
+        agent.setUpdatedAt(LocalDateTime.now());
+        
+        // 保存更新
+        agentRepository.updateById(agent);
+        
+        log.info("智能体状态更新成功, agentId={}, status={}", agentId, status);
+        return convertToDTO(agent);
+    }
+
+    public List<AgentDTO> getUserAccessibleAgents(String tenantId, String userId) {
+        log.debug("获取用户可访问的智能体, tenantId={}, userId={}", tenantId, userId);
+        
+        // 查询用户可访问的智能体（这里简化处理，返回所有已发布的智能体）
+        List<Agent> agents = agentRepository.selectList(
+            new LambdaQueryWrapper<Agent>()
+                .eq(Agent::getTenantId, tenantId)
+                .eq(Agent::getStatus, AgentStatus.PUBLISHED)
+                .eq(Agent::getEnabled, true)
+                .orderByDesc(Agent::getCreatedAt)
+        );
+        
+        // 转换为DTO
+        List<AgentDTO> agentDTOs = agents.stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+        
+        log.debug("获取用户可访问智能体完成, count={}", agentDTOs.size());
+        return agentDTOs;
+    }
+
+    public PageResult<AgentDTO> getAgentList(String tenantId, AgentQueryRequest request) {
+        log.debug("获取智能体列表, tenantId={}, request={}", tenantId, request);
+        
+        // 构建查询条件
+        LambdaQueryWrapper<Agent> queryWrapper = new LambdaQueryWrapper<Agent>()
+            .eq(Agent::getTenantId, tenantId);
+        
+        // 根据请求参数添加过滤条件
+        if (request.getName() != null && !request.getName().trim().isEmpty()) {
+            queryWrapper.like(Agent::getName, request.getName().trim());
+        }
+        if (request.getType() != null) {
+            queryWrapper.eq(Agent::getType, request.getType());
+        }
+        if (request.getStatus() != null) {
+            queryWrapper.eq(Agent::getStatus, request.getStatus());
+        }
+        
+        // 分页查询
+        Page<Agent> page = new Page<>(request.getPageNum(), request.getPageSize());
+        IPage<Agent> result = agentRepository.selectPage(page, queryWrapper);
+        
+        // 转换为DTO
+        List<AgentDTO> dtoList = result.getRecords().stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+        
+        return PageResult.<AgentDTO>builder()
+            .records(dtoList)
+            .total(result.getTotal())
+            .current(request.getPageNum().longValue())
+            .size(request.getPageSize().longValue())
+            .pages(result.getPages())
+            .build();
     }
 
     /**

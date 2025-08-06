@@ -12,8 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * 聊天交互控制器
@@ -50,7 +50,7 @@ public class ChatController {
             // 设置请求中的用户ID和租户ID
             request.setUserId(userId);
             
-            ChatResponse response = chatService.chat(tenantId, request);
+            ChatResponse response = chatService.chat(tenantId, userId, request);
             
             log.info("聊天消息发送成功, conversationId={}, messageId={}", 
                     response.getConversationId(), response.getMessageId());
@@ -120,7 +120,8 @@ public class ChatController {
             request.setUserId(userId);
             request.setStream(true);
             
-            ChatResponse response = chatService.streamChat(tenantId, request);
+            // 流式聊天应该返回单个响应
+            ChatResponse response = chatService.chatInConversation(tenantId, request);
             
             return ApiResult.success(response);
             
@@ -149,7 +150,9 @@ public class ChatController {
         try {
             request.setUserId(userId);
             
-            ChatResponse response = chatService.regenerateResponse(tenantId, request);
+            // 假设messageId存储在quotedMessageId字段中
+            String messageId = request.getQuotedMessageId();
+            ChatResponse response = chatService.regenerateResponse(tenantId, userId, messageId);
             
             return ApiResult.success(response);
             
@@ -162,7 +165,7 @@ public class ChatController {
 
     @GetMapping("/conversations/{conversationId}/context")
     @Operation(summary = "获取会话上下文", description = "获取指定会话的上下文信息")
-    public ApiResult<ChatRequest> getConversationContext(
+    public ApiResult<Object> getConversationContext(
             @Parameter(description = "租户ID", required = true)
             @RequestHeader("X-Tenant-Id") @NotBlank String tenantId,
             
@@ -179,7 +182,7 @@ public class ChatController {
                  tenantId, conversationId, contextSize);
         
         try {
-            ChatRequest context = chatService.getConversationContext(tenantId, conversationId, contextSize);
+            Object context = chatService.getConversationContext(tenantId, conversationId, contextSize);
             
             return ApiResult.success(context);
             

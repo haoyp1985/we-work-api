@@ -19,7 +19,7 @@
         <!-- 公共模块 -->
         <dependency>
             <groupId>com.wework.platform</groupId>
-            <artifactId>common</artifactId>
+            <artifactId>wework-platform-common</artifactId>
             <version>${project.version}</version>
         </dependency>
 

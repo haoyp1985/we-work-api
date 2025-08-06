@@ -4,17 +4,17 @@
 
 // 应用信息
 export const APP_INFO = {
-  NAME: 'WeWork Platform',
-  VERSION: '2.0.0',
-  DESCRIPTION: 'Enterprise WeChat Management Platform',
+  NAME: "WeWork Platform",
+  VERSION: "2.0.0",
+  DESCRIPTION: "Enterprise WeChat Management Platform",
 } as const;
 
 // 存储键名
 export const STORAGE_KEYS = {
-  TOKEN: 'wework_token',
-  USER_INFO: 'wework_user_info',
-  SETTINGS: 'wework_settings',
-  REMEMBER_PASSWORD: 'wework_remember_password',
+  TOKEN: "wework_token",
+  USER_INFO: "wework_user_info",
+  SETTINGS: "wework_settings",
+  REMEMBER_PASSWORD: "wework_remember_password",
 } as const;
 
 // API响应状态码
@@ -37,9 +37,9 @@ export const PAGINATION = {
 export const UPLOAD = {
   MAX_SIZE: 10 * 1024 * 1024, // 10MB
   ALLOWED_TYPES: {
-    IMAGE: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
-    DOCUMENT: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'],
-    ARCHIVE: ['zip', 'rar', '7z'],
+    IMAGE: ["jpg", "jpeg", "png", "gif", "webp"],
+    DOCUMENT: ["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx"],
+    ARCHIVE: ["zip", "rar", "7z"],
   },
 } as const;
 
@@ -55,23 +55,23 @@ export const REGEX = {
 
 // 日期格式
 export const DATE_FORMAT = {
-  DATE: 'YYYY-MM-DD',
-  TIME: 'HH:mm:ss',
-  DATETIME: 'YYYY-MM-DD HH:mm:ss',
-  MONTH: 'YYYY-MM',
-  YEAR: 'YYYY',
+  DATE: "YYYY-MM-DD",
+  TIME: "HH:mm:ss",
+  DATETIME: "YYYY-MM-DD HH:mm:ss",
+  MONTH: "YYYY-MM",
+  YEAR: "YYYY",
 } as const;
 
 // 主题配置
 export const THEME = {
-  LIGHT: 'light',
-  DARK: 'dark',
+  LIGHT: "light",
+  DARK: "dark",
 } as const;
 
 // 语言配置
 export const LANGUAGE = {
-  ZH_CN: 'zh-CN',
-  EN_US: 'en-US',
+  ZH_CN: "zh-CN",
+  EN_US: "en-US",
 } as const;
 
 // 用户状态
@@ -90,56 +90,56 @@ export const ACCOUNT_STATUS = {
 
 // 消息类型
 export const MESSAGE_TYPE = {
-  TEXT: 'text',
-  IMAGE: 'image',
-  VOICE: 'voice',
-  VIDEO: 'video',
-  FILE: 'file',
-  NEWS: 'news',
-  MARKDOWN: 'markdown',
+  TEXT: "text",
+  IMAGE: "image",
+  VOICE: "voice",
+  VIDEO: "video",
+  FILE: "file",
+  NEWS: "news",
+  MARKDOWN: "markdown",
 } as const;
 
 // 消息状态
 export const MESSAGE_STATUS = {
-  PENDING: 'pending',
-  SENT: 'sent',
-  FAILED: 'failed',
+  PENDING: "pending",
+  SENT: "sent",
+  FAILED: "failed",
 } as const;
 
 // 日志级别
 export const LOG_LEVEL = {
-  DEBUG: 'DEBUG',
-  INFO: 'INFO',
-  WARN: 'WARN',
-  ERROR: 'ERROR',
+  DEBUG: "DEBUG",
+  INFO: "INFO",
+  WARN: "WARN",
+  ERROR: "ERROR",
 } as const;
 
 // 告警级别
 export const ALERT_SEVERITY = {
-  CRITICAL: 'CRITICAL',
-  WARNING: 'WARNING',
-  INFO: 'INFO',
+  CRITICAL: "CRITICAL",
+  WARNING: "WARNING",
+  INFO: "INFO",
 } as const;
 
 // 告警状态
 export const ALERT_STATUS = {
-  FIRING: 'FIRING',
-  RESOLVED: 'RESOLVED',
+  FIRING: "FIRING",
+  RESOLVED: "RESOLVED",
 } as const;
 
 // 权限类型
 export const PERMISSION_TYPE = {
-  MENU: 'menu',
-  BUTTON: 'button',
-  DATA: 'data',
+  MENU: "menu",
+  BUTTON: "button",
+  DATA: "data",
 } as const;
 
 // 操作类型
 export const OPERATION_TYPE = {
-  CREATE: 'create',
-  UPDATE: 'update',
-  DELETE: 'delete',
-  VIEW: 'view',
+  CREATE: "create",
+  UPDATE: "update",
+  DELETE: "delete",
+  VIEW: "view",
 } as const;
 
 // 性别
@@ -151,15 +151,15 @@ export const GENDER = {
 
 // HTTP方法
 export const HTTP_METHOD = {
-  GET: 'GET',
-  POST: 'POST',
-  PUT: 'PUT',
-  DELETE: 'DELETE',
-  PATCH: 'PATCH',
+  GET: "GET",
+  POST: "POST",
+  PUT: "PUT",
+  DELETE: "DELETE",
+  PATCH: "PATCH",
 } as const;
 
 // 排序方向
 export const SORT_DIRECTION = {
-  ASC: 'asc',
-  DESC: 'desc',
+  ASC: "asc",
+  DESC: "desc",
 } as const;

@@ -16,15 +16,15 @@ public interface ModelConfigService {
     /**
      * 创建模型配置
      *
-     * @param tenantId    租户ID
-     * @param name        配置名称
-     * @param platformType 平台类型
-     * @param modelName   模型名称
-     * @param configJson  配置JSON
+     * @param tenantId          租户ID
+     * @param platformConfigId  平台配置ID
+     * @param modelName         模型名称
+     * @param displayName       显示名称
+     * @param parameters        配置参数
      * @return 模型配置信息
      */
-    ModelConfigDTO createModelConfig(String tenantId, String name, PlatformType platformType,
-                                   String modelName, String configJson);
+    ModelConfigDTO createModelConfig(String tenantId, String platformConfigId, String modelName,
+                                   String displayName, Map<String, Object> parameters);
 
     /**
      * 更新模型配置
@@ -72,11 +72,11 @@ public interface ModelConfigService {
     /**
      * 获取指定平台类型的模型配置列表
      *
-     * @param tenantId     租户ID
-     * @param platformType 平台类型
+     * @param tenantId         租户ID
+     * @param platformConfigId 平台配置ID  
      * @return 配置列表
      */
-    List<ModelConfigDTO> getModelConfigsByPlatform(String tenantId, PlatformType platformType);
+    List<ModelConfigDTO> getModelConfigsByPlatform(String tenantId, String platformConfigId);
 
     /**
      * 获取启用的模型配置列表
@@ -126,6 +126,111 @@ public interface ModelConfigService {
     Integer batchDeleteModelConfigs(String tenantId, List<String> configIds);
 
     /**
+     * 获取租户所有模型配置
+     *
+     * @param tenantId 租户ID
+     * @return 配置列表
+     */
+    List<ModelConfigDTO> getTenantModelConfigs(String tenantId);
+
+    /**
+     * 按平台类型获取模型配置
+     *
+     * @param tenantId     租户ID
+     * @param platformType 平台类型
+     * @return 配置列表
+     */
+    List<ModelConfigDTO> getModelConfigsByType(String tenantId, PlatformType platformType);
+
+    /**
+     * 启用模型配置
+     *
+     * @param tenantId 租户ID
+     * @param configId 配置ID
+     */
+    void enableModelConfig(String tenantId, String configId);
+
+    /**
+     * 禁用模型配置
+     *
+     * @param tenantId 租户ID
+     * @param configId 配置ID
+     */
+    void disableModelConfig(String tenantId, String configId);
+
+    /**
+     * 获取默认模型配置
+     *
+     * @param tenantId  租户ID
+     * @param modelName 模型名称
+     * @return 默认配置
+     */
+    ModelConfigDTO getDefaultModelConfig(String tenantId, String modelName);
+
+    /**
+     * 根据名称查找模型配置
+     *
+     * @param tenantId     租户ID
+     * @param platformType 平台类型
+     * @param modelName    模型名称
+     * @return 配置信息
+     */
+    ModelConfigDTO findModelConfigByName(String tenantId, String platformType, String modelName);
+
+    /**
+     * 批量创建模型配置
+     *
+     * @param tenantId          租户ID
+     * @param platformConfigId  平台配置ID
+     * @param configList        配置列表
+     */
+    void batchCreateModelConfigs(String tenantId, String platformConfigId, List<Map<String, Object>> configList);
+
+    /**
+     * 统计模型配置数量
+     *
+     * @param tenantId 租户ID
+     * @return 配置数量
+     */
+    long countModelConfigs(String tenantId);
+
+    /**
+     * 统计启用的模型配置数量
+     *
+     * @param tenantId 租户ID
+     * @return 启用配置数量
+     */
+    long countEnabledModelConfigs(String tenantId);
+
+    /**
+     * 统计平台模型配置数量
+     *
+     * @param tenantId          租户ID
+     * @param platformConfigId  平台配置ID
+     * @return 配置数量
+     */
+    long countPlatformModelConfigs(String tenantId, String platformConfigId);
+
+    /**
+     * 检查是否存在指定模型配置
+     *
+     * @param tenantId          租户ID
+     * @param platformConfigId  平台配置ID
+     * @return 是否存在
+     */
+    boolean hasModelConfig(String tenantId, String platformConfigId);
+
+    /**
+     * 验证模型参数
+     *
+     * @param platformType 平台类型
+     * @param modelName    模型名称
+     * @param parameters   参数配置
+     * @return 验证结果
+     */
+    com.wework.platform.agent.dto.ValidationResult validateModelParameters(PlatformType platformType, String modelName, Map<String, Object> parameters);
+
+    /**
      * 获取模型配置使用统计
      *
      * @param tenantId 租户ID
@@ -160,17 +265,6 @@ public interface ModelConfigService {
      * @return 模型列表
      */
     List<AvailableModel> getAvailableModels(PlatformType platformType);
-
-    /**
-     * 验证模型配置参数
-     *
-     * @param platformType 平台类型
-     * @param modelName    模型名称
-     * @param parameters   参数
-     * @return 验证结果
-     */
-    ValidationResult validateModelParameters(PlatformType platformType, String modelName, 
-                                           Map<String, Object> parameters);
 
     /**
      * 模型测试结果

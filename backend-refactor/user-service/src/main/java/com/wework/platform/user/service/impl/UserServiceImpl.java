@@ -20,7 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -53,7 +55,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 2. 检查用户状态
-        if (user.getStatus() == 0) {
+        if ("0".equals(user.getStatus())) {
             throw new BusinessException(ResultCode.FORBIDDEN, "用户已被禁用");
         }
 
@@ -96,7 +98,8 @@ public class UserServiceImpl implements UserService {
         userInfo.setTenantId(user.getTenantId());
         userInfo.setRoles(roles);
         userInfo.setPermissions(permissions);
-        userInfo.setLastLoginTime(user.getLastLoginTime());
+        userInfo.setLastLoginTime(user.getLastLoginTime() != null ? 
+                LocalDateTime.ofInstant(Instant.ofEpochMilli(user.getLastLoginTime()), ZoneId.systemDefault()) : null);
 
         response.setUserInfo(userInfo);
 
@@ -120,7 +123,7 @@ public class UserServiceImpl implements UserService {
 
         String userId = jwtUtils.getUserIdFromRefreshToken(refreshToken);
         User user = userRepository.selectById(userId);
-        if (user == null || user.getStatus() == 0) {
+        if (user == null || "0".equals(user.getStatus())) {
             throw new BusinessException(ResultCode.UNAUTHORIZED, "用户不存在或已被禁用");
         }
 
@@ -183,9 +186,9 @@ public class UserServiceImpl implements UserService {
         return PageResult.<UserDTO>builder()
                 .records(userDTOs)
                 .total(userPage.getTotal())
-                .pageNum(pageNum)
-                .pageSize(pageSize)
-                .pages((int) userPage.getPages())
+                .current(pageNum.longValue())
+                .size(pageSize.longValue())
+                .pages(userPage.getPages())
                 .build();
     }
 
@@ -221,7 +224,7 @@ public class UserServiceImpl implements UserService {
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
         user.setAvatar(request.getAvatar());
-        user.setStatus(request.getStatus());
+        user.setStatus(String.valueOf(request.getStatus()));
         user.setTenantId(tenantId);
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
@@ -269,7 +272,7 @@ public class UserServiceImpl implements UserService {
             user.setAvatar(request.getAvatar());
         }
         if (request.getStatus() != null) {
-            user.setStatus(request.getStatus());
+            user.setStatus(String.valueOf(request.getStatus()));
         }
 
         user.setUpdatedAt(LocalDateTime.now());
@@ -350,7 +353,7 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(ResultCode.NOT_FOUND, "用户不存在");
         }
 
-        user.setStatus(status);
+        user.setStatus(String.valueOf(status));
         user.setUpdatedAt(LocalDateTime.now());
         user.setUpdatedBy(operatorId);
 
@@ -428,7 +431,7 @@ public class UserServiceImpl implements UserService {
     private void updateLoginInfo(String userId, String clientIp) {
         User user = userRepository.selectById(userId);
         if (user != null) {
-            user.setLastLoginTime(LocalDateTime.now());
+            user.setLastLoginTime(System.currentTimeMillis());
             user.setLastLoginIp(clientIp);
             user.setUpdatedAt(LocalDateTime.now());
             userRepository.updateById(user);

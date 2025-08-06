@@ -1,3 +1,122 @@
+<script setup lang="ts">
+import { ref, computed } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { ElMessage, ElMessageBox } from "element-plus";
+import {
+  Fold,
+  Expand,
+  Search,
+  Bell,
+  FullScreen,
+  Aim,
+  Setting,
+  UserFilled,
+  ArrowDown,
+  User,
+  SwitchButton,
+} from "@element-plus/icons-vue";
+import { storeToRefs } from "pinia";
+import { useAppStore } from "@/stores/modules/app";
+import { useUserStore } from "@/stores/modules/user";
+
+const router = useRouter();
+const route = useRoute();
+const appStore = useAppStore();
+const userStore = useUserStore();
+
+const { sidebarOpened } = storeToRefs(appStore);
+
+// 搜索关键词
+const searchKeyword = ref("");
+
+// 未读通知数量
+const unreadCount = ref(5);
+
+// 全屏状态
+const isFullscreen = ref(false);
+
+// 面包屑导航
+const breadcrumbList = computed(() => {
+  const matched = route.matched.filter((item) => item.meta && item.meta.title);
+  const breadcrumbs = matched.map((item) => ({
+    title: item.meta?.title as string,
+    path: item.path,
+  }));
+
+  // 添加首页
+  if (breadcrumbs.length > 0 && breadcrumbs[0].path !== "/") {
+    breadcrumbs.unshift({ title: "首页", path: "/" });
+  }
+
+  return breadcrumbs;
+});
+
+// 切换侧边栏
+const toggleSidebar = () => {
+  appStore.toggleSidebar();
+};
+
+// 搜索功能
+const handleSearch = () => {
+  if (searchKeyword.value.trim()) {
+    ElMessage.info(`搜索功能开发中：${searchKeyword.value}`);
+  }
+};
+
+// 显示通知
+const showNotifications = () => {
+  ElMessage.info("通知功能开发中");
+};
+
+// 切换全屏
+const toggleFullscreen = () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+    isFullscreen.value = true;
+  } else {
+    document.exitFullscreen();
+    isFullscreen.value = false;
+  }
+};
+
+// 显示设置
+const showSettings = () => {
+  ElMessage.info("设置功能开发中");
+};
+
+// 处理用户菜单命令
+const handleUserCommand = (command: string) => {
+  switch (command) {
+    case "profile":
+      ElMessage.info("个人资料功能开发中");
+      break;
+    case "settings":
+      ElMessage.info("账户设置功能开发中");
+      break;
+    case "logout":
+      handleLogout();
+      break;
+  }
+};
+
+// 退出登录
+const handleLogout = async () => {
+  try {
+    await ElMessageBox.confirm("确定要退出登录吗？", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+
+    await userStore.userLogout();
+    ElMessage.success("退出登录成功");
+    router.push("/login");
+  } catch (error) {
+    // 用户取消操作
+  }
+};
+</script>
+
 <template>
   <div class="app-header">
     <!-- 左侧 -->
@@ -44,7 +163,11 @@
       </div>
 
       <!-- 通知 -->
-      <el-badge :value="unreadCount" :hidden="unreadCount === 0" class="notification-badge">
+      <el-badge
+        :value="unreadCount"
+        :hidden="unreadCount === 0"
+        class="notification-badge"
+      >
         <el-button type="text" size="large" @click="showNotifications">
           <el-icon><Bell /></el-icon>
         </el-button>
@@ -71,8 +194,12 @@
             :src="userStore.userInfo?.avatar"
             :icon="UserFilled"
           />
-          <span class="username">{{ userStore.userInfo?.nickname || '用户' }}</span>
-          <el-icon class="arrow-down"><ArrowDown /></el-icon>
+          <span class="username">{{
+            userStore.userInfo?.nickname || "用户"
+          }}</span>
+          <el-icon class="arrow-down">
+            <ArrowDown />
+          </el-icon>
         </div>
         <template #dropdown>
           <el-dropdown-menu>
@@ -95,131 +222,8 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { ElMessage, ElMessageBox } from 'element-plus';
-import {
-  Fold,
-  Expand,
-  Search,
-  Bell,
-  FullScreen,
-  Aim,
-  Setting,
-  UserFilled,
-  ArrowDown,
-  User,
-  SwitchButton,
-} from '@element-plus/icons-vue';
-import { storeToRefs } from 'pinia';
-import { useAppStore } from '@/stores/modules/app';
-import { useUserStore } from '@/stores/modules/user';
-
-const router = useRouter();
-const route = useRoute();
-const appStore = useAppStore();
-const userStore = useUserStore();
-
-const { sidebarOpened } = storeToRefs(appStore);
-
-// 搜索关键词
-const searchKeyword = ref('');
-
-// 未读通知数量
-const unreadCount = ref(5);
-
-// 全屏状态
-const isFullscreen = ref(false);
-
-// 面包屑导航
-const breadcrumbList = computed(() => {
-  const matched = route.matched.filter(item => item.meta && item.meta.title);
-  const breadcrumbs = matched.map(item => ({
-    title: item.meta?.title as string,
-    path: item.path,
-  }));
-  
-  // 添加首页
-  if (breadcrumbs.length > 0 && breadcrumbs[0].path !== '/') {
-    breadcrumbs.unshift({ title: '首页', path: '/' });
-  }
-  
-  return breadcrumbs;
-});
-
-// 切换侧边栏
-const toggleSidebar = () => {
-  appStore.toggleSidebar();
-};
-
-// 搜索功能
-const handleSearch = () => {
-  if (searchKeyword.value.trim()) {
-    ElMessage.info(`搜索功能开发中：${searchKeyword.value}`);
-  }
-};
-
-// 显示通知
-const showNotifications = () => {
-  ElMessage.info('通知功能开发中');
-};
-
-// 切换全屏
-const toggleFullscreen = () => {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen();
-    isFullscreen.value = true;
-  } else {
-    document.exitFullscreen();
-    isFullscreen.value = false;
-  }
-};
-
-// 显示设置
-const showSettings = () => {
-  ElMessage.info('设置功能开发中');
-};
-
-// 处理用户菜单命令
-const handleUserCommand = (command: string) => {
-  switch (command) {
-    case 'profile':
-      ElMessage.info('个人资料功能开发中');
-      break;
-    case 'settings':
-      ElMessage.info('账户设置功能开发中');
-      break;
-    case 'logout':
-      handleLogout();
-      break;
-  }
-};
-
-// 退出登录
-const handleLogout = async () => {
-  try {
-    await ElMessageBox.confirm(
-      '确定要退出登录吗？',
-      '提示',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      }
-    );
-    
-    await userStore.userLogout();
-    ElMessage.success('退出登录成功');
-    router.push('/login');
-  } catch (error) {
-    // 用户取消操作
-  }
-};
-</script>
-
 <style lang="scss" scoped>
-@import '@/styles/variables.scss';
+@import "@/styles/variables.scss";
 
 .app-header {
   display: flex;
@@ -268,7 +272,7 @@ const handleLogout = async () => {
       transition: background-color 0.2s ease;
 
       &:hover {
-        background-color: $background-color-base;
+        background-color: $bg-color;
       }
 
       .username {
