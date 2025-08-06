@@ -154,6 +154,7 @@ public class AgentServiceImpl implements AgentService {
         return convertToDTO(agent);
     }
 
+    @Override
     public PageResult<AgentDTO> queryAgents(String tenantId, AgentQueryRequest request) {
         log.debug("分页查询智能体, tenantId={}, request={}", tenantId, request);
         
@@ -241,6 +242,7 @@ public class AgentServiceImpl implements AgentService {
     }
 
     @Transactional(rollbackFor = Exception.class)
+    @Override
     public AgentDTO createAgentVersion(String tenantId, String agentId) {
         log.info("创建智能体新版本, tenantId={}, agentId={}", tenantId, agentId);
         
@@ -264,6 +266,7 @@ public class AgentServiceImpl implements AgentService {
         return convertToDTO(newAgent);
     }
 
+    @Override
     public List<AgentDTO> getPublishedAgents(String tenantId) {
         log.debug("查询已发布的智能体, tenantId={}", tenantId);
         
@@ -279,6 +282,7 @@ public class AgentServiceImpl implements AgentService {
             .collect(Collectors.toList());
     }
 
+    @Override
     public long countAgentsByStatus(String tenantId, AgentStatus status) {
         return agentRepository.selectCount(
             new LambdaQueryWrapper<Agent>()

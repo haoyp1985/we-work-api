@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -86,8 +87,13 @@ public class ModelConfigController {
         log.info("更新模型配置, tenantId={}, configId={}", tenantId, configId);
         
         try {
+            // 合并更新参数
+            Map<String, Object> updates = new HashMap<>();
+            if (displayName != null) updates.put("displayName", displayName);
+            if (parameters != null) updates.putAll(parameters);
+            
             ModelConfigDTO modelConfig = modelConfigService.updateModelConfig(
-                tenantId, configId, displayName, parameters);
+                tenantId, configId, updates);
             
             log.info("模型配置更新成功, configId={}", configId);
             return ApiResult.success(modelConfig);

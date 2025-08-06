@@ -60,6 +60,41 @@ public interface AgentService {
     PageResult<AgentDTO> getAgentList(String tenantId, AgentQueryRequest request);
 
     /**
+     * 查询智能体列表
+     *
+     * @param tenantId 租户ID
+     * @param request  查询请求
+     * @return 分页结果
+     */
+    PageResult<AgentDTO> queryAgents(String tenantId, AgentQueryRequest request);
+
+    /**
+     * 创建智能体版本
+     *
+     * @param tenantId 租户ID
+     * @param agentId  智能体ID
+     * @return 新版本智能体信息
+     */
+    AgentDTO createAgentVersion(String tenantId, String agentId);
+
+    /**
+     * 获取已发布的智能体列表
+     *
+     * @param tenantId 租户ID
+     * @return 智能体列表
+     */
+    List<AgentDTO> getPublishedAgents(String tenantId);
+
+    /**
+     * 按状态统计智能体数量
+     *
+     * @param tenantId 租户ID
+     * @param status   智能体状态
+     * @return 数量统计
+     */
+    long countAgentsByStatus(String tenantId, AgentStatus status);
+
+    /**
      * 获取用户可访问的智能体列表
      *
      * @param tenantId 租户ID

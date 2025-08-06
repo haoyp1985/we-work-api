@@ -78,7 +78,7 @@ public class MessageController {
         
         try {
             PageResult<MessageDTO> result = messageService.getConversationMessages(
-                tenantId, conversationId, pageNum, pageSize);
+                tenantId, conversationId, pageNum, pageSize, true);
             
             return ApiResult.success(result);
             
@@ -235,9 +235,10 @@ public class MessageController {
         log.debug("搜索消息, tenantId={}, keyword={}, limit={}", tenantId, keyword, limit);
         
         try {
-            List<MessageDTO> messages = messageService.searchMessages(tenantId, keyword, limit);
+            PageResult<MessageDTO> result = messageService.searchMessages(
+                tenantId, null, keyword, null, null, null, 1, limit);
             
-            return ApiResult.success(messages);
+            return ApiResult.success(result);
             
         } catch (Exception e) {
             log.error("搜索消息失败, tenantId={}, keyword={}, error={}", 

@@ -50,7 +50,7 @@ public class ChatController {
             // 设置请求中的用户ID和租户ID
             request.setUserId(userId);
             
-            ChatResponse response = chatService.chat(tenantId, request);
+            ChatResponse response = chatService.chat(tenantId, userId, request);
             
             log.info("聊天消息发送成功, conversationId={}, messageId={}", 
                     response.getConversationId(), response.getMessageId());
@@ -149,7 +149,9 @@ public class ChatController {
         try {
             request.setUserId(userId);
             
-            ChatResponse response = chatService.regenerateResponse(tenantId, request);
+            // 假设messageId存储在quotedMessageId字段中
+            String messageId = request.getQuotedMessageId();
+            ChatResponse response = chatService.regenerateResponse(tenantId, userId, messageId);
             
             return ApiResult.success(response);
             

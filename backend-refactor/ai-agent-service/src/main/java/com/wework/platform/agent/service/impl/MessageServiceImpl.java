@@ -129,6 +129,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Transactional(rollbackFor = Exception.class)
+    @Override
     public void updateMessageContent(String tenantId, String messageId, String content) {
         log.info("更新消息内容, tenantId={}, messageId={}", tenantId, messageId);
         
@@ -214,6 +215,7 @@ public class MessageServiceImpl implements MessageService {
             .collect(Collectors.toList());
     }
 
+    @Override
     public List<MessageDTO> getUserMessages(String tenantId, String userId, int limit) {
         log.debug("查询用户消息, tenantId={}, userId={}, limit={}", tenantId, userId, limit);
         
@@ -231,6 +233,7 @@ public class MessageServiceImpl implements MessageService {
             .collect(Collectors.toList());
     }
 
+    @Override
     public long countMessagesByType(String tenantId, MessageType type) {
         return messageRepository.selectCount(
             new LambdaQueryWrapper<Message>()
@@ -240,6 +243,7 @@ public class MessageServiceImpl implements MessageService {
         );
     }
 
+    @Override
     public long countMessagesByStatus(String tenantId, MessageStatus status) {
         return messageRepository.selectCount(
             new LambdaQueryWrapper<Message>()
@@ -248,6 +252,7 @@ public class MessageServiceImpl implements MessageService {
         );
     }
 
+    @Override
     public long countConversationMessages(String tenantId, String conversationId) {
         return messageRepository.selectCount(
             new LambdaQueryWrapper<Message>()
@@ -257,6 +262,7 @@ public class MessageServiceImpl implements MessageService {
         );
     }
 
+    @Override
     public long countUserMessages(String tenantId, String userId) {
         return messageRepository.selectCount(
             new LambdaQueryWrapper<Message>()
@@ -308,6 +314,7 @@ public class MessageServiceImpl implements MessageService {
             .collect(Collectors.toList());
     }
 
+    @Override
     public Map<String, Long> getMessageStatistics(String tenantId, LocalDateTime startTime, 
                                                  LocalDateTime endTime) {
         log.debug("获取消息统计, tenantId={}, startTime={}, endTime={}", 

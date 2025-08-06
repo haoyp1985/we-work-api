@@ -185,6 +185,71 @@ public interface MessageService {
     void removeMessageReaction(String tenantId, String userId, String messageId, String reactionType);
 
     /**
+     * 获取用户消息列表
+     *
+     * @param tenantId 租户ID
+     * @param userId   用户ID
+     * @param limit    数量限制
+     * @return 消息列表
+     */
+    List<MessageDTO> getUserMessages(String tenantId, String userId, int limit);
+
+    /**
+     * 更新消息内容
+     *
+     * @param tenantId  租户ID
+     * @param messageId 消息ID
+     * @param content   新内容
+     */
+    void updateMessageContent(String tenantId, String messageId, String content);
+
+    /**
+     * 获取消息统计
+     *
+     * @param tenantId  租户ID
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return 统计信息
+     */
+    Map<String, Long> getMessageStatistics(String tenantId, LocalDateTime startTime, LocalDateTime endTime);
+
+    /**
+     * 按类型统计消息数量
+     *
+     * @param tenantId    租户ID
+     * @param messageType 消息类型
+     * @return 消息数量
+     */
+    long countMessagesByType(String tenantId, MessageType messageType);
+
+    /**
+     * 按状态统计消息数量
+     *
+     * @param tenantId      租户ID
+     * @param messageStatus 消息状态
+     * @return 消息数量
+     */
+    long countMessagesByStatus(String tenantId, MessageStatus messageStatus);
+
+    /**
+     * 统计会话消息数量
+     *
+     * @param tenantId       租户ID
+     * @param conversationId 会话ID
+     * @return 消息数量
+     */
+    long countConversationMessages(String tenantId, String conversationId);
+
+    /**
+     * 统计用户消息数量
+     *
+     * @param tenantId 租户ID
+     * @param userId   用户ID
+     * @return 消息数量
+     */
+    long countUserMessages(String tenantId, String userId);
+
+    /**
      * 获取消息统计
      *
      * @param tenantId       租户ID
