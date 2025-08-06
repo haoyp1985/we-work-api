@@ -277,15 +277,119 @@ public class ConversationServiceImpl implements ConversationService {
             expiredConversations.forEach(conversation -> {
                 conversation.setStatus(ConversationStatus.DELETED);
                 conversation.setUpdatedAt(LocalDateTime.now());
+                conversationRepository.updateById(conversation);
             });
-            
-            conversationRepository.updateBatchById(expiredConversations);
             
             log.info("清理过期会话完成, 清理数量={}", expiredConversations.size());
             return (long) expiredConversations.size();
         }
         
         return 0L;
+    }
+
+    @Override
+    public ConversationService.ConversationStats getConversationStats(String tenantId, String userId) {
+        log.debug("获取会话统计, tenantId={}, userId={}", tenantId, userId);
+        
+        ConversationService.ConversationStats stats = new ConversationService.ConversationStats();
+        
+        // 查询用户的所有会话
+        List<Conversation> conversations = conversationRepository.selectList(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getTenantId, tenantId)
+                .eq(Conversation::getUserId, userId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+        
+        // 计算各种统计信息
+        stats.setTotalConversations((long) conversations.size());
+        stats.setActiveConversations(conversations.stream()
+            .filter(c -> c.getStatus() == ConversationStatus.ACTIVE)
+            .count());
+        stats.setPinnedConversations(conversations.stream()
+            .filter(c -> Boolean.TRUE.equals(c.getPinned()))
+            .count());
+        stats.setStarredConversations(conversations.stream()
+            .filter(c -> Boolean.TRUE.equals(c.getStarred()))
+            .count());
+        stats.setArchivedConversations(conversations.stream()
+            .filter(c -> c.getStatus() == ConversationStatus.ENDED)
+            .count());
+        
+        // 计算平均消息数
+        if (!conversations.isEmpty()) {
+            double avgMessages = conversations.stream()
+                .mapToInt(c -> c.getMessageCount() != null ? c.getMessageCount() : 0)
+                .average()
+                .orElse(0.0);
+            stats.setAvgMessagesPerConversation(avgMessages);
+        } else {
+            stats.setAvgMessagesPerConversation(0.0);
+        }
+        
+        // 计算平均持续时间（暂时设为0，需要根据实际业务逻辑计算）
+        stats.setAvgDurationMinutes(0.0);
+        
+        return stats;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ConversationDTO unarchiveConversation(String tenantId, String userId, String conversationId) {
+        log.info("取消归档会话, tenantId={}, userId={}, conversationId={}", tenantId, userId, conversationId);
+        
+        // 查询会话
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .eq(Conversation::getUserId, userId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+        
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或已删除");
+        }
+        
+        // 更新状态为活跃
+        conversation.setStatus(ConversationStatus.ACTIVE);
+        conversation.setUpdatedAt(LocalDateTime.now());
+        
+        // 保存更新
+        conversationRepository.updateById(conversation);
+        
+        log.info("会话取消归档成功, conversationId={}", conversationId);
+        return convertToDTO(conversation);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ConversationDTO archiveConversation(String tenantId, String userId, String conversationId) {
+        log.info("归档会话, tenantId={}, userId={}, conversationId={}", tenantId, userId, conversationId);
+        
+        // 查询会话
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .eq(Conversation::getUserId, userId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+        
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或已删除");
+        }
+        
+        // 更新状态为结束（作为归档状态）
+        conversation.setStatus(ConversationStatus.ENDED);
+        conversation.setEndedAt(LocalDateTime.now());
+        conversation.setUpdatedAt(LocalDateTime.now());
+        
+        // 保存更新
+        conversationRepository.updateById(conversation);
+        
+        log.info("会话归档成功, conversationId={}", conversationId);
+        return convertToDTO(conversation);
     }
 
     /**

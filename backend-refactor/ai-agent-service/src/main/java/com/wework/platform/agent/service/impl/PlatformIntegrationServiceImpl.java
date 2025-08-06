@@ -499,4 +499,102 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
             Map.of("role", "user", "content", request.getMessage())
         );
     }
+
+    @Override
+    public Double calculateCost(Integer inputTokens, Integer outputTokens, String modelName) {
+        log.debug("计算费用, inputTokens={}, outputTokens={}, modelName={}", 
+                 inputTokens, outputTokens, modelName);
+        
+        if (inputTokens == null || outputTokens == null || modelName == null) {
+            return 0.0;
+        }
+        
+        // 定义不同模型的价格（每1000个token的费用，单位：USD）
+        Map<String, Map<String, Double>> modelPricing = Map.of(
+            "gpt-3.5-turbo", Map.of("input", 0.0015, "output", 0.002),
+            "gpt-4", Map.of("input", 0.03, "output", 0.06),
+            "gpt-4-turbo", Map.of("input", 0.01, "output", 0.03),
+            "claude-3-haiku", Map.of("input", 0.00025, "output", 0.00125),
+            "claude-3-sonnet", Map.of("input", 0.003, "output", 0.015),
+            "claude-3-opus", Map.of("input", 0.015, "output", 0.075)
+        );
+        
+        // 获取模型价格，如果没有找到则使用默认价格
+        Map<String, Double> pricing = modelPricing.getOrDefault(
+            modelName.toLowerCase(), 
+            Map.of("input", 0.001, "output", 0.002) // 默认价格
+        );
+        
+        // 计算费用
+        double inputCost = (inputTokens / 1000.0) * pricing.get("input");
+        double outputCost = (outputTokens / 1000.0) * pricing.get("output");
+        double totalCost = inputCost + outputCost;
+        
+        log.debug("费用计算完成, inputCost={}, outputCost={}, totalCost={}", 
+                 inputCost, outputCost, totalCost);
+        
+        return totalCost;
+    }
+
+    @Override
+    public Integer estimateTokens(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return 0;
+        }
+        
+        // 简单的Token估算算法
+        // 通常1个英文单词约等于1.3个token，1个中文字符约等于2个token
+        String trimmedText = text.trim();
+        
+        // 统计中文字符数
+        int chineseChars = 0;
+        int englishWords = 0;
+        
+        for (char c : trimmedText.toCharArray()) {
+            if (c >= 0x4e00 && c <= 0x9fff) { // Unicode中文范围
+                chineseChars++;
+            }
+        }
+        
+        // 统计英文单词数（简单按空格分割）
+        String[] words = trimmedText.split("\\s+");
+        for (String word : words) {
+            if (word.matches("[a-zA-Z0-9]+")) {
+                englishWords++;
+            }
+        }
+        
+        // 计算预估token数
+        int estimatedTokens = (int) (chineseChars * 2 + englishWords * 1.3);
+        
+        // 加上一些基础token（标点符号等）
+        estimatedTokens += trimmedText.length() - chineseChars - englishWords * 5; // 估算其他字符
+        
+        log.debug("Token估算完成, text length={}, estimatedTokens={}", trimmedText.length(), estimatedTokens);
+        
+        return Math.max(1, estimatedTokens); // 至少1个token
+    }
+
+    @Override
+    public PlatformIntegrationService.PlatformCapabilities getCapabilities() {
+        log.debug("获取平台功能信息");
+        
+        PlatformIntegrationService.PlatformCapabilities capabilities = new PlatformIntegrationService.PlatformCapabilities();
+        
+        // 设置平台支持的功能
+        capabilities.setSupportsChat(true);
+        capabilities.setSupportsWorkflow(true);
+        capabilities.setSupportsStream(true);
+        capabilities.setSupportsTools(true);
+        capabilities.setSupportsImages(true);
+        capabilities.setSupportsAudio(false); // 暂不支持音频
+        capabilities.setSupportsVideo(false); // 暂不支持视频
+        capabilities.setSupportsFiles(true);
+        
+        // 设置支持的语言
+        capabilities.setSupportedLanguages(List.of("zh-CN", "en-US", "ja-JP", "ko-KR"));
+        
+        log.debug("平台功能信息获取完成");
+        return capabilities;
+    }
 }

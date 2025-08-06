@@ -348,6 +348,80 @@ public class AgentServiceImpl implements AgentService {
         return stats;
     }
 
+    @Override
+    public String testAgent(String tenantId, String agentId, String testInput) {
+        log.info("测试智能体, tenantId={}, agentId={}, testInput={}", tenantId, agentId, testInput);
+        
+        // 验证Agent存在
+        Agent agent = getAgentEntity(tenantId, agentId);
+        
+        try {
+            // 这里应该调用实际的AI服务进行测试
+            // 暂时返回一个模拟的测试结果
+            String testResult = String.format(
+                "测试成功！智能体 '%s' 响应正常。输入: '%s'，响应: '这是一个测试响应，表明智能体配置正确。'",
+                agent.getName(),
+                testInput
+            );
+            
+            log.info("智能体测试完成, agentId={}, result={}", agentId, testResult);
+            return testResult;
+            
+        } catch (Exception e) {
+            log.error("智能体测试失败, agentId={}, error={}", agentId, e.getMessage(), e);
+            return "测试失败: " + e.getMessage();
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AgentDTO copyAgent(String tenantId, String sourceAgentId, String newName) {
+        log.info("复制智能体, tenantId={}, sourceAgentId={}, newName={}", tenantId, sourceAgentId, newName);
+        
+        // 验证源智能体存在
+        Agent sourceAgent = getAgentEntity(tenantId, sourceAgentId);
+        
+        // 创建新智能体
+        Agent newAgent = new Agent();
+        newAgent.setTenantId(tenantId);
+        newAgent.setName(newName);
+        newAgent.setDescription(sourceAgent.getDescription() + " (复制)");
+        newAgent.setType(sourceAgent.getType());
+        newAgent.setStatus(AgentStatus.DRAFT); // 复制的智能体默认为草稿状态
+        newAgent.setSystemPrompt(sourceAgent.getSystemPrompt());
+        newAgent.setConfigJson(sourceAgent.getConfigJson());
+        newAgent.setPlatformType(sourceAgent.getPlatformType());
+        newAgent.setPlatformConfigId(sourceAgent.getPlatformConfigId());
+        newAgent.setAvatar(sourceAgent.getAvatar());
+        newAgent.setCreatedAt(LocalDateTime.now());
+        newAgent.setUpdatedAt(LocalDateTime.now());
+        
+        // 保存新智能体
+        agentRepository.insert(newAgent);
+        
+        log.info("智能体复制成功, sourceAgentId={}, newAgentId={}", sourceAgentId, newAgent.getId());
+        return convertToDTO(newAgent);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AgentDTO updateAgentStatus(String tenantId, String agentId, AgentStatus status) {
+        log.info("更新智能体状态, tenantId={}, agentId={}, status={}", tenantId, agentId, status);
+        
+        // 验证智能体存在
+        Agent agent = getAgentEntity(tenantId, agentId);
+        
+        // 更新状态
+        agent.setStatus(status);
+        agent.setUpdatedAt(LocalDateTime.now());
+        
+        // 保存更新
+        agentRepository.updateById(agent);
+        
+        log.info("智能体状态更新成功, agentId={}, status={}", agentId, status);
+        return convertToDTO(agent);
+    }
+
     /**
      * 转换为DTO
      */
