@@ -16,15 +16,15 @@ public interface ModelConfigService {
     /**
      * 创建模型配置
      *
-     * @param tenantId    租户ID
-     * @param name        配置名称
-     * @param platformType 平台类型
-     * @param modelName   模型名称
-     * @param configJson  配置JSON
+     * @param tenantId          租户ID
+     * @param platformConfigId  平台配置ID
+     * @param modelName         模型名称
+     * @param displayName       显示名称
+     * @param parameters        配置参数
      * @return 模型配置信息
      */
-    ModelConfigDTO createModelConfig(String tenantId, String name, PlatformType platformType,
-                                   String modelName, String configJson);
+    ModelConfigDTO createModelConfig(String tenantId, String platformConfigId, String modelName,
+                                   String displayName, Map<String, Object> parameters);
 
     /**
      * 更新模型配置

@@ -2,6 +2,9 @@ package com.wework.platform.agent.service;
 
 import com.wework.platform.agent.dto.request.ChatRequest;
 import com.wework.platform.agent.dto.response.ChatResponse;
+import com.wework.platform.agent.dto.ValidationResult;
+import com.wework.platform.agent.dto.ModelInfo;
+import com.wework.platform.agent.dto.PlatformCapabilities;
 import com.wework.platform.agent.entity.Agent;
 import com.wework.platform.agent.entity.PlatformConfig;
 import com.wework.platform.agent.entity.ModelConfig;

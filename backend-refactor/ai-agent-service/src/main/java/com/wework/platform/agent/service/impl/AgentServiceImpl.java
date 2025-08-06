@@ -81,7 +81,7 @@ public class AgentServiceImpl implements AgentService {
         
         // 检查状态是否允许修改
         if (agent.getStatus() == AgentStatus.PUBLISHED && 
-            !request.isForceUpdate()) {
+            !Boolean.TRUE.equals(request.getForceUpdate())) {
             throw new IllegalStateException("已发布的智能体不能直接修改，请创建新版本或强制更新");
         }
         

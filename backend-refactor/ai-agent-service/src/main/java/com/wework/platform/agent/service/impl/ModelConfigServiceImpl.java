@@ -59,10 +59,13 @@ public class ModelConfigServiceImpl implements ModelConfigService {
         // 创建模型配置
         ModelConfig modelConfig = new ModelConfig();
         modelConfig.setTenantId(tenantId);
-        modelConfig.setPlatformConfigId(platformConfigId);
+        modelConfig.setName(StringUtils.hasText(displayName) ? displayName : modelName);
         modelConfig.setModelName(modelName);
-        modelConfig.setDisplayName(StringUtils.hasText(displayName) ? displayName : modelName);
-        modelConfig.setParameters(parameters);
+        try {
+            modelConfig.setConfigJson(parameters != null ? objectMapper.writeValueAsString(parameters) : "{}");
+        } catch (Exception e) {
+            modelConfig.setConfigJson("{}");
+        }
         modelConfig.setEnabled(true);
         modelConfig.setCreatedAt(LocalDateTime.now());
         modelConfig.setUpdatedAt(LocalDateTime.now());
@@ -84,10 +87,10 @@ public class ModelConfigServiceImpl implements ModelConfigService {
         
         // 更新字段
         if (StringUtils.hasText(displayName)) {
-            modelConfig.setDisplayName(displayName);
+            modelConfig.setName(displayName);
         }
         if (parameters != null && !parameters.isEmpty()) {
-            modelConfig.setParameters(parameters);
+            modelConfig.setConfigJson(parameters);
         }
         
         modelConfig.setUpdatedAt(LocalDateTime.now());
@@ -336,10 +339,10 @@ public class ModelConfigServiceImpl implements ModelConfigService {
             // 创建模型配置
             ModelConfig modelConfig = new ModelConfig();
             modelConfig.setTenantId(tenantId);
-            modelConfig.setPlatformConfigId(platformConfigId);
+            modelConfig.setPlatformType(platformConfigId);
             modelConfig.setModelName(modelName);
-            modelConfig.setDisplayName(StringUtils.hasText(displayName) ? displayName : modelName);
-            modelConfig.setParameters(parameters);
+            modelConfig.setName(StringUtils.hasText(displayName) ? displayName : modelName);
+            modelConfig.setConfigJson(parameters);
             modelConfig.setEnabled(true);
             modelConfig.setCreatedAt(LocalDateTime.now());
             modelConfig.setUpdatedAt(LocalDateTime.now());

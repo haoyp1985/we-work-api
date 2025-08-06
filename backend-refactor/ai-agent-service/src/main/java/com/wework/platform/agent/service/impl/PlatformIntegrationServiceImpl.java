@@ -432,7 +432,7 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         // TODO: 解析Coze响应
         return ChatResponse.builder()
             .success(true)
-            .message("Coze响应")
+            .content("Coze响应")
             .timestamp(LocalDateTime.now())
             .build();
     }
@@ -441,7 +441,7 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         // TODO: 解析Dify响应
         return ChatResponse.builder()
             .success(true)
-            .message("Dify响应")
+            .content("Dify响应")
             .timestamp(LocalDateTime.now())
             .build();
     }
@@ -450,7 +450,7 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         // TODO: 解析阿里百炼响应
         return ChatResponse.builder()
             .success(true)
-            .message("阿里百炼响应")
+            .content("阿里百炼响应")
             .timestamp(LocalDateTime.now())
             .build();
     }
@@ -459,7 +459,7 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         // TODO: 解析OpenAI响应
         return ChatResponse.builder()
             .success(true)
-            .message("OpenAI响应")
+            .content("OpenAI响应")
             .timestamp(LocalDateTime.now())
             .build();
     }
@@ -468,7 +468,7 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         // TODO: 解析Claude响应
         return ChatResponse.builder()
             .success(true)
-            .message("Claude响应")
+            .content("Claude响应")
             .timestamp(LocalDateTime.now())
             .build();
     }
@@ -477,7 +477,7 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         // TODO: 解析文心一言响应
         return ChatResponse.builder()
             .success(true)
-            .message("文心一言响应")
+            .content("文心一言响应")
             .timestamp(LocalDateTime.now())
             .build();
     }

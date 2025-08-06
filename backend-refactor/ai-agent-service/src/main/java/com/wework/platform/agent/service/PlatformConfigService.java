@@ -1,6 +1,8 @@
 package com.wework.platform.agent.service;
 
 import com.wework.platform.agent.dto.PlatformConfigDTO;
+import com.wework.platform.agent.dto.ConnectionTestResult;
+import com.wework.platform.agent.dto.PlatformConfigUsageStats;
 import com.wework.platform.agent.dto.response.PageResult;
 import com.wework.platform.agent.enums.PlatformType;
 
