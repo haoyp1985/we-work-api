@@ -169,12 +169,151 @@ const staticRoutes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: "/ai-agent",
+    component: () => import("@/layout/index.vue"),
+    meta: {
+      title: "AI智能体管理",
+      icon: "robot",
+      order: 5,
+    },
+    children: [
+      {
+        path: "",
+        name: "AgentList",
+        component: () => import("@/views/ai-agent/AgentList.vue"),
+        meta: {
+          title: "智能体列表",
+          permissions: ["ai-agent:read"],
+        },
+      },
+      {
+        path: "create",
+        name: "AgentCreate",
+        component: () => import("@/views/ai-agent/AgentForm.vue"),
+        meta: {
+          title: "创建智能体",
+          permissions: ["ai-agent:create"],
+          hideInMenu: true,
+        },
+      },
+      {
+        path: "edit/:id",
+        name: "AgentEdit",
+        component: () => import("@/views/ai-agent/AgentForm.vue"),
+        meta: {
+          title: "编辑智能体",
+          permissions: ["ai-agent:update"],
+          hideInMenu: true,
+        },
+      },
+      {
+        path: "detail/:id",
+        name: "AgentDetail",
+        component: () => import("@/views/ai-agent/AgentDetail.vue"),
+        meta: {
+          title: "智能体详情",
+          permissions: ["ai-agent:read"],
+          hideInMenu: true,
+        },
+      },
+    ],
+  },
+  {
+    path: "/conversation",
+    component: () => import("@/layout/index.vue"),
+    meta: {
+      title: "对话管理",
+      icon: "chat",
+      order: 6,
+    },
+    children: [
+      {
+        path: "",
+        name: "ConversationList",
+        component: () => import("@/views/conversation/ConversationList.vue"),
+        meta: {
+          title: "会话列表",
+          permissions: ["conversation:read"],
+        },
+      },
+      {
+        path: "chat/:agentId?",
+        name: "ChatInterface",
+        component: () => import("@/views/conversation/ChatInterface.vue"),
+        meta: {
+          title: "AI对话",
+          permissions: ["conversation:chat"],
+          hideInMenu: true,
+        },
+      },
+    ],
+  },
+  {
+    path: "/platform",
+    component: () => import("@/layout/index.vue"),
+    meta: {
+      title: "平台集成",
+      icon: "connection",
+      order: 7,
+    },
+    children: [
+      {
+        path: "",
+        name: "PlatformConfigList",
+        component: () => import("@/views/platform/PlatformConfigList.vue"),
+        meta: {
+          title: "平台配置",
+          permissions: ["platform:read"],
+        },
+      },
+      {
+        path: "model-config",
+        name: "ModelConfigList",
+        component: () => import("@/views/model-config/ModelConfigList.vue"),
+        meta: {
+          title: "模型配置",
+          permissions: ["model:read"],
+        },
+      },
+    ],
+  },
+  {
+    path: "/ai-analytics",
+    component: () => import("@/layout/index.vue"),
+    meta: {
+      title: "AI数据分析",
+      icon: "chart",
+      order: 8,
+    },
+    children: [
+      {
+        path: "",
+        name: "AIAnalyticsDashboard",
+        component: () => import("@/views/ai-analytics/Dashboard.vue"),
+        meta: {
+          title: "数据概览",
+          permissions: ["analytics:read"],
+        },
+      },
+      {
+        path: "agent/:agentId",
+        name: "AgentAnalytics",
+        component: () => import("@/views/ai-analytics/AgentAnalytics.vue"),
+        meta: {
+          title: "智能体分析",
+          permissions: ["analytics:read"],
+          hideInMenu: true,
+        },
+      },
+    ],
+  },
+  {
     path: "/system",
     component: () => import("@/layout/index.vue"),
     meta: {
       title: "系统管理",
       icon: "system",
-      order: 5,
+      order: 9,
       permissions: ["system:read"],
     },
     children: [
