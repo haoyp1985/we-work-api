@@ -3,7 +3,10 @@ package com.wework.platform.agent.dto.request;
 import com.wework.platform.agent.enums.AgentStatus;
 import com.wework.platform.agent.enums.AgentType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -14,6 +17,9 @@ import java.util.List;
  * 智能体查询请求DTO
  */
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Schema(description = "智能体查询请求")
 public class AgentQueryRequest {
 

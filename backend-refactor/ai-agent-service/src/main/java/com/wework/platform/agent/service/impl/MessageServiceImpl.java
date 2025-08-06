@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -519,6 +520,54 @@ public class MessageServiceImpl implements MessageService {
         // 由于reactions字段的具体结构不明确，暂时记录日志
         
         log.info("消息反应添加成功, messageId={}, reactionType={}", messageId, reactionType);
+    }
+
+    @Override
+    public List<MessageDTO> getMessageQuoteChain(String tenantId, String messageId) {
+        log.debug("获取消息引用链, tenantId={}, messageId={}", tenantId, messageId);
+        
+        // 验证消息存在
+        Message message = getMessageEntity(tenantId, messageId);
+        
+        // TODO: 实现具体的引用链逻辑
+        // 这里应该根据消息的引用关系构建引用链
+        // 由于引用关系的具体实现不明确，暂时返回空列表
+        
+        List<MessageDTO> quoteChain = new ArrayList<>();
+        
+        log.debug("消息引用链获取完成, messageId={}, chainSize={}", messageId, quoteChain.size());
+        return quoteChain;
+    }
+
+    @Override
+    public String exportConversationMessages(String tenantId, String conversationId, String format) {
+        log.info("导出会话消息, tenantId={}, conversationId={}, format={}", tenantId, conversationId, format);
+        
+        // 查询会话消息
+        List<Message> messages = messageRepository.selectList(
+            new LambdaQueryWrapper<Message>()
+                .eq(Message::getTenantId, tenantId)
+                .eq(Message::getConversationId, conversationId)
+                .ne(Message::getStatus, MessageStatus.DELETED)
+                .orderByAsc(Message::getCreatedAt)
+        );
+        
+        if (messages.isEmpty()) {
+            return "{}";
+        }
+        
+        // 根据格式导出（这里简化处理，返回JSON格式）
+        try {
+            List<MessageDTO> messageDTOs = messages.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+            
+            // 使用JSON格式导出
+            return objectMapper.writeValueAsString(messageDTOs);
+        } catch (JsonProcessingException e) {
+            log.error("导出会话消息失败, conversationId={}, error={}", conversationId, e.getMessage());
+            throw new RuntimeException("导出会话消息失败: " + e.getMessage());
+        }
     }
 
     /**

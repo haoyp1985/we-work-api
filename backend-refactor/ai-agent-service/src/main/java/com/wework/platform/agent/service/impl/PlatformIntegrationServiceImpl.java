@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,9 +50,9 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
                     return callDashScope(platformConfig, modelConfig, request);
                 case OPENAI:
                     return callOpenAI(platformConfig, modelConfig, request);
-                case CLAUDE:
+                case ANTHROPIC_CLAUDE:
                     return callClaude(platformConfig, modelConfig, request);
-                case WENXIN:
+                case BAIDU_WENXIN:
                     return callWenxin(platformConfig, modelConfig, request);
                 default:
                     throw new UnsupportedOperationException("不支持的平台类型: " + platformConfig.getPlatformType());
@@ -117,9 +118,9 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
                     return getDashScopeModels(platformConfig);
                 case OPENAI:
                     return getOpenAIModels(platformConfig);
-                case CLAUDE:
+                case ANTHROPIC_CLAUDE:
                     return getClaudeModels(platformConfig);
-                case WENXIN:
+                case BAIDU_WENXIN:
                     return getWenxinModels(platformConfig);
                 default:
                     log.warn("不支持的平台类型: {}", platformConfig.getPlatformType());
@@ -596,5 +597,49 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         
         log.debug("平台功能信息获取完成");
         return capabilities;
+    }
+
+    @Override
+    public List<PlatformIntegrationService.ModelInfo> getAvailableModels(PlatformConfig platformConfig) {
+        log.debug("获取可用模型列表, platformType={}", platformConfig.getPlatformType());
+        
+        List<PlatformIntegrationService.ModelInfo> models = new ArrayList<>();
+        
+        // 根据平台类型返回预定义的模型列表
+        switch (platformConfig.getPlatformType()) {
+            case OPENAI:
+                models.add(createModelInfo("gpt-3.5-turbo", "GPT-3.5 Turbo", true, 4096));
+                models.add(createModelInfo("gpt-4", "GPT-4", true, 8192));
+                models.add(createModelInfo("gpt-4-turbo", "GPT-4 Turbo", true, 128000));
+                break;
+            case ANTHROPIC_CLAUDE:
+                models.add(createModelInfo("claude-3-haiku", "Claude 3 Haiku", true, 200000));
+                models.add(createModelInfo("claude-3-sonnet", "Claude 3 Sonnet", true, 200000));
+                models.add(createModelInfo("claude-3-opus", "Claude 3 Opus", true, 200000));
+                break;
+            case ALIBABA_DASHSCOPE:
+                models.add(createModelInfo("qwen-turbo", "通义千问-Turbo", true, 6000));
+                models.add(createModelInfo("qwen-plus", "通义千问-Plus", true, 30000));
+                break;
+            case BAIDU_WENXIN:
+                models.add(createModelInfo("ernie-bot", "文心一言", true, 5120));
+                models.add(createModelInfo("ernie-bot-turbo", "文心一言-Turbo", true, 5120));
+                break;
+            default:
+                models.add(createModelInfo("default-model", "默认模型", true, 4096));
+                break;
+        }
+        
+        log.debug("获取可用模型列表完成, count={}", models.size());
+        return models;
+    }
+
+    private PlatformIntegrationService.ModelInfo createModelInfo(String id, String name, boolean available, int maxTokens) {
+        PlatformIntegrationService.ModelInfo modelInfo = new PlatformIntegrationService.ModelInfo();
+        modelInfo.setId(id);
+        modelInfo.setName(name);
+        modelInfo.setAvailable(available);
+        modelInfo.setMaxTokens(maxTokens);
+        return modelInfo;
     }
 }

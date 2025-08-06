@@ -3,6 +3,7 @@ package com.wework.platform.agent.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wework.platform.agent.dto.ConversationDTO;
 import com.wework.platform.agent.dto.response.PageResult;
 import com.wework.platform.agent.entity.Agent;
@@ -20,7 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +39,7 @@ public class ConversationServiceImpl implements ConversationService {
 
     private final ConversationRepository conversationRepository;
     private final AgentRepository agentRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -390,6 +394,62 @@ public class ConversationServiceImpl implements ConversationService {
         
         log.info("会话归档成功, conversationId={}", conversationId);
         return convertToDTO(conversation);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void clearConversationContext(String tenantId, String conversationId) {
+        log.info("清理会话上下文, tenantId={}, conversationId={}", tenantId, conversationId);
+        
+        // 查询会话
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+        
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或已删除");
+        }
+        
+        // 清理上下文JSON
+        conversation.setContextJson("{}");
+        conversation.setUpdatedAt(LocalDateTime.now());
+        
+        // 保存更新
+        conversationRepository.updateById(conversation);
+        
+        log.info("会话上下文清理成功, conversationId={}", conversationId);
+    }
+
+    @Override
+    public Map<String, Object> getConversationContext(String tenantId, String conversationId) {
+        log.debug("获取会话上下文, tenantId={}, conversationId={}", tenantId, conversationId);
+        
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+        
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或已删除");
+        }
+        
+        // 解析JSON字符串为Map
+        String contextJson = conversation.getContextJson();
+        if (contextJson == null || contextJson.trim().isEmpty()) {
+            return new HashMap<>();
+        }
+        
+        try {
+            return objectMapper.readValue(contextJson, Map.class);
+        } catch (Exception e) {
+            log.warn("解析会话上下文JSON失败, conversationId={}, error={}", conversationId, e.getMessage());
+            return new HashMap<>();
+        }
     }
 
     /**

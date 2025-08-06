@@ -422,6 +422,65 @@ public class AgentServiceImpl implements AgentService {
         return convertToDTO(agent);
     }
 
+    @Override
+    public List<AgentDTO> getUserAccessibleAgents(String tenantId, String userId) {
+        log.debug("获取用户可访问的智能体, tenantId={}, userId={}", tenantId, userId);
+        
+        // 查询用户可访问的智能体（这里简化处理，返回所有已发布的智能体）
+        List<Agent> agents = agentRepository.selectList(
+            new LambdaQueryWrapper<Agent>()
+                .eq(Agent::getTenantId, tenantId)
+                .eq(Agent::getStatus, AgentStatus.PUBLISHED)
+                .eq(Agent::getEnabled, true)
+                .orderByDesc(Agent::getCreatedAt)
+        );
+        
+        // 转换为DTO
+        List<AgentDTO> agentDTOs = agents.stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+        
+        log.debug("获取用户可访问智能体完成, count={}", agentDTOs.size());
+        return agentDTOs;
+    }
+
+    @Override
+    public PageResult<AgentDTO> getAgentList(String tenantId, AgentQueryRequest request) {
+        log.debug("获取智能体列表, tenantId={}, request={}", tenantId, request);
+        
+        // 构建查询条件
+        LambdaQueryWrapper<Agent> queryWrapper = new LambdaQueryWrapper<Agent>()
+            .eq(Agent::getTenantId, tenantId);
+        
+        // 根据请求参数添加过滤条件
+        if (request.getName() != null && !request.getName().trim().isEmpty()) {
+            queryWrapper.like(Agent::getName, request.getName().trim());
+        }
+        if (request.getType() != null) {
+            queryWrapper.eq(Agent::getType, request.getType());
+        }
+        if (request.getStatus() != null) {
+            queryWrapper.eq(Agent::getStatus, request.getStatus());
+        }
+        
+        // 分页查询
+        Page<Agent> page = new Page<>(request.getPageNum(), request.getPageSize());
+        IPage<Agent> result = agentRepository.selectPage(page, queryWrapper);
+        
+        // 转换为DTO
+        List<AgentDTO> dtoList = result.getRecords().stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+        
+        return PageResult.<AgentDTO>builder()
+            .records(dtoList)
+            .total(result.getTotal())
+            .current(request.getPageNum().longValue())
+            .size(request.getPageSize().longValue())
+            .pages(result.getPages())
+            .build();
+    }
+
     /**
      * 转换为DTO
      */
