@@ -7,6 +7,8 @@ import com.wework.platform.common.core.base.PageQuery;
 import com.wework.platform.common.core.base.PageResult;
 import com.wework.platform.common.core.exception.BusinessException;
 import com.wework.platform.common.exception.ResourceNotFoundException;
+import com.wework.platform.common.enums.ErrorCode;
+import com.wework.platform.common.enums.TaskStatus;
 import com.wework.platform.common.utils.BeanCopyUtils;
 import com.wework.platform.task.dto.CreateTaskDefinitionRequest;
 import com.wework.platform.task.dto.TaskDefinitionDTO;
@@ -41,18 +43,18 @@ public class TaskDefinitionServiceImpl implements TaskDefinitionService {
     public TaskDefinitionDTO createTaskDefinition(String tenantId, CreateTaskDefinitionRequest request) {
         // 验证任务名称唯一性
         if (existsByName(tenantId, request.getTaskName())) {
-            throw new BusinessException(ErrorCode.BUSINESS_ERROR, "任务名称已存在");
+            throw new BusinessException(Integer.parseInt(ErrorCode.BUSINESS_ERROR.getCode()), "任务名称已存在");
         }
 
         // 验证Cron表达式
         if ("CRON".equals(request.getScheduleType()) && !isValidCronExpression(request.getCronExpression())) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR, "Cron表达式格式不正确");
+            throw new BusinessException(Integer.parseInt(ErrorCode.PARAM_ERROR.getCode()), "Cron表达式格式不正确");
         }
 
         TaskDefinition taskDefinition = new TaskDefinition();
         BeanCopyUtils.copyProperties(request, taskDefinition);
         taskDefinition.setTenantId(tenantId);
-        taskDefinition.setStatus("ENABLED");
+        taskDefinition.setStatus(TaskStatus.ENABLED);
         taskDefinition.setCreatedAt(LocalDateTime.now());
         taskDefinition.setUpdatedAt(LocalDateTime.now());
 
@@ -104,14 +106,14 @@ public class TaskDefinitionServiceImpl implements TaskDefinitionService {
         if (StringUtils.hasText(request.getTaskName()) && 
             !request.getTaskName().equals(taskDefinition.getTaskName()) &&
             existsByName(tenantId, request.getTaskName())) {
-            throw new BusinessException(ErrorCode.BUSINESS_ERROR, "任务名称已存在");
+            throw new BusinessException(Integer.parseInt(ErrorCode.BUSINESS_ERROR.getCode()), "任务名称已存在");
         }
 
         // 验证Cron表达式
         if ("CRON".equals(request.getScheduleType()) && 
             StringUtils.hasText(request.getCronExpression()) &&
             !isValidCronExpression(request.getCronExpression())) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR, "Cron表达式格式不正确");
+            throw new BusinessException(Integer.parseInt(ErrorCode.PARAM_ERROR.getCode()), "Cron表达式格式不正确");
         }
 
         // 保存原状态用于判断是否需要重新调度
@@ -146,7 +148,7 @@ public class TaskDefinitionServiceImpl implements TaskDefinitionService {
             taskDefinition.setMaxRetryCount(request.getMaxRetryCount());
         }
         if (StringUtils.hasText(request.getStatus())) {
-            taskDefinition.setStatus(request.getStatus());
+            taskDefinition.setStatus(TaskStatus.fromCode(request.getStatus()));
         }
 
         taskDefinition.setUpdatedAt(LocalDateTime.now());
@@ -186,7 +188,7 @@ public class TaskDefinitionServiceImpl implements TaskDefinitionService {
             return true; // 已经启用
         }
 
-        taskDefinition.setStatus("ENABLED");
+        taskDefinition.setStatus(TaskStatus.ENABLED);
         taskDefinition.setUpdatedAt(LocalDateTime.now());
         taskDefinitionRepository.updateById(taskDefinition);
 
@@ -207,7 +209,7 @@ public class TaskDefinitionServiceImpl implements TaskDefinitionService {
             return true; // 已经禁用
         }
 
-        taskDefinition.setStatus("DISABLED");
+        taskDefinition.setStatus(TaskStatus.DISABLED);
         taskDefinition.setUpdatedAt(LocalDateTime.now());
         taskDefinitionRepository.updateById(taskDefinition);
 
@@ -269,10 +271,10 @@ public class TaskDefinitionServiceImpl implements TaskDefinitionService {
     private TaskDefinition getTaskDefinitionEntity(String tenantId, String taskDefinitionId) {
         TaskDefinition taskDefinition = taskDefinitionRepository.selectById(taskDefinitionId);
         if (taskDefinition == null || taskDefinition.getDeletedAt() != null) {
-            throw new BusinessException(ErrorCode.NOT_FOUND, "任务定义不存在");
+            throw new BusinessException(Integer.parseInt(ErrorCode.NOT_FOUND.getCode()), "任务定义不存在");
         }
         if (!tenantId.equals(taskDefinition.getTenantId())) {
-            throw new BusinessException(ErrorCode.FORBIDDEN, "无权限访问该任务定义");
+            throw new BusinessException(Integer.parseInt(ErrorCode.FORBIDDEN.getCode()), "无权限访问该任务定义");
         }
         return taskDefinition;
     }
@@ -290,7 +292,7 @@ public class TaskDefinitionServiceImpl implements TaskDefinitionService {
      * 处理调度状态变化
      */
     private void handleSchedulingStateChange(TaskDefinition taskDefinition, String originalStatus) {
-        String currentStatus = taskDefinition.getStatus();
+        String currentStatus = taskDefinition.getStatus().getCode();
         
         if ("ENABLED".equals(currentStatus) && !"ENABLED".equals(originalStatus)) {
             // 从禁用变为启用，添加到调度器

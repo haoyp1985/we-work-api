@@ -91,7 +91,22 @@ public enum ErrorCode {
     /**
      * 分布式锁获取失败
      */
-    DISTRIBUTED_LOCK_FAILED("2010", "分布式锁获取失败");
+    DISTRIBUTED_LOCK_FAILED("2010", "分布式锁获取失败"),
+
+    /**
+     * 业务错误
+     */
+    BUSINESS_ERROR("3000", "业务错误"),
+
+    /**
+     * 资源未找到
+     */
+    NOT_FOUND("3001", "资源未找到"),
+
+    /**
+     * 访问被拒绝
+     */
+    FORBIDDEN("3002", "访问被拒绝");
 
     /**
      * 错误码

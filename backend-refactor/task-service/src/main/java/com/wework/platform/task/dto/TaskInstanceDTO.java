@@ -32,6 +32,9 @@ public class TaskInstanceDTO {
     @Schema(description = "任务定义ID", example = "550e8400-e29b-41d4-a716-446655440001")
     private String definitionId;
 
+    @Schema(description = "任务定义ID - 别名", example = "550e8400-e29b-41d4-a716-446655440001")
+    private String taskDefinitionId;
+
     @Schema(description = "任务定义名称", example = "数据同步任务")
     private String definitionName;
 
@@ -40,6 +43,15 @@ public class TaskInstanceDTO {
 
     @Schema(description = "任务状态", example = "SUCCESS")
     private String status;
+
+    @Schema(description = "执行状态 - 别名", example = "SUCCESS")
+    private String executionStatus;
+
+    @Schema(description = "执行结果")
+    private String executionResult;
+
+    @Schema(description = "执行参数")
+    private String executionParams;
 
     @Schema(description = "任务优先级", example = "5")
     private Integer priority;

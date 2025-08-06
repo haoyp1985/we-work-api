@@ -417,14 +417,14 @@ public class TaskContext {
      * 设置实例ID（用于兼容接口调用）
      */
     public void setInstanceId(String instanceId) {
-        this.instanceId = instanceId;
+        this.taskId = instanceId;
     }
 
     /**
      * 设置任务定义ID（用于兼容接口调用）
      */
     public void setTaskDefinitionId(String taskDefinitionId) {
-        this.taskDefinitionId = taskDefinitionId;
+        this.definitionId = taskDefinitionId;
     }
 
     /**

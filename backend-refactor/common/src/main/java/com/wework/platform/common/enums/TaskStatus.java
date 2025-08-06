@@ -61,7 +61,17 @@ public enum TaskStatus {
     /**
      * 等待重试
      */
-    WAITING_RETRY("WAITING_RETRY", "等待重试");
+    WAITING_RETRY("WAITING_RETRY", "等待重试"),
+
+    /**
+     * 已启用
+     */
+    ENABLED("ENABLED", "已启用"),
+
+    /**
+     * 已禁用
+     */
+    DISABLED("DISABLED", "已禁用");
 
     /**
      * 状态码

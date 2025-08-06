@@ -7,6 +7,8 @@ import com.wework.platform.common.core.base.PageQuery;
 import com.wework.platform.common.core.base.PageResult;
 import com.wework.platform.common.core.exception.BusinessException;
 import com.wework.platform.common.exception.ResourceNotFoundException;
+import com.wework.platform.common.enums.ErrorCode;
+import com.wework.platform.common.enums.TaskStatus;
 import com.wework.platform.common.utils.BeanCopyUtils;
 import com.wework.platform.task.dto.TaskInstanceDTO;
 import com.wework.platform.task.entity.TaskInstance;
@@ -38,7 +40,7 @@ public class TaskInstanceServiceImpl implements TaskInstanceService {
         TaskInstance taskInstance = new TaskInstance();
         taskInstance.setTenantId(tenantId);
         taskInstance.setTaskDefinitionId(taskDefinitionId);
-        taskInstance.setExecutionStatus("PENDING");
+        taskInstance.setExecutionStatus(TaskStatus.PENDING);
         taskInstance.setExecutionParams(executionParams);
         taskInstance.setRetryCount(0);
         taskInstance.setMaxRetryCount(3); // 默认最大重试次数
@@ -86,7 +88,7 @@ public class TaskInstanceServiceImpl implements TaskInstanceService {
             return false;
         }
 
-        taskInstance.setExecutionStatus(status);
+        taskInstance.setExecutionStatus(TaskStatus.fromCode(status));
         if (StringUtils.hasText(result)) {
             taskInstance.setExecutionResult(result);
         }
@@ -106,7 +108,7 @@ public class TaskInstanceServiceImpl implements TaskInstanceService {
             return false;
         }
 
-        taskInstance.setExecutionStatus("RUNNING");
+        taskInstance.setExecutionStatus(TaskStatus.RUNNING);
         taskInstance.setStartTime(LocalDateTime.now());
         taskInstance.setExecutionNode(executionNode);
         taskInstance.setUpdatedAt(LocalDateTime.now());
@@ -124,7 +126,7 @@ public class TaskInstanceServiceImpl implements TaskInstanceService {
         }
 
         LocalDateTime endTime = LocalDateTime.now();
-        taskInstance.setExecutionStatus(status);
+        taskInstance.setExecutionStatus(TaskStatus.fromCode(status));
         taskInstance.setEndTime(endTime);
         
         if (taskInstance.getStartTime() != null) {
@@ -157,7 +159,7 @@ public class TaskInstanceServiceImpl implements TaskInstanceService {
 
         taskInstance.setRetryCount(taskInstance.getRetryCount() + 1);
         taskInstance.setNextRetryTime(nextRetryTime);
-        taskInstance.setExecutionStatus("PENDING"); // 重置为待执行状态
+        taskInstance.setExecutionStatus(TaskStatus.PENDING); // 重置为待执行状态
         taskInstance.setUpdatedAt(LocalDateTime.now());
 
         return taskInstanceRepository.updateById(taskInstance) > 0;
@@ -215,10 +217,10 @@ public class TaskInstanceServiceImpl implements TaskInstanceService {
         // 只能取消待执行或执行中的任务
         if (!"PENDING".equals(taskInstance.getExecutionStatus()) && 
             !"RUNNING".equals(taskInstance.getExecutionStatus())) {
-            throw new BusinessException(ErrorCode.BUSINESS_ERROR, "该状态的任务实例不能取消");
+            throw new BusinessException(Integer.parseInt(ErrorCode.BUSINESS_ERROR.getCode()), "该状态的任务实例不能取消");
         }
 
-        taskInstance.setExecutionStatus("CANCELLED");
+        taskInstance.setExecutionStatus(TaskStatus.CANCELLED);
         taskInstance.setEndTime(LocalDateTime.now());
         taskInstance.setUpdatedAt(LocalDateTime.now());
 
@@ -289,10 +291,10 @@ public class TaskInstanceServiceImpl implements TaskInstanceService {
     private TaskInstance getTaskInstanceEntity(String tenantId, String instanceId) {
         TaskInstance taskInstance = taskInstanceRepository.selectById(instanceId);
         if (taskInstance == null || taskInstance.getDeletedAt() != null) {
-            throw new BusinessException(ErrorCode.NOT_FOUND, "任务实例不存在");
+            throw new BusinessException(Integer.parseInt(ErrorCode.NOT_FOUND.getCode()), "任务实例不存在");
         }
         if (!tenantId.equals(taskInstance.getTenantId())) {
-            throw new BusinessException(ErrorCode.FORBIDDEN, "无权限访问该任务实例");
+            throw new BusinessException(Integer.parseInt(ErrorCode.FORBIDDEN.getCode()), "无权限访问该任务实例");
         }
         return taskInstance;
     }

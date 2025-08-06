@@ -191,7 +191,7 @@ public class TaskSchedulerController {
         dto.setExecutionParams(taskDefinition.getExecutionParams());
         dto.setTimeout(taskDefinition.getTimeout());
         dto.setMaxRetryCount(taskDefinition.getMaxRetryCount());
-        dto.setStatus(taskDefinition.getStatus());
+        dto.setStatus(taskDefinition.getStatus().getCode());
         dto.setCreatedAt(taskDefinition.getCreatedAt());
         dto.setUpdatedAt(taskDefinition.getUpdatedAt());
         return dto;
@@ -206,7 +206,7 @@ public class TaskSchedulerController {
         dto.setId(taskInstance.getId());
         dto.setTenantId(taskInstance.getTenantId());
         dto.setTaskDefinitionId(taskInstance.getTaskDefinitionId());
-        dto.setExecutionStatus(taskInstance.getExecutionStatus());
+        dto.setExecutionStatus(taskInstance.getExecutionStatus().getCode());
         dto.setStartTime(taskInstance.getStartTime());
         dto.setEndTime(taskInstance.getEndTime());
         dto.setExecutionDuration(taskInstance.getExecutionDuration());

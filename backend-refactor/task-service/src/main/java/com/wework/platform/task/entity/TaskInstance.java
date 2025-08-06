@@ -194,12 +194,7 @@ public class TaskInstance {
         this.executionNode = executionNode;
     }
 
-    /**
-     * 获取实例名称
-     */
-    public String getInstanceName() {
-        return this.instanceName;
-    }
+    // 实例名称字段不存在于TaskInstance实体中，移除错误方法
 
     /**
      * 获取重试次数
