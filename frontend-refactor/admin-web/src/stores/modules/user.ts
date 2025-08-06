@@ -5,43 +5,56 @@
 
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import { authApi } from "@/api/auth";
-import { getToken, setToken, removeToken } from "@/utils/auth";
+import * as authApi from "@/api/auth";
+import { 
+  getToken, 
+  setToken, 
+  removeToken, 
+  getRefreshToken,
+  setRefreshToken,
+  removeRefreshToken,
+  setUserInfoCache,
+  clearAuth
+} from "@/utils/auth";
 import router from "@/router";
 import type {
-  User,
+  UserInfo,
   Role,
   Permission,
-  LoginForm,
+  LoginRequest,
   LoginResponse,
-} from "@/types/user";
+  UserStatus
+} from "@/types/api";
 
 export const useUserStore = defineStore("user", () => {
   // ===== State =====
-  const userInfo = ref<User>({
+  const userInfo = ref<UserInfo>({
     id: "",
-    tenantId: "",
     username: "",
-    nickname: "",
+    realName: "",
     email: "",
     phone: "",
     avatar: "",
-    status: "active",
+    status: UserStatus.ACTIVE,
+    roles: [],
+    permissions: [],
+    tenantId: "",
+    organizationId: "",
     createdAt: "",
     updatedAt: "",
+    lastLoginAt: ""
   });
 
-  const roles = ref<Role[]>([]);
-  const permissions = ref<Permission[]>([]);
   const token = ref<string>(getToken() || "");
+  const refreshToken = ref<string>(getRefreshToken() || "");
   const isLoggedIn = ref<boolean>(!!getToken());
 
   // ===== Getters =====
-  const permissionCodes = computed(() =>
-    permissions.value.map((permission) => permission.permissionCode),
-  );
+  const permissionCodes = computed(() => userInfo.value.permissions);
 
-  const roleCodes = computed(() => roles.value.map((role) => role.roleCode));
+  const roleCodes = computed(() => 
+    userInfo.value.roles.map((role) => role.code)
+  );
 
   const isAdmin = computed(
     () =>
@@ -49,49 +62,31 @@ export const useUserStore = defineStore("user", () => {
       roleCodes.value.includes("TENANT_ADMIN"),
   );
 
-  const menuPermissions = computed(() =>
-    permissions.value.filter(
-      (permission) => permission.permissionType === "MENU",
-    ),
-  );
-
-  const buttonPermissions = computed(() =>
-    permissions.value.filter(
-      (permission) => permission.permissionType === "BUTTON",
-    ),
-  );
+  // 删除了单独的menuPermissions和buttonPermissions计算属性
+  // 因为权限信息现在直接存储在userInfo中
 
   // ===== Actions =====
 
   /**
    * 用户登录
    */
-  const login = async (loginForm: LoginForm): Promise<LoginResponse> => {
+  const login = async (loginForm: LoginRequest): Promise<LoginResponse> => {
     try {
       const response = await authApi.login(loginForm);
+      const data = response.data;
 
-      if (response.code === 200) {
-        const {
-          token: newToken,
-          userInfo: userData,
-          roles: userRoles,
-          permissions: userPermissions,
-        } = response.data;
+      // 设置token
+      token.value = data.token;
+      refreshToken.value = data.refreshToken;
+      setToken(data.token);
+      setRefreshToken(data.refreshToken);
 
-        // 设置token
-        token.value = newToken;
-        setToken(newToken);
+      // 设置用户信息
+      userInfo.value = data.userInfo;
+      setUserInfoCache(data.userInfo);
+      isLoggedIn.value = true;
 
-        // 设置用户信息
-        userInfo.value = userData;
-        roles.value = userRoles;
-        permissions.value = userPermissions;
-        isLoggedIn.value = true;
-
-        return response.data;
-      } else {
-        throw new Error(response.message || "登录失败");
-      }
+      return data;
     } catch (error) {
       console.error("登录失败:", error);
       throw error;
@@ -101,25 +96,13 @@ export const useUserStore = defineStore("user", () => {
   /**
    * 获取用户信息
    */
-  const getUserInfo = async (): Promise<User> => {
+  const getUserInfo = async (): Promise<UserInfo> => {
     try {
-      const response = await authApi.getUserInfo();
+      const response = await authApi.getCurrentUser();
+      const userData = response.data;
 
-      if (response.code === 200) {
-        const {
-          userInfo: userData,
-          roles: userRoles,
-          permissions: userPermissions,
-        } = response.data;
-
-        userInfo.value = userData;
-        roles.value = userRoles;
-        permissions.value = userPermissions;
-
-        return userData;
-      } else {
-        throw new Error(response.message || "获取用户信息失败");
-      }
+      userInfo.value = userData;
+      return userData;
     } catch (error) {
       console.error("获取用户信息失败:", error);
       // 清除无效token
@@ -171,26 +154,51 @@ export const useUserStore = defineStore("user", () => {
   };
 
   /**
+   * 刷新Token
+   */
+  const refreshAccessToken = async (): Promise<string> => {
+    try {
+      const response = await authApi.refreshToken(refreshToken.value);
+      const data = response.data;
+
+      token.value = data.token;
+      refreshToken.value = data.refreshToken;
+      setToken(data.token);
+      setRefreshToken(data.refreshToken);
+      
+      return data.token;
+    } catch (error) {
+      console.error("Token刷新失败:", error);
+      // Token刷新失败，清除登录状态
+      logout();
+      throw error;
+    }
+  };
+
+  /**
    * 清除用户状态
    */
   const clearUserState = (): void => {
     userInfo.value = {
       id: "",
-      tenantId: "",
       username: "",
-      nickname: "",
+      realName: "",
       email: "",
       phone: "",
       avatar: "",
-      status: "active",
+      status: UserStatus.ACTIVE,
+      roles: [],
+      permissions: [],
+      tenantId: "",
+      organizationId: "",
       createdAt: "",
       updatedAt: "",
+      lastLoginAt: ""
     };
-    roles.value = [];
-    permissions.value = [];
     token.value = "";
+    refreshToken.value = "";
     isLoggedIn.value = false;
-    removeToken();
+    clearAuth();
   };
 
   /**
@@ -313,31 +321,23 @@ export const useUserStore = defineStore("user", () => {
   return {
     // State
     userInfo,
-    roles,
-    permissions,
     token,
+    refreshToken,
     isLoggedIn,
 
     // Getters
     permissionCodes,
     roleCodes,
     isAdmin,
-    menuPermissions,
-    buttonPermissions,
 
     // Actions
     login,
     logout,
     getUserInfo,
-    refreshToken,
+    refreshAccessToken,
     clearUserState,
     hasPermission,
     hasRole,
-    hasAnyPermission,
-    hasAnyRole,
-    updateProfile,
-    changePassword,
-    uploadAvatar,
     initializeAuth,
   };
 });

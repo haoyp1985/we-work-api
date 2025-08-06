@@ -14,40 +14,10 @@ import {
   DataBoard
 } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
+import * as agentApi from '@/api/agent'
+import type { Agent, AgentQuery, AgentStatus, AgentType } from '@/types/api'
 
 const router = useRouter()
-
-// 智能体状态枚举
-enum AgentStatus {
-  DRAFT = 'DRAFT',
-  PUBLISHED = 'PUBLISHED', 
-  DISABLED = 'DISABLED'
-}
-
-// 智能体类型枚举
-enum AgentType {
-  CHAT = 'CHAT',
-  TASK = 'TASK',
-  ANALYSIS = 'ANALYSIS'
-}
-
-// 智能体数据接口
-interface Agent {
-  id: string
-  name: string
-  description: string
-  type: AgentType
-  status: AgentStatus
-  avatar?: string
-  platformType: string
-  modelName: string
-  createdAt: string
-  updatedAt: string
-  createdBy: string
-  conversationCount: number
-  messageCount: number
-  lastActiveAt?: string
-}
 
 // 响应式数据
 const loading = ref(false)
@@ -55,17 +25,13 @@ const tableData = ref<Agent[]>([])
 const total = ref(0)
 
 // 搜索表单
-const searchForm = reactive({
-  keyword: '',
-  status: '',
-  type: '',
-  platformType: ''
-})
-
-// 分页
-const pagination = reactive({
+const searchForm = reactive<AgentQuery>({
   current: 1,
-  size: 10
+  size: 10,
+  keyword: '',
+  status: undefined,
+  type: undefined,
+  platformType: undefined
 })
 
 // 状态选项
@@ -89,16 +55,9 @@ const platformOptions = [
   { label: 'Dify', value: 'DIFY' }
 ]
 
-// 计算属性
+// 计算属性 - 服务端分页，不需要前端过滤
 const filteredData = computed(() => {
-  return tableData.value.filter(item => {
-    return (!searchForm.keyword || 
-            item.name.toLowerCase().includes(searchForm.keyword.toLowerCase()) ||
-            item.description.toLowerCase().includes(searchForm.keyword.toLowerCase())) &&
-           (!searchForm.status || item.status === searchForm.status) &&
-           (!searchForm.type || item.type === searchForm.type) &&
-           (!searchForm.platformType || item.platformType === searchForm.platformType)
-  })
+  return tableData.value
 })
 
 // 获取状态标签类型
@@ -125,64 +84,17 @@ const getPlatformText = (platform: string) => {
   return option?.label || platform
 }
 
-// 模拟数据
-const mockData: Agent[] = [
-  {
-    id: '1',
-    name: '智能客服助手',
-    description: '专业的客户服务AI助手，能够处理常见问题咨询、产品介绍等',
-    type: AgentType.CHAT,
-    status: AgentStatus.PUBLISHED,
-    avatar: 'https://avatars.githubusercontent.com/u/1?v=4',
-    platformType: 'OPENAI',
-    modelName: 'gpt-3.5-turbo',
-    createdAt: '2024-01-15 10:30:00',
-    updatedAt: '2024-01-15 14:20:00',
-    createdBy: '张三',
-    conversationCount: 156,
-    messageCount: 2341,
-    lastActiveAt: '2024-01-15 16:45:00'
-  },
-  {
-    id: '2', 
-    name: '数据分析专家',
-    description: '专注于数据分析和报告生成的AI助手',
-    type: AgentType.ANALYSIS,
-    status: AgentStatus.PUBLISHED,
-    platformType: 'ANTHROPIC_CLAUDE',
-    modelName: 'claude-3-sonnet',
-    createdAt: '2024-01-14 09:15:00',
-    updatedAt: '2024-01-15 11:30:00',
-    createdBy: '李四',
-    conversationCount: 89,
-    messageCount: 1567,
-    lastActiveAt: '2024-01-15 15:20:00'
-  },
-  {
-    id: '3',
-    name: '任务处理助手',
-    description: '处理各类业务任务和工作流程的AI助手',
-    type: AgentType.TASK,
-    status: AgentStatus.DRAFT,
-    platformType: 'BAIDU_WENXIN',
-    modelName: 'ernie-3.5',
-    createdAt: '2024-01-15 16:00:00',
-    updatedAt: '2024-01-15 16:00:00',
-    createdBy: '王五',
-    conversationCount: 0,
-    messageCount: 0
-  }
-]
-
 // 加载数据
 const loadData = async () => {
   loading.value = true
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    tableData.value = mockData
-    total.value = mockData.length
+    const response = await agentApi.getAgents(searchForm)
+    tableData.value = response.data.records
+    total.value = response.data.total
+    searchForm.current = response.data.current
+    searchForm.size = response.data.size
   } catch (error) {
+    console.error('加载智能体列表失败:', error)
     ElMessage.error('加载数据失败')
   } finally {
     loading.value = false
@@ -191,20 +103,20 @@ const loadData = async () => {
 
 // 搜索
 const handleSearch = () => {
-  pagination.current = 1
-  // 实际项目中这里会调用API
-  ElMessage.success('搜索完成')
+  searchForm.current = 1
+  loadData()
 }
 
 // 重置搜索
 const handleReset = () => {
   Object.assign(searchForm, {
+    current: 1,
+    size: 10,
     keyword: '',
-    status: '',
-    type: '',
-    platformType: ''
+    status: undefined,
+    type: undefined,
+    platformType: undefined
   })
-  pagination.current = 1
   loadData()
 }
 
@@ -236,18 +148,15 @@ const handleDelete = async (row: Agent) => {
       }
     )
     
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await agentApi.deleteAgent(row.id)
     
-    const index = tableData.value.findIndex(item => item.id === row.id)
-    if (index > -1) {
-      tableData.value.splice(index, 1)
-      total.value--
-    }
-    
-    ElMessage.success('删除成功')
+    // 重新加载数据
+    await loadData()
   } catch (error) {
-    // 用户取消删除
+    // 用户取消删除或API错误
+    if (error && typeof error === 'object' && 'message' in error) {
+      console.error('删除智能体失败:', error)
+    }
   }
 }
 
@@ -256,14 +165,15 @@ const handleStatusToggle = async (row: Agent) => {
   const newStatus = row.status === AgentStatus.PUBLISHED ? AgentStatus.DISABLED : AgentStatus.PUBLISHED
   
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
+    const response = await agentApi.toggleAgentStatus(row.id, newStatus)
     
-    row.status = newStatus
-    row.updatedAt = new Date().toLocaleString()
-    
-    ElMessage.success(`智能体已${newStatus === AgentStatus.PUBLISHED ? '启用' : '禁用'}`)
+    // 更新本地数据
+    const index = tableData.value.findIndex(item => item.id === row.id)
+    if (index > -1) {
+      tableData.value[index] = response.data
+    }
   } catch (error) {
+    console.error('状态切换失败:', error)
     ElMessage.error('状态切换失败')
   }
 }
@@ -280,13 +190,13 @@ const handleStats = (row: Agent) => {
 
 // 分页变化
 const handlePageChange = (page: number) => {
-  pagination.current = page
+  searchForm.current = page
   loadData()
 }
 
 const handleSizeChange = (size: number) => {
-  pagination.size = size
-  pagination.current = 1
+  searchForm.size = size
+  searchForm.current = 1
   loadData()
 }
 
@@ -504,8 +414,8 @@ onMounted(() => {
       <!-- 分页 -->
       <div class="pagination-container">
         <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
+          v-model:current-page="searchForm.current"
+          v-model:page-size="searchForm.size"
           :page-sizes="[10, 20, 50, 100]"
           :total="total"
           layout="total, sizes, prev, pager, next, jumper"

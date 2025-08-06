@@ -14,6 +14,16 @@ import {
 } from '@element-plus/icons-vue'
 import { useRouter, useRoute } from 'vue-router'
 import type { FormInstance, FormRules, UploadProps } from 'element-plus'
+import * as agentApi from '@/api/agent'
+import { uploadAvatar } from '@/api/upload'
+import type { 
+  Agent, 
+  CreateAgentRequest, 
+  UpdateAgentRequest, 
+  AgentStatus, 
+  AgentType, 
+  PlatformType 
+} from '@/types/api'
 
 const router = useRouter()
 const route = useRoute()
@@ -34,31 +44,19 @@ const steps = [
   { title: '预览发布', description: '确认配置并发布' }
 ]
 
-// 智能体状态和类型枚举
-enum AgentStatus {
-  DRAFT = 'DRAFT',
-  PUBLISHED = 'PUBLISHED',
-  DISABLED = 'DISABLED'
-}
-
-enum AgentType {
-  CHAT = 'CHAT',
-  TASK = 'TASK',
-  ANALYSIS = 'ANALYSIS'
-}
+// 使用导入的类型枚举
 
 // 表单数据
-const formData = reactive({
+const formData = reactive<CreateAgentRequest & { id?: string }>({
   name: '',
   description: '',
-  type: AgentType.CHAT as AgentType,
+  type: AgentType.CHAT,
   avatar: '',
-  tags: [] as string[],
+  tags: [],
   
   // 平台配置
-  platformType: '',
+  platformType: PlatformType.OPENAI,
   modelName: '',
-  platformConfigId: '',
   
   // 高级设置
   systemPrompt: '',
@@ -83,11 +81,9 @@ const formData = reactive({
     contentFilter: true,
     rateLimitEnabled: true,
     maxRequestsPerMinute: 60,
-    allowedDomains: [] as string[],
-    blockedKeywords: [] as string[]
-  },
-  
-  status: AgentStatus.DRAFT as AgentStatus
+    allowedDomains: [],
+    blockedKeywords: []
+  }
 })
 
 // 表单验证规则
@@ -140,31 +136,31 @@ const typeOptions = [
 const platformOptions = [
   { 
     label: 'OpenAI', 
-    value: 'OPENAI', 
+    value: PlatformType.OPENAI, 
     description: 'GPT系列模型，强大的通用能力',
     models: ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo']
   },
   { 
     label: 'Anthropic Claude', 
-    value: 'ANTHROPIC_CLAUDE', 
+    value: PlatformType.ANTHROPIC_CLAUDE, 
     description: 'Claude系列模型，安全可靠',
     models: ['claude-3-haiku', 'claude-3-sonnet', 'claude-3-opus']
   },
   { 
     label: '百度文心一言', 
-    value: 'BAIDU_WENXIN', 
+    value: PlatformType.BAIDU_WENXIN, 
     description: '中文优化，本土化服务',
     models: ['ernie-3.5', 'ernie-4.0', 'ernie-bot-turbo']
   },
   { 
     label: 'Coze', 
-    value: 'COZE', 
+    value: PlatformType.COZE, 
     description: '字节跳动AI平台',
     models: ['coze-pro', 'coze-standard']
   },
   { 
     label: 'Dify', 
-    value: 'DIFY', 
+    value: PlatformType.DIFY, 
     description: '开源LLM应用平台',
     models: ['dify-chat', 'dify-completion']
   }
@@ -185,31 +181,30 @@ const tagInputRef = ref()
 const loading = ref(false)
 const saveLoading = ref(false)
 
-// 头像上传
-const avatarUploadProps: UploadProps = {
-  action: '/api/upload/avatar',
-  showFileList: false,
-  beforeUpload: (file) => {
-    const isJPG = file.type === 'image/jpeg' || file.type === 'image/png'
-    const isLt2M = file.size / 1024 / 1024 < 2
+// 头像上传处理
+const handleAvatarUpload = async (file: File) => {
+  const isJPG = file.type === 'image/jpeg' || file.type === 'image/png'
+  const isLt2M = file.size / 1024 / 1024 < 2
 
-    if (!isJPG) {
-      ElMessage.error('头像只能是 JPG/PNG 格式!')
-      return false
-    }
-    if (!isLt2M) {
-      ElMessage.error('头像大小不能超过 2MB!')
-      return false
-    }
-    return true
-  },
-  onSuccess: (response) => {
+  if (!isJPG) {
+    ElMessage.error('头像只能是 JPG/PNG 格式!')
+    return false
+  }
+  if (!isLt2M) {
+    ElMessage.error('头像大小不能超过 2MB!')
+    return false
+  }
+
+  try {
+    const response = await uploadAvatar(file)
     formData.avatar = response.data.url
     ElMessage.success('头像上传成功')
-  },
-  onError: () => {
+  } catch (error) {
+    console.error('头像上传失败:', error)
     ElMessage.error('头像上传失败')
   }
+  
+  return false // 阻止自动上传
 }
 
 // 监听平台变化，重置模型选择
@@ -312,23 +307,33 @@ const handleSave = async (publish = false) => {
     
     saveLoading.value = true
     
-    const submitData = {
-      ...formData,
-      status: publish ? AgentStatus.PUBLISHED : AgentStatus.DRAFT
+    if (isEdit.value && formData.id) {
+      // 更新智能体
+      const updateData: UpdateAgentRequest = {
+        id: formData.id,
+        ...formData
+      }
+      
+      await agentApi.updateAgent(updateData)
+      
+      // 如果需要发布
+      if (publish) {
+        await agentApi.publishAgent(formData.id)
+      }
+    } else {
+      // 创建智能体
+      const response = await agentApi.createAgent(formData)
+      
+      // 如果需要发布
+      if (publish && response.data.id) {
+        await agentApi.publishAgent(response.data.id)
+      }
     }
-    
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    ElMessage.success(
-      isEdit.value 
-        ? '智能体更新成功' 
-        : `智能体${publish ? '创建并发布' : '保存为草稿'}成功`
-    )
     
     router.push('/ai-agent')
   } catch (error) {
-    console.error('表单验证失败:', error)
+    console.error('保存智能体失败:', error)
+    ElMessage.error('保存失败，请重试')
   } finally {
     saveLoading.value = false
   }
@@ -355,45 +360,36 @@ const handleCancel = async () => {
 
 // 加载数据（编辑模式）
 const loadAgentData = async () => {
-  if (!isEdit.value) return
+  if (!isEdit.value || !agentId.value) return
   
   loading.value = true
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const response = await agentApi.getAgent(agentId.value)
+    const agent = response.data
     
-    // 模拟数据
-    const mockAgent = {
-      name: '智能客服助手',
-      description: '专业的客户服务AI助手，能够处理常见问题咨询、产品介绍等',
-      type: AgentType.CHAT,
-      avatar: 'https://avatars.githubusercontent.com/u/1?v=4',
-      tags: ['客服', '咨询', '自动化'],
-      platformType: 'OPENAI',
-      modelName: 'gpt-3.5-turbo',
-      systemPrompt: '你是一个专业的客户服务AI助手，请始终保持友好、专业的态度，为用户提供准确、有用的信息。',
-      temperature: 0.7,
-      maxTokens: 2048,
-      features: {
-        memoryEnabled: true,
-        contextWindow: 4000,
-        streamResponse: true,
-        webSearch: false,
-        codeExecution: false,
-        imageAnalysis: false
-      },
-      security: {
-        contentFilter: true,
-        rateLimitEnabled: true,
-        maxRequestsPerMinute: 60,
-        allowedDomains: ['example.com'],
-        blockedKeywords: ['敏感词']
-      }
-    }
-    
-    Object.assign(formData, mockAgent)
+    // 映射数据到表单
+    Object.assign(formData, {
+      id: agent.id,
+      name: agent.name,
+      description: agent.description,
+      type: agent.type,
+      avatar: agent.avatar,
+      tags: agent.tags,
+      platformType: agent.platformType,
+      modelName: agent.modelName,
+      systemPrompt: agent.systemPrompt,
+      temperature: agent.temperature,
+      maxTokens: agent.maxTokens,
+      topP: agent.topP,
+      frequencyPenalty: agent.frequencyPenalty,
+      presencePenalty: agent.presencePenalty,
+      features: agent.features,
+      security: agent.security
+    })
   } catch (error) {
+    console.error('加载智能体数据失败:', error)
     ElMessage.error('加载智能体数据失败')
+    router.push('/ai-agent')
   } finally {
     loading.value = false
   }
@@ -531,7 +527,8 @@ onMounted(() => {
               <el-form-item label="头像">
                 <div class="avatar-upload">
                   <el-upload
-                    v-bind="avatarUploadProps"
+                    :before-upload="handleAvatarUpload"
+                    :show-file-list="false"
                     class="avatar-uploader"
                   >
                     <img v-if="formData.avatar" :src="formData.avatar" class="avatar" />
