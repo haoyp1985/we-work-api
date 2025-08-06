@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="WeWork企业微信管理平台 - 专业的企业微信账号管理、消息发送、数据分析解决方案" />
+    <meta name="keywords" content="企业微信,WeWork,消息发送,账号管理,数据分析,SaaS平台" />
+    <meta name="author" content="WeWork Platform Team" />
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="WeWork管理平台" />
+    <meta property="og:description" content="专业的企业微信管理解决方案" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://admin.wework-platform.com" />
+    <meta property="og:image" content="/logo.png" />
+    
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ws: wss: https:;" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#409eff" />
+    <meta name="msapplication-TileColor" content="#409eff" />
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    
+    <!-- Title -->
+    <title>WeWork管理平台</title>
+    
+    <!-- Loading Style -->
+    <style>
+      /* 加载页面样式 */
+      #loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        flex-direction: column;
+      }
+      
+      .loading-logo {
+        width: 120px;
+        height: 120px;
+        margin-bottom: 30px;
+        animation: logoFloat 2s ease-in-out infinite;
+      }
+      
+      .loading-text {
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 20px;
+        letter-spacing: 1px;
+      }
+      
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(255, 255, 255, 0.2);
+        border-top: 3px solid #ffffff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes logoFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      /* 防止页面闪烁 */
+      #app {
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+      }
+      
+      #app.loaded {
+        opacity: 1;
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/js/index-DfjBAFcn.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/js/vendor-B8QV_ZHR.js">
+    <link rel="modulepreload" crossorigin href="/assets/js/element-plus-F2F34IhK.js">
+    <link rel="modulepreload" crossorigin href="/assets/js/vue-vendor-C8mxq32R.js">
+    <link rel="modulepreload" crossorigin href="/assets/js/network-C5DcNM9U.js">
+    <link rel="stylesheet" crossorigin href="/assets/css/element-plus-CHnlYbF4.css">
+    <link rel="stylesheet" crossorigin href="/assets/css/index-BAqmboKH.css">
+  </head>
+  
+  <body>
+    <!-- Loading Screen -->
+    <div id="loading">
+      <div class="loading-logo">
+        <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- WeWork Logo SVG -->
+          <circle cx="60" cy="60" r="50" stroke="white" stroke-width="2" fill="none" opacity="0.8"/>
+          <path d="M30 45 L45 30 L60 45 L75 30 L90 45 L75 60 L60 75 L45 60 L30 45Z" fill="white"/>
+          <circle cx="60" cy="60" r="8" fill="white"/>
+        </svg>
+      </div>
+      <div class="loading-text">WeWork 管理平台</div>
+      <div class="loading-spinner"></div>
+    </div>
+    
+    <!-- App Container -->
+    <div id="app"></div>
+    
+    <!-- Polyfills for older browsers -->
+    <script>
+      // 检查浏览器兼容性
+      if (!window.Promise || !window.fetch || !Array.prototype.includes) {
+        document.getElementById('loading').innerHTML = `
+          <div style="text-align: center; color: white;">
+            <h2>浏览器版本过低</h2>
+            <p>请使用现代浏览器访问本站点</p>
+            <p>推荐使用 Chrome 80+、Firefox 75+、Safari 13+、Edge 80+</p>
+          </div>
+        `;
+        throw new Error('Browser not supported');
+      }
+      
+      // 隐藏加载页面
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          const loading = document.getElementById('loading');
+          const app = document.getElementById('app');
+          if (loading && app) {
+            loading.style.opacity = '0';
+            app.classList.add('loaded');
+            setTimeout(function() {
+              loading.style.display = 'none';
+            }, 300);
+          }
+        }, 500);
+      });
+      
+      // 错误监控
+      window.addEventListener('error', function(e) {
+        console.error('Global error:', e.error);
+      });
+      
+      window.addEventListener('unhandledrejection', function(e) {
+        console.error('Unhandled promise rejection:', e.reason);
+      });
+    </script>
+    
+    <!-- Main Script -->
+  </body>
+</html>
