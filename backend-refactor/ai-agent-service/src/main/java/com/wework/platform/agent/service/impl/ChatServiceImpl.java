@@ -1,5 +1,7 @@
 package com.wework.platform.agent.service.impl;
 
+import com.wework.platform.agent.dto.ConversationDTO;
+import com.wework.platform.agent.dto.MessageDTO;
 import com.wework.platform.agent.dto.request.ChatRequest;
 import com.wework.platform.agent.dto.response.ChatResponse;
 import com.wework.platform.agent.entity.*;
@@ -443,15 +445,19 @@ public class ChatServiceImpl implements ChatService {
         }
         
         // 创建新会话
-        return conversationService.createConversation(tenantId, userId, request.getAgentId(), null);
+        ConversationDTO conversationDTO = conversationService.createConversation(tenantId, userId, request.getAgentId(), null);
+        // 从数据库重新获取实体
+        return conversationRepository.selectById(conversationDTO.getId());
     }
     
     private Message saveUserMessage(String tenantId, Conversation conversation, Agent agent, 
                                   String userId, ChatRequest request) {
-        return messageService.createMessage(
+        MessageDTO messageDTO = messageService.createMessage(
             tenantId, conversation.getId(), agent.getId(), userId,
             request.getMessageType(), "user", request.getContent()
         );
+        // 从数据库重新获取实体
+        return messageRepository.selectById(messageDTO.getId());
     }
     
     private ChatResponse callExternalPlatform(String tenantId, Agent agent, Conversation conversation,
@@ -485,10 +491,13 @@ public class ChatServiceImpl implements ChatService {
     
     private Message saveAssistantMessage(String tenantId, Conversation conversation, Agent agent,
                                        ChatResponse response, Message userMessage) {
-        Message assistantMessage = messageService.createMessage(
+        MessageDTO messageDTO = messageService.createMessage(
             tenantId, conversation.getId(), agent.getId(), null,
             response.getMessageType(), "assistant", response.getContent()
         );
+        
+        // 从数据库重新获取实体
+        Message assistantMessage = messageRepository.selectById(messageDTO.getId());
         
         // 设置父消息关系
         assistantMessage.setParentMessageId(userMessage.getId());

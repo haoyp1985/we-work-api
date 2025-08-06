@@ -78,22 +78,24 @@ public class TaskDefinitionServiceImpl implements TaskDefinitionService {
     }
 
     @Override
-    public PageResult<TaskDefinitionDTO> getTaskDefinitions(String tenantId, String taskName, 
-                                                           String status, PageQuery pageQuery) {
+    public IPage<TaskDefinitionDTO> getTaskDefinitions(String tenantId, Page<TaskDefinition> page,
+                                                       String taskName, String taskType, 
+                                                       Boolean enabled, String status) {
         LambdaQueryWrapper<TaskDefinition> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(TaskDefinition::getTenantId, tenantId)
                    .like(StringUtils.hasText(taskName), TaskDefinition::getTaskName, taskName)
-                   .eq(StringUtils.hasText(status), TaskDefinition::getStatus, status)
+                   .like(StringUtils.hasText(taskType), TaskDefinition::getTaskType, taskType)
+                   .eq(enabled != null, TaskDefinition::getEnabled, enabled)
+                   .eq(StringUtils.hasText(status), TaskDefinition::getStatus, TaskStatus.fromCode(status))
                    .orderByDesc(TaskDefinition::getCreatedAt);
 
-        IPage<TaskDefinition> page = new Page<>(pageQuery.getPageNum(), pageQuery.getPageSize());
         IPage<TaskDefinition> result = taskDefinitionRepository.selectPage(page, queryWrapper);
 
         List<TaskDefinitionDTO> records = result.getRecords().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
 
-        return PageResult.of(records, result.getTotal(), pageQuery.getPageNum(), pageQuery.getPageSize());
+        return result.setRecords(records);
     }
 
     @Override
@@ -117,7 +119,7 @@ public class TaskDefinitionServiceImpl implements TaskDefinitionService {
         }
 
         // 保存原状态用于判断是否需要重新调度
-        String originalStatus = taskDefinition.getStatus();
+        String originalStatus = taskDefinition.getStatus().getCode();
         
         // 更新字段
         if (StringUtils.hasText(request.getTaskName())) {
@@ -142,7 +144,7 @@ public class TaskDefinitionServiceImpl implements TaskDefinitionService {
             taskDefinition.setExecutionParams(request.getExecutionParams());
         }
         if (request.getTimeout() != null) {
-            taskDefinition.setTimeout(request.getTimeout());
+            taskDefinition.setTimeoutSeconds(request.getTimeout());
         }
         if (request.getMaxRetryCount() != null) {
             taskDefinition.setMaxRetryCount(request.getMaxRetryCount());
@@ -319,4 +321,15 @@ public class TaskDefinitionServiceImpl implements TaskDefinitionService {
             return false;
         }
     }
+
+    @Override
+    public ImportResult importTaskDefinitions(String tenantId, String importData) {
+        // TODO: 实现任务定义导入功能
+        ImportResult result = new ImportResult();
+        result.setSuccessCount(0);
+        result.setFailCount(0);
+        result.setMessage("导入功能暂未实现");
+        return result;
+    }
+
 }

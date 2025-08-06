@@ -150,9 +150,9 @@ public class ConversationServiceImpl implements ConversationService {
         return PageResult.<ConversationDTO>builder()
             .records(dtoList)
             .total(result.getTotal())
-            .pageNum(pageNum)
-            .pageSize(pageSize)
-            .pages((int) result.getPages())
+            .current((long) pageNum)
+            .size((long) pageSize)
+            .pages(result.getPages())
             .build();
     }
 
@@ -181,9 +181,9 @@ public class ConversationServiceImpl implements ConversationService {
         return PageResult.<ConversationDTO>builder()
             .records(dtoList)
             .total(result.getTotal())
-            .pageNum(pageNum)
-            .pageSize(pageSize)
-            .pages((int) result.getPages())
+            .current((long) pageNum)
+            .size((long) pageSize)
+            .pages(result.getPages())
             .build();
     }
 
@@ -262,16 +262,14 @@ public class ConversationServiceImpl implements ConversationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void cleanupExpiredConversations(int retentionDays) {
-        log.info("清理过期会话, retentionDays={}", retentionDays);
-        
-        LocalDateTime cutoffTime = LocalDateTime.now().minusDays(retentionDays);
+    public Long cleanupExpiredConversations(LocalDateTime expiredBefore) {
+        log.info("清理过期会话, expiredBefore={}", expiredBefore);
         
         // 查询需要清理的会话
         List<Conversation> expiredConversations = conversationRepository.selectList(
             new LambdaQueryWrapper<Conversation>()
                 .eq(Conversation::getStatus, ConversationStatus.ENDED)
-                .lt(Conversation::getEndedAt, cutoffTime)
+                .lt(Conversation::getEndedAt, expiredBefore)
         );
         
         if (!expiredConversations.isEmpty()) {
@@ -284,7 +282,10 @@ public class ConversationServiceImpl implements ConversationService {
             conversationRepository.updateBatchById(expiredConversations);
             
             log.info("清理过期会话完成, 清理数量={}", expiredConversations.size());
+            return (long) expiredConversations.size();
         }
+        
+        return 0L;
     }
 
     /**

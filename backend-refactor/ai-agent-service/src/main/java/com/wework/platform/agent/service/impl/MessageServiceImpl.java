@@ -3,6 +3,8 @@ package com.wework.platform.agent.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wework.platform.agent.dto.MessageDTO;
 import com.wework.platform.agent.dto.response.PageResult;
 import com.wework.platform.agent.entity.Conversation;
@@ -37,6 +39,7 @@ public class MessageServiceImpl implements MessageService {
 
     private final MessageRepository messageRepository;
     private final ConversationRepository conversationRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -55,7 +58,19 @@ public class MessageServiceImpl implements MessageService {
         message.setUserId(userId);
         message.setType(type);
         message.setContent(content);
-        message.setMetadata(metadata);
+        
+        // 转换metadata为JSON字符串
+        if (metadata != null && !metadata.isEmpty()) {
+            try {
+                message.setMetadata(objectMapper.writeValueAsString(metadata));
+            } catch (JsonProcessingException e) {
+                log.warn("Failed to serialize metadata to JSON, setting as empty string", e);
+                message.setMetadata("{}");
+            }
+        } else {
+            message.setMetadata("{}");
+        }
+        
         message.setStatus(MessageStatus.SENT);
         message.setCreatedAt(LocalDateTime.now());
         message.setUpdatedAt(LocalDateTime.now());
@@ -103,7 +118,7 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateMessageStatus(String tenantId, String messageId, MessageStatus status) {
+    public MessageDTO updateMessageStatus(String tenantId, String messageId, MessageStatus status) {
         log.info("更新消息状态, tenantId={}, messageId={}, status={}", tenantId, messageId, status);
         
         Message message = getMessageEntity(tenantId, messageId);
@@ -113,6 +128,8 @@ public class MessageServiceImpl implements MessageService {
         messageRepository.updateById(message);
         
         log.info("消息状态更新成功, messageId={}, status={}", messageId, status);
+        
+        return convertToDTO(message);
     }
 
     @Override
@@ -179,9 +196,9 @@ public class MessageServiceImpl implements MessageService {
         return PageResult.<MessageDTO>builder()
             .records(dtoList)
             .total(result.getTotal())
-            .pageNum(pageNum)
-            .pageSize(pageSize)
-            .pages((int) result.getPages())
+            .current((long) pageNum)
+            .size((long) pageSize)
+            .pages(result.getPages())
             .build();
     }
 
@@ -370,6 +387,34 @@ public class MessageServiceImpl implements MessageService {
         }
         
         return message;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long cleanupExpiredMessages(LocalDateTime expiredBefore) {
+        log.info("清理过期消息, expiredBefore={}", expiredBefore);
+        
+        // 查询需要清理的消息
+        List<Message> expiredMessages = messageRepository.selectList(
+            new LambdaQueryWrapper<Message>()
+                .lt(Message::getCreatedAt, expiredBefore)
+                .ne(Message::getStatus, MessageStatus.DELETED)
+        );
+        
+        if (!expiredMessages.isEmpty()) {
+            // 批量软删除
+            expiredMessages.forEach(message -> {
+                message.setStatus(MessageStatus.DELETED);
+                message.setUpdatedAt(LocalDateTime.now());
+            });
+            
+            messageRepository.updateBatchById(expiredMessages);
+            
+            log.info("清理过期消息完成, 清理数量={}", expiredMessages.size());
+            return (long) expiredMessages.size();
+        }
+        
+        return 0L;
     }
 
     /**

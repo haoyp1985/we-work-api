@@ -193,9 +193,9 @@ public class AgentServiceImpl implements AgentService {
         return PageResult.<AgentDTO>builder()
             .records(dtoList)
             .total(result.getTotal())
-            .pageNum(request.getPageNum())
-            .pageSize(request.getPageSize())
-            .pages((int) result.getPages())
+            .current(request.getPageNum().longValue())
+            .size(request.getPageSize().longValue())
+            .pages(result.getPages())
             .build();
     }
 
@@ -326,6 +326,26 @@ public class AgentServiceImpl implements AgentService {
             throw new IllegalStateException("系统提示词不能为空");
         }
         // 可以添加更多验证规则
+    }
+
+    @Override
+    public AgentService.AgentUsageStats getAgentUsageStats(String tenantId, String agentId) {
+        // 验证Agent存在
+        getAgentEntity(tenantId, agentId);
+        
+        // 创建统计对象
+        AgentService.AgentUsageStats stats = new AgentService.AgentUsageStats();
+        
+        // TODO: 实现具体的统计逻辑
+        // 这里应该查询会话、消息、令牌等统计信息
+        stats.setTotalConversations(0L);
+        stats.setTotalMessages(0L);
+        stats.setTotalTokens(0L);
+        stats.setAvgResponseTime(0.0);
+        stats.setSuccessRate(100.0);
+        stats.setLastUsedAt(java.time.LocalDateTime.now());
+        
+        return stats;
     }
 
     /**

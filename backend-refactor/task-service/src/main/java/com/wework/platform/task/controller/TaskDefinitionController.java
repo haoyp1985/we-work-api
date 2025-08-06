@@ -1,11 +1,12 @@
 package com.wework.platform.task.controller;
 
-import com.wework.platform.common.core.base.PageQuery;
-import com.wework.platform.common.core.base.PageResult;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wework.platform.common.core.base.Result;
 import com.wework.platform.task.dto.CreateTaskDefinitionRequest;
 import com.wework.platform.task.dto.TaskDefinitionDTO;
 import com.wework.platform.task.dto.UpdateTaskDefinitionRequest;
+import com.wework.platform.task.entity.TaskDefinition;
 import com.wework.platform.task.service.TaskDefinitionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -54,20 +55,17 @@ public class TaskDefinitionController {
 
     @GetMapping
     @Operation(summary = "分页查询任务定义", description = "根据条件分页查询任务定义列表")
-    public Result<PageResult<TaskDefinitionDTO>> getTaskDefinitions(
+    public Result<IPage<TaskDefinitionDTO>> getTaskDefinitions(
             @Parameter(description = "租户ID", required = true) @RequestHeader("X-Tenant-Id") String tenantId,
             @Parameter(description = "任务名称(模糊查询)") @RequestParam(required = false) String taskName,
             @Parameter(description = "状态") @RequestParam(required = false) String status,
             @Parameter(description = "页码", example = "1") @RequestParam(defaultValue = "1") Integer pageNum,
             @Parameter(description = "页大小", example = "20") @RequestParam(defaultValue = "20") Integer pageSize) {
         
-        PageQuery pageQuery = PageQuery.builder()
-                .pageNum(pageNum)
-                .pageSize(pageSize)
-                .build();
+        Page<TaskDefinition> page = new Page<>(pageNum, pageSize);
         
-        PageResult<TaskDefinitionDTO> result = taskDefinitionService.getTaskDefinitions(
-                tenantId, taskName, status, pageQuery);
+        IPage<TaskDefinitionDTO> result = taskDefinitionService.getTaskDefinitions(
+                tenantId, page, taskName, null, null, status);
         return Result.success(result);
     }
 

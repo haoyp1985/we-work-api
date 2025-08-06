@@ -298,4 +298,9 @@ public interface TaskDefinitionService {
             this.errors = errors;
         }
     }
+
+    /**
+     * 验证任务定义
+     */
+    boolean validateTaskDefinition(CreateTaskDefinitionRequest request);
 }
