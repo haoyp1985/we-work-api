@@ -120,7 +120,8 @@ public class ChatController {
             request.setUserId(userId);
             request.setStream(true);
             
-            ChatResponse response = chatService.streamChat(tenantId, request);
+            // 流式聊天应该返回单个响应
+            ChatResponse response = chatService.chatInConversation(tenantId, request);
             
             return ApiResult.success(response);
             
@@ -181,7 +182,7 @@ public class ChatController {
                  tenantId, conversationId, contextSize);
         
         try {
-            ChatRequest context = chatService.getConversationContext(tenantId, conversationId, contextSize);
+            Object context = chatService.getConversationContext(tenantId, conversationId, contextSize);
             
             return ApiResult.success(context);
             
