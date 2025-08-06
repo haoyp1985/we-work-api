@@ -1,13 +1,122 @@
+<script setup lang="ts">
+import { ref, reactive, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { ElMessage, ElForm } from "element-plus";
+import { useUserStore } from "@/stores/modules/user";
+import { APP_INFO, STORAGE_KEYS, REGEX } from "@/constants";
+import { setPageTitle } from "@/utils";
+import type { LoginData } from "@/types/user";
+
+const router = useRouter();
+const userStore = useUserStore();
+
+// 表单引用
+const loginFormRef = ref<InstanceType<typeof ElForm>>();
+
+// 表单数据
+const loginForm = reactive<LoginData>({
+  username: "",
+  password: "",
+});
+
+// 表单验证规则
+const loginRules = {
+  username: [
+    { required: true, message: "请输入用户名", trigger: "blur" },
+    {
+      min: 3,
+      max: 20,
+      message: "用户名长度在 3 到 20 个字符",
+      trigger: "blur",
+    },
+    {
+      pattern: REGEX.USERNAME,
+      message: "用户名只能包含字母、数字和下划线",
+      trigger: "blur",
+    },
+  ],
+  password: [
+    { required: true, message: "请输入密码", trigger: "blur" },
+    { min: 6, max: 20, message: "密码长度在 6 到 20 个字符", trigger: "blur" },
+  ],
+};
+
+// 状态
+const loading = ref(false);
+const rememberPassword = ref(false);
+
+// 登录处理
+const handleLogin = async () => {
+  if (!loginFormRef.value) return;
+
+  try {
+    await loginFormRef.value.validate();
+
+    loading.value = true;
+
+    await userStore.userLogin(loginForm);
+
+    // 保存记住密码状态
+    if (rememberPassword.value) {
+      localStorage.setItem(
+        STORAGE_KEYS.REMEMBER_PASSWORD,
+        JSON.stringify({
+          username: loginForm.username,
+          remember: true,
+        }),
+      );
+    } else {
+      localStorage.removeItem(STORAGE_KEYS.REMEMBER_PASSWORD);
+    }
+
+    ElMessage.success("登录成功");
+
+    // 跳转到首页
+    router.push("/");
+  } catch (error) {
+    console.error("Login failed:", error);
+    ElMessage.error("登录失败，请检查用户名和密码");
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 初始化
+onMounted(() => {
+  setPageTitle("登录");
+
+  // 恢复记住的用户名
+  const remembered = localStorage.getItem(STORAGE_KEYS.REMEMBER_PASSWORD);
+  if (remembered) {
+    try {
+      const data = JSON.parse(remembered);
+      if (data.remember) {
+        loginForm.username = data.username;
+        rememberPassword.value = true;
+      }
+    } catch (error) {
+      console.error("Failed to parse remembered data:", error);
+    }
+  }
+});
+</script>
+
 <template>
   <div class="login-container">
     <div class="login-wrapper">
       <div class="login-form-container">
         <div class="login-header">
           <div class="logo">
-            <img src="/logo.png" alt="WeWork Platform" />
+            <img src="/logo.png"
+alt="WeWork Platform"
+/>
           </div>
-          <h1 class="title">{{ APP_INFO.NAME }}</h1>
-          <p class="subtitle">企业微信管理平台</p>
+          <h1 class="title">
+            {{ APP_INFO.NAME }}
+          </h1>
+          <p class="subtitle">
+企业微信管理平台
+</p>
         </div>
 
         <el-form
@@ -40,8 +149,14 @@
 
           <el-form-item>
             <div class="login-options">
-              <el-checkbox v-model="rememberPassword">记住密码</el-checkbox>
-              <el-link type="primary" :underline="false">忘记密码？</el-link>
+              <el-checkbox v-model="rememberPassword">
+记住密码
+</el-checkbox>
+              <el-link type="primary"
+:underline="false"
+>
+忘记密码？
+</el-link>
             </div>
           </el-form-item>
 
@@ -52,7 +167,7 @@
               class="login-button"
               @click="handleLogin"
             >
-              {{ loading ? '登录中...' : '登录' }}
+              {{ loading ? "登录中..." : "登录" }}
             </el-button>
           </el-form-item>
         </el-form>
@@ -65,100 +180,8 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { ElMessage, ElForm } from 'element-plus';
-import { useUserStore } from '@/stores/modules/user';
-import { APP_INFO, STORAGE_KEYS, REGEX } from '@/constants';
-import { setPageTitle } from '@/utils';
-import type { LoginData } from '@/types/user';
-
-const router = useRouter();
-const userStore = useUserStore();
-
-// 表单引用
-const loginFormRef = ref<InstanceType<typeof ElForm>>();
-
-// 表单数据
-const loginForm = reactive<LoginData>({
-  username: '',
-  password: '',
-});
-
-// 表单验证规则
-const loginRules = {
-  username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 20, message: '用户名长度在 3 到 20 个字符', trigger: 'blur' },
-    { pattern: REGEX.USERNAME, message: '用户名只能包含字母、数字和下划线', trigger: 'blur' },
-  ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码长度在 6 到 20 个字符', trigger: 'blur' },
-  ],
-};
-
-// 状态
-const loading = ref(false);
-const rememberPassword = ref(false);
-
-// 登录处理
-const handleLogin = async () => {
-  if (!loginFormRef.value) return;
-
-  try {
-    await loginFormRef.value.validate();
-    
-    loading.value = true;
-    
-    await userStore.userLogin(loginForm);
-    
-    // 保存记住密码状态
-    if (rememberPassword.value) {
-      localStorage.setItem(STORAGE_KEYS.REMEMBER_PASSWORD, JSON.stringify({
-        username: loginForm.username,
-        remember: true,
-      }));
-    } else {
-      localStorage.removeItem(STORAGE_KEYS.REMEMBER_PASSWORD);
-    }
-    
-    ElMessage.success('登录成功');
-    
-    // 跳转到首页
-    router.push('/');
-    
-  } catch (error) {
-    console.error('Login failed:', error);
-    ElMessage.error('登录失败，请检查用户名和密码');
-  } finally {
-    loading.value = false;
-  }
-};
-
-// 初始化
-onMounted(() => {
-  setPageTitle('登录');
-  
-  // 恢复记住的用户名
-  const remembered = localStorage.getItem(STORAGE_KEYS.REMEMBER_PASSWORD);
-  if (remembered) {
-    try {
-      const data = JSON.parse(remembered);
-      if (data.remember) {
-        loginForm.username = data.username;
-        rememberPassword.value = true;
-      }
-    } catch (error) {
-      console.error('Failed to parse remembered data:', error);
-    }
-  }
-});
-</script>
-
 <style lang="scss" scoped>
-@import '@/styles/variables.scss';
+@import "@/styles/variables.scss";
 
 .login-container {
   display: flex;

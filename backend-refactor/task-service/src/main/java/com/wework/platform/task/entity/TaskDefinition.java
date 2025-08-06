@@ -163,4 +163,18 @@ public class TaskDefinition {
     @TableField("deleted_at")
     @TableLogic
     private LocalDateTime deletedAt;
+
+    /**
+     * 获取处理器类名（用于兼容接口调用）
+     */
+    public String getHandlerClass() {
+        return this.taskClass;
+    }
+
+    /**
+     * 设置处理器类名（用于兼容接口调用）
+     */
+    public void setHandlerClass(String handlerClass) {
+        this.taskClass = handlerClass;
+    }
 }

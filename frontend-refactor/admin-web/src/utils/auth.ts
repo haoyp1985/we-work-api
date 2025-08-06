@@ -2,8 +2,8 @@
  * 认证相关工具函数
  */
 
-import { STORAGE_KEYS } from '@/constants';
-import type { UserInfo } from '@/types/user';
+import { STORAGE_KEYS } from "@/constants";
+import type { UserInfo } from "@/types/user";
 
 /**
  * 获取Token
@@ -35,7 +35,7 @@ export function getUserInfo(): UserInfo | null {
     try {
       return JSON.parse(userInfoStr);
     } catch (error) {
-      console.error('Failed to parse user info from localStorage:', error);
+      console.error("Failed to parse user info from localStorage:", error);
       removeUserInfo();
       return null;
     }
@@ -83,17 +83,17 @@ export function isTokenExpired(): boolean {
 
   try {
     // 解析JWT Token的payload部分
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const payload = JSON.parse(atob(token.split(".")[1]));
     const currentTime = Math.floor(Date.now() / 1000);
-    
+
     // 检查exp字段
     if (payload.exp && payload.exp < currentTime) {
       return true;
     }
-    
+
     return false;
   } catch (error) {
-    console.error('Failed to parse token:', error);
+    console.error("Failed to parse token:", error);
     return true;
   }
 }
@@ -106,16 +106,16 @@ export function getTokenRemainingTime(): number {
   if (!token) return 0;
 
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const payload = JSON.parse(atob(token.split(".")[1]));
     const currentTime = Math.floor(Date.now() / 1000);
-    
+
     if (payload.exp) {
       return Math.max(0, payload.exp - currentTime);
     }
-    
+
     return 0;
   } catch (error) {
-    console.error('Failed to parse token:', error);
+    console.error("Failed to parse token:", error);
     return 0;
   }
 }
@@ -126,13 +126,13 @@ export function getTokenRemainingTime(): number {
 export function autoRefreshToken(): boolean {
   const remainingTime = getTokenRemainingTime();
   const refreshThreshold = 5 * 60; // 5分钟
-  
+
   if (remainingTime > 0 && remainingTime < refreshThreshold) {
     // 可以在这里调用刷新Token的API
-    console.log('Token将在', remainingTime, '秒后过期，建议刷新');
+    console.log("Token将在", remainingTime, "秒后过期，建议刷新");
     return true;
   }
-  
+
   return false;
 }
 
@@ -142,13 +142,13 @@ export function autoRefreshToken(): boolean {
 export function hasPermission(permission: string): boolean {
   const userInfo = getUserInfo();
   if (!userInfo) return false;
-  
+
   // 这里可以根据实际的权限结构进行判断
   // 假设用户信息中有permissions字段
-  if ('permissions' in userInfo && Array.isArray(userInfo.permissions)) {
+  if ("permissions" in userInfo && Array.isArray(userInfo.permissions)) {
     return userInfo.permissions.includes(permission);
   }
-  
+
   return false;
 }
 
@@ -158,13 +158,13 @@ export function hasPermission(permission: string): boolean {
 export function hasRole(role: string): boolean {
   const userInfo = getUserInfo();
   if (!userInfo) return false;
-  
+
   // 这里可以根据实际的角色结构进行判断
   // 假设用户信息中有roles字段
-  if ('roles' in userInfo && Array.isArray(userInfo.roles)) {
+  if ("roles" in userInfo && Array.isArray(userInfo.roles)) {
     return userInfo.roles.includes(role);
   }
-  
+
   return false;
 }
 
@@ -172,7 +172,7 @@ export function hasRole(role: string): boolean {
  * 检查是否为管理员
  */
 export function isAdmin(): boolean {
-  return hasRole('admin') || hasRole('super_admin');
+  return hasRole("admin") || hasRole("super_admin");
 }
 
 /**
@@ -186,26 +186,26 @@ export function formatPermissionCode(module: string, action: string): string {
  * 检查多个权限（需要全部满足）
  */
 export function hasAllPermissions(permissions: string[]): boolean {
-  return permissions.every(permission => hasPermission(permission));
+  return permissions.every((permission) => hasPermission(permission));
 }
 
 /**
  * 检查多个权限（满足其中一个即可）
  */
 export function hasAnyPermission(permissions: string[]): boolean {
-  return permissions.some(permission => hasPermission(permission));
+  return permissions.some((permission) => hasPermission(permission));
 }
 
 /**
  * 检查多个角色（需要全部满足）
  */
 export function hasAllRoles(roles: string[]): boolean {
-  return roles.every(role => hasRole(role));
+  return roles.every((role) => hasRole(role));
 }
 
 /**
  * 检查多个角色（满足其中一个即可）
  */
 export function hasAnyRole(roles: string[]): boolean {
-  return roles.some(role => hasRole(role));
+  return roles.some((role) => hasRole(role));
 }

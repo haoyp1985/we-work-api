@@ -3,8 +3,8 @@ package com.wework.platform.task.repository;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wework.platform.common.enums.TaskStatus;
 import com.wework.platform.task.entity.TaskInstance;
-import com.wework.platform.task.entity.TaskInstance.TaskStatus;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
 

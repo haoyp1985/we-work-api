@@ -23,7 +23,7 @@ function createLoadingElement(): HTMLElement {
     align-items: center;
     z-index: 9999;
   `;
-  
+
   const spinner = document.createElement("div");
   spinner.className = "loading-spinner";
   spinner.style.cssText = `
@@ -34,9 +34,9 @@ function createLoadingElement(): HTMLElement {
     border-radius: 50%;
     animation: spin 1s linear infinite;
   `;
-  
+
   loadingEl.appendChild(spinner);
-  
+
   // 添加旋转动画
   if (!document.head.querySelector("#loading-style")) {
     const style = document.createElement("style");
@@ -49,7 +49,7 @@ function createLoadingElement(): HTMLElement {
     `;
     document.head.appendChild(style);
   }
-  
+
   return loadingEl;
 }
 
@@ -59,7 +59,7 @@ function createLoadingElement(): HTMLElement {
 const loading = {
   mounted(el: HTMLElement, binding: DirectiveBinding) {
     const { value } = binding;
-    
+
     if (value) {
       el.style.position = el.style.position || "relative";
       const loadingEl = createLoadingElement();
@@ -67,11 +67,11 @@ const loading = {
       el.setAttribute("data-loading", "true");
     }
   },
-  
+
   updated(el: HTMLElement, binding: DirectiveBinding) {
     const { value } = binding;
     const hasLoading = el.getAttribute("data-loading") === "true";
-    
+
     if (value && !hasLoading) {
       el.style.position = el.style.position || "relative";
       const loadingEl = createLoadingElement();
@@ -85,13 +85,13 @@ const loading = {
       }
     }
   },
-  
+
   unmounted(el: HTMLElement) {
     const loadingEl = el.querySelector(".v-loading");
     if (loadingEl) {
       el.removeChild(loadingEl);
     }
-  }
+  },
 };
 
 /**

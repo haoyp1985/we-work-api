@@ -1,55 +1,118 @@
 package com.wework.platform.common.enums;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
 /**
  * 任务类型枚举
- * 
- * @author WeWork Platform
+ *
+ * @author WeWork Platform Team
  * @since 2.0.0
  */
+@Getter
+@AllArgsConstructor
 public enum TaskType {
-    
+
     /**
      * 定时任务
      */
-    SCHEDULED("定时任务"),
-    
+    SCHEDULED("SCHEDULED", "定时任务"),
+
     /**
-     * 立即执行
+     * 即时任务
      */
-    IMMEDIATE("立即执行"),
-    
+    IMMEDIATE("IMMEDIATE", "即时任务"),
+
     /**
      * 延迟任务
      */
-    DELAYED("延迟任务"),
-    
-    /**
-     * 重复任务
-     */
-    RECURRING("重复任务"),
-    
-    /**
-     * 手动任务
-     */
-    MANUAL("手动任务"),
-    
-    /**
-     * 系统任务
-     */
-    SYSTEM("系统任务"),
-    
-    /**
-     * 批量任务
-     */
-    BATCH("批量任务");
+    DELAYED("DELAYED", "延迟任务"),
 
+    /**
+     * 周期任务
+     */
+    PERIODIC("PERIODIC", "周期任务"),
+
+    /**
+     * 一次性任务
+     */
+    ONE_TIME("ONE_TIME", "一次性任务"),
+
+    /**
+     * 消息任务
+     */
+    MESSAGE("MESSAGE", "消息任务"),
+
+    /**
+     * 数据同步任务
+     */
+    DATA_SYNC("DATA_SYNC", "数据同步任务"),
+
+    /**
+     * 清理任务
+     */
+    CLEANUP("CLEANUP", "清理任务"),
+
+    /**
+     * 备份任务
+     */
+    BACKUP("BACKUP", "备份任务"),
+
+    /**
+     * 报告任务
+     */
+    REPORT("REPORT", "报告任务"),
+
+    /**
+     * 监控任务
+     */
+    MONITOR("MONITOR", "监控任务"),
+
+    /**
+     * 自定义任务
+     */
+    CUSTOM("CUSTOM", "自定义任务");
+
+    /**
+     * 类型码
+     */
+    private final String code;
+
+    /**
+     * 类型描述
+     */
     private final String description;
 
-    TaskType(String description) {
-        this.description = description;
+    /**
+     * 根据类型码获取枚举
+     */
+    public static TaskType fromCode(String code) {
+        for (TaskType type : TaskType.values()) {
+            if (type.getCode().equals(code)) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Unknown TaskType code: " + code);
     }
 
-    public String getDescription() {
-        return description;
+    /**
+     * 判断是否为定时任务
+     */
+    public boolean isScheduled() {
+        return this == SCHEDULED || this == PERIODIC;
+    }
+
+    /**
+     * 判断是否为一次性任务
+     */
+    public boolean isOneTime() {
+        return this == ONE_TIME || this == IMMEDIATE;
+    }
+
+    /**
+     * 判断是否需要定时执行
+     */
+    public boolean requiresScheduling() {
+        return this == SCHEDULED || this == PERIODIC || this == DELAYED;
     }
 }

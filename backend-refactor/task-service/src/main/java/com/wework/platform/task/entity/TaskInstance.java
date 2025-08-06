@@ -1,6 +1,7 @@
 package com.wework.platform.task.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.wework.platform.common.enums.TaskStatus;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -43,7 +44,7 @@ public class TaskInstance {
      * CANCELLED: 已取消
      */
     @TableField("execution_status")
-    private String executionStatus;
+    private TaskStatus executionStatus;
 
     /**
      * 开始执行时间
@@ -148,4 +149,32 @@ public class TaskInstance {
     @Version
     @TableField("version")
     private Integer version;
+
+    /**
+     * 获取任务定义ID（用于兼容接口调用）
+     */
+    public String getDefinitionId() {
+        return this.taskDefinitionId;
+    }
+
+    /**
+     * 设置任务定义ID（用于兼容接口调用）
+     */
+    public void setDefinitionId(String definitionId) {
+        this.taskDefinitionId = definitionId;
+    }
+
+    /**
+     * 设置执行状态（用于兼容接口调用）
+     */
+    public void setStatus(TaskStatus status) {
+        this.executionStatus = status;
+    }
+
+    /**
+     * 获取执行状态（用于兼容接口调用）
+     */
+    public TaskStatus getStatus() {
+        return this.executionStatus;
+    }
 }

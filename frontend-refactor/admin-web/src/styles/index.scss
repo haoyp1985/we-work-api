@@ -209,16 +209,31 @@ select {
 @include generate-spacing-classes('mr', 'margin-right');
 @include generate-spacing-classes('mb', 'margin-bottom');
 @include generate-spacing-classes('ml', 'margin-left');
-@include generate-spacing-classes('mx', 'margin-left margin-right');
-@include generate-spacing-classes('my', 'margin-top margin-bottom');
+
+// 生成水平和垂直间距类
+@mixin generate-dual-spacing-classes($prefix, $property1, $property2) {
+  .#{$prefix}-0 { #{$property1}: 0 !important; #{$property2}: 0 !important; }
+  .#{$prefix}-1 { #{$property1}: $spacing-xs !important; #{$property2}: $spacing-xs !important; }
+  .#{$prefix}-2 { #{$property1}: $spacing-sm !important; #{$property2}: $spacing-sm !important; }
+  .#{$prefix}-3 { #{$property1}: $spacing-base !important; #{$property2}: $spacing-base !important; }
+  .#{$prefix}-4 { #{$property1}: $spacing-md !important; #{$property2}: $spacing-md !important; }
+  .#{$prefix}-5 { #{$property1}: $spacing-lg !important; #{$property2}: $spacing-lg !important; }
+  .#{$prefix}-6 { #{$property1}: $spacing-xl !important; #{$property2}: $spacing-xl !important; }
+  .#{$prefix}-7 { #{$property1}: $spacing-2xl !important; #{$property2}: $spacing-2xl !important; }
+  .#{$prefix}-8 { #{$property1}: $spacing-3xl !important; #{$property2}: $spacing-3xl !important; }
+}
+
+@include generate-dual-spacing-classes('mx', 'margin-left', 'margin-right');
+@include generate-dual-spacing-classes('my', 'margin-top', 'margin-bottom');
 
 @include generate-spacing-classes('p', 'padding');
 @include generate-spacing-classes('pt', 'padding-top');
 @include generate-spacing-classes('pr', 'padding-right');
 @include generate-spacing-classes('pb', 'padding-bottom');
 @include generate-spacing-classes('pl', 'padding-left');
-@include generate-spacing-classes('px', 'padding-left padding-right');
-@include generate-spacing-classes('py', 'padding-top padding-bottom');
+
+@include generate-dual-spacing-classes('px', 'padding-left', 'padding-right');
+@include generate-dual-spacing-classes('py', 'padding-top', 'padding-bottom');
 
 // 宽度和高度
 .w-full { width: 100% !important; }

@@ -57,7 +57,7 @@ const checkBrowserCompatibility = () => {
       {
         confirmButtonText: "我知道了",
         type: "warning",
-      }
+      },
     );
   }
 };
@@ -115,26 +115,17 @@ watch(
     } else {
       document.documentElement.classList.remove("dark");
     }
-  }
+  },
 );
 </script>
 
 <template>
-  <div
-    id="app"
-    class="app-container"
-  >
+  <div id="app" class="app-container">
     <!-- 全局加载条 -->
     <Transition name="loading">
-      <div
-        v-if="appStore.isLoading"
-        class="global-loading"
-      >
+      <div v-if="appStore.isLoading" class="global-loading">
         <div class="loading-content">
-          <el-icon
-            class="loading-icon"
-            size="32"
-          >
+          <el-icon class="loading-icon" size="32">
             <Loading />
           </el-icon>
           <div class="loading-text">
@@ -146,18 +137,9 @@ watch(
 
     <!-- 路由视图 -->
     <router-view v-slot="{ Component, route }">
-      <Transition
-        :name="route.meta.transition || 'fade'"
-        mode="out-in"
-      >
-        <KeepAlive
-          :include="cachedViews"
-          :max="10"
-        >
-          <component
-            :is="Component"
-            :key="route.path"
-          />
+      <Transition :name="route.meta.transition || 'fade'" mode="out-in">
+        <KeepAlive :include="cachedViews" :max="10">
+          <component :is="Component" :key="route.path" />
         </KeepAlive>
       </Transition>
     </router-view>
@@ -169,10 +151,7 @@ watch(
     <GlobalConfirm />
 
     <!-- 水印组件 -->
-    <Watermark
-      v-if="enableWatermark"
-      :text="watermarkText"
-    />
+    <Watermark v-if="enableWatermark" :text="watermarkText" />
 
     <!-- 网络状态提示 -->
     <NetworkStatus />

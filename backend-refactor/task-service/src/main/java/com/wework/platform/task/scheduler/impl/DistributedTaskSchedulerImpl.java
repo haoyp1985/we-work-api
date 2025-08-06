@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 分布式任务调度器实现类
@@ -25,7 +26,7 @@ public class DistributedTaskSchedulerImpl implements DistributedTaskScheduler {
         
         try {
             // 尝试获取分布式锁，锁定时间为2分钟
-            if (distributedLock.tryLock(lockKey, lockValue, 120)) {
+            if (distributedLock.tryLock(lockKey, lockValue, 120, TimeUnit.SECONDS)) {
                 log.debug("获取调度锁成功: lockKey={}, taskId={}", lockKey, taskDefinition.getId());
                 return true;
             } else {
@@ -44,7 +45,7 @@ public class DistributedTaskSchedulerImpl implements DistributedTaskScheduler {
         String lockValue = generateLockValue(taskDefinition, scheduledTime);
         
         try {
-            distributedLock.unlock(lockKey, lockValue);
+            distributedLock.releaseLock(lockKey, lockValue);
             log.debug("释放调度锁: lockKey={}, taskId={}", lockKey, taskDefinition.getId());
         } catch (Exception e) {
             log.error("释放调度锁异常: lockKey={}, taskId={}", lockKey, taskDefinition.getId(), e);

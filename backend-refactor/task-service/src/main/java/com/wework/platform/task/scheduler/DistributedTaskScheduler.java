@@ -1,10 +1,12 @@
 package com.wework.platform.task.scheduler;
 
 import com.wework.platform.common.context.TenantContextHolder;
+import com.wework.platform.common.enums.TaskStatus;
 import com.wework.platform.task.entity.TaskDefinition;
 import com.wework.platform.task.entity.TaskInstance;
-import com.wework.platform.task.entity.TaskInstance.TaskStatus;
 import com.wework.platform.task.entity.TaskLog;
+import com.wework.platform.task.handler.TaskContext;
+import com.wework.platform.task.handler.TaskResult;
 import com.wework.platform.task.lock.DistributedLock;
 import com.wework.platform.task.repository.TaskDefinitionRepository;
 import com.wework.platform.task.repository.TaskInstanceRepository;
