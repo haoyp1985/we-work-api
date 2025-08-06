@@ -675,6 +675,117 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         return true;
     }
 
+    @Override
+    public java.util.List<Map<String, Object>> getConversationHistory(PlatformConfig platformConfig, String conversationId, Integer limit) {
+        log.info("获取平台会话历史, platformType={}, conversationId={}, limit={}", platformConfig.getPlatformType(), conversationId, limit);
+
+        try {
+            switch (platformConfig.getPlatformType()) {
+                case OPENAI:
+                    return getOpenAIConversationHistory(platformConfig, conversationId, limit);
+                case ANTHROPIC_CLAUDE:
+                    return getClaudeConversationHistory(platformConfig, conversationId, limit);
+                case BAIDU_WENXIN:
+                    return getWenxinConversationHistory(platformConfig, conversationId, limit);
+                case COZE:
+                    return getCozeConversationHistory(platformConfig, conversationId, limit);
+                case DIFY:
+                    return getDifyConversationHistory(platformConfig, conversationId, limit);
+                default:
+                    log.warn("不支持的平台类型: {}", platformConfig.getPlatformType());
+                    return new java.util.ArrayList<>();
+            }
+        } catch (Exception e) {
+            log.error("获取平台会话历史失败, conversationId={}", conversationId, e);
+            return new java.util.ArrayList<>();
+        }
+    }
+
+    private java.util.List<Map<String, Object>> getOpenAIConversationHistory(PlatformConfig platformConfig, String conversationId, Integer limit) {
+        // TODO: 实现OpenAI会话历史获取逻辑
+        log.debug("OpenAI平台会话历史获取暂未实现, conversationId={}", conversationId);
+        return new java.util.ArrayList<>();
+    }
+
+    private java.util.List<Map<String, Object>> getClaudeConversationHistory(PlatformConfig platformConfig, String conversationId, Integer limit) {
+        // TODO: 实现Claude会话历史获取逻辑
+        log.debug("Claude平台会话历史获取暂未实现, conversationId={}", conversationId);
+        return new java.util.ArrayList<>();
+    }
+
+    private java.util.List<Map<String, Object>> getWenxinConversationHistory(PlatformConfig platformConfig, String conversationId, Integer limit) {
+        // TODO: 实现文心一言会话历史获取逻辑
+        log.debug("文心一言平台会话历史获取暂未实现, conversationId={}", conversationId);
+        return new java.util.ArrayList<>();
+    }
+
+    private java.util.List<Map<String, Object>> getCozeConversationHistory(PlatformConfig platformConfig, String conversationId, Integer limit) {
+        // TODO: 实现Coze会话历史获取逻辑
+        log.debug("Coze平台会话历史获取暂未实现, conversationId={}", conversationId);
+        return new java.util.ArrayList<>();
+    }
+
+    private java.util.List<Map<String, Object>> getDifyConversationHistory(PlatformConfig platformConfig, String conversationId, Integer limit) {
+        // TODO: 实现Dify会话历史获取逻辑
+        log.debug("Dify平台会话历史获取暂未实现, conversationId={}", conversationId);
+        return new java.util.ArrayList<>();
+    }
+
+    @Override
+    public void stopGeneration(PlatformConfig platformConfig, String conversationId, String requestId) {
+        log.info("停止生成, platformType={}, conversationId={}, requestId={}", platformConfig.getPlatformType(), conversationId, requestId);
+
+        try {
+            switch (platformConfig.getPlatformType()) {
+                case OPENAI:
+                    stopOpenAIGeneration(platformConfig, conversationId, requestId);
+                    break;
+                case ANTHROPIC_CLAUDE:
+                    stopClaudeGeneration(platformConfig, conversationId, requestId);
+                    break;
+                case BAIDU_WENXIN:
+                    stopWenxinGeneration(platformConfig, conversationId, requestId);
+                    break;
+                case COZE:
+                    stopCozeGeneration(platformConfig, conversationId, requestId);
+                    break;
+                case DIFY:
+                    stopDifyGeneration(platformConfig, conversationId, requestId);
+                    break;
+                default:
+                    log.warn("不支持的平台类型停止生成: {}", platformConfig.getPlatformType());
+                    break;
+            }
+        } catch (Exception e) {
+            log.error("停止生成失败, conversationId={}, requestId={}", conversationId, requestId, e);
+        }
+    }
+
+    private void stopOpenAIGeneration(PlatformConfig platformConfig, String conversationId, String requestId) {
+        // TODO: 实现OpenAI停止生成逻辑
+        log.debug("OpenAI平台停止生成暂未实现, conversationId={}, requestId={}", conversationId, requestId);
+    }
+
+    private void stopClaudeGeneration(PlatformConfig platformConfig, String conversationId, String requestId) {
+        // TODO: 实现Claude停止生成逻辑
+        log.debug("Claude平台停止生成暂未实现, conversationId={}, requestId={}", conversationId, requestId);
+    }
+
+    private void stopWenxinGeneration(PlatformConfig platformConfig, String conversationId, String requestId) {
+        // TODO: 实现文心一言停止生成逻辑
+        log.debug("文心一言平台停止生成暂未实现, conversationId={}, requestId={}", conversationId, requestId);
+    }
+
+    private void stopCozeGeneration(PlatformConfig platformConfig, String conversationId, String requestId) {
+        // TODO: 实现Coze停止生成逻辑
+        log.debug("Coze平台停止生成暂未实现, conversationId={}, requestId={}", conversationId, requestId);
+    }
+
+    private void stopDifyGeneration(PlatformConfig platformConfig, String conversationId, String requestId) {
+        // TODO: 实现Dify停止生成逻辑
+        log.debug("Dify平台停止生成暂未实现, conversationId={}, requestId={}", conversationId, requestId);
+    }
+
     private ModelInfo createModelInfo(String id, String name, boolean available, int maxTokens) {
         ModelInfo modelInfo = new ModelInfo();
         modelInfo.setId(id);

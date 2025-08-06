@@ -582,6 +582,60 @@ public class ConversationServiceImpl implements ConversationService {
         return convertToDTO(conversation);
     }
 
+    @Override
+    @Transactional
+    public ConversationDTO pinConversation(String tenantId, String userId, String conversationId, Boolean pinned) {
+        log.info("设置会话置顶状态, tenantId={}, userId={}, conversationId={}, pinned={}", tenantId, userId, conversationId, pinned);
+
+        // 验证会话存在且用户有权限
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .eq(Conversation::getUserId, userId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或无权限访问");
+        }
+
+        // 更新置顶状态
+        conversation.setPinned(Boolean.TRUE.equals(pinned));
+        conversation.setUpdatedAt(LocalDateTime.now());
+        conversationRepository.updateById(conversation);
+
+        log.info("会话置顶状态更新成功, conversationId={}, pinned={}", conversationId, pinned);
+        return convertToDTO(conversation);
+    }
+
+    @Override
+    @Transactional
+    public ConversationDTO starConversation(String tenantId, String userId, String conversationId, Boolean starred) {
+        log.info("设置会话收藏状态, tenantId={}, userId={}, conversationId={}, starred={}", tenantId, userId, conversationId, starred);
+
+        // 验证会话存在且用户有权限
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .eq(Conversation::getUserId, userId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或无权限访问");
+        }
+
+        // 更新收藏状态
+        conversation.setStarred(Boolean.TRUE.equals(starred));
+        conversation.setUpdatedAt(LocalDateTime.now());
+        conversationRepository.updateById(conversation);
+
+        log.info("会话收藏状态更新成功, conversationId={}, starred={}", conversationId, starred);
+        return convertToDTO(conversation);
+    }
+
     /**
      * 转换为DTO
      */

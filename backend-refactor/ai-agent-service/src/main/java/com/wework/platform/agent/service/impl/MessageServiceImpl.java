@@ -15,6 +15,7 @@ import com.wework.platform.agent.enums.MessageType;
 import com.wework.platform.agent.repository.ConversationRepository;
 import com.wework.platform.agent.repository.MessageRepository;
 import com.wework.platform.agent.service.MessageService;
+import org.springframework.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -620,6 +621,60 @@ public class MessageServiceImpl implements MessageService {
 
         log.info("批量删除消息完成, conversationId={}, 删除数量={}", conversationId, deletedCount);
         return deletedCount;
+    }
+
+    @Override
+    public Long getUnreadMessageCount(String tenantId, String userId, String conversationId) {
+        log.debug("获取未读消息数量, tenantId={}, userId={}, conversationId={}", tenantId, userId, conversationId);
+
+        LambdaQueryWrapper<Message> queryWrapper = new LambdaQueryWrapper<Message>()
+            .eq(Message::getTenantId, tenantId)
+            .ne(Message::getStatus, MessageStatus.DELETED)
+            .eq(Message::getRead, false);
+
+        // 如果指定了会话ID，则只统计该会话的未读消息
+        if (StringUtils.hasText(conversationId)) {
+            queryWrapper.eq(Message::getConversationId, conversationId);
+        }
+
+        // 只统计发送给该用户的消息（不是用户自己发送的消息）
+        queryWrapper.ne(Message::getSenderId, userId);
+
+        Long count = messageRepository.selectCount(queryWrapper);
+        log.debug("未读消息数量统计完成, count={}", count);
+        return count;
+    }
+
+    @Override
+    @Transactional
+    public void markMessageAsRead(String tenantId, String userId, String conversationId, String messageId) {
+        log.debug("标记消息为已读, tenantId={}, userId={}, conversationId={}, messageId={}", tenantId, userId, conversationId, messageId);
+
+        LambdaQueryWrapper<Message> queryWrapper = new LambdaQueryWrapper<Message>()
+            .eq(Message::getTenantId, tenantId)
+            .eq(Message::getConversationId, conversationId)
+            .ne(Message::getStatus, MessageStatus.DELETED)
+            .eq(Message::getRead, false);
+
+        // 如果指定了messageId，则只标记该消息
+        if (StringUtils.hasText(messageId)) {
+            queryWrapper.eq(Message::getId, messageId);
+        }
+
+        // 只标记发送给该用户的消息（不是用户自己发送的消息）
+        queryWrapper.ne(Message::getSenderId, userId);
+
+        List<Message> messages = messageRepository.selectList(queryWrapper);
+        
+        if (!messages.isEmpty()) {
+            LocalDateTime now = LocalDateTime.now();
+            for (Message message : messages) {
+                message.setRead(true);
+                message.setUpdatedAt(now);
+                messageRepository.updateById(message);
+            }
+            log.debug("标记消息为已读完成, count={}", messages.size());
+        }
     }
 
     /**

@@ -474,4 +474,35 @@ public class PlatformConfigServiceImpl implements PlatformConfigService {
         // TODO: 实现Dify配置验证逻辑
         return com.wework.platform.agent.dto.ValidationResult.success();
     }
+
+    @Override
+    public com.wework.platform.agent.dto.PlatformConfigUsageStats getPlatformConfigUsageStats(String tenantId, String configId) {
+        log.info("获取平台配置使用统计, tenantId={}, configId={}", tenantId, configId);
+
+        // 验证配置是否存在
+        PlatformConfig config = platformConfigRepository.selectOne(
+            new LambdaQueryWrapper<PlatformConfig>()
+                .eq(PlatformConfig::getId, configId)
+                .eq(PlatformConfig::getTenantId, tenantId)
+        );
+
+        if (config == null) {
+            throw new IllegalArgumentException("平台配置不存在: " + configId);
+        }
+
+        // 构建使用统计（这里是示例数据，实际应该从统计表中查询）
+        com.wework.platform.agent.dto.PlatformConfigUsageStats stats = new com.wework.platform.agent.dto.PlatformConfigUsageStats();
+        stats.setTotalCalls(0L);
+        stats.setSuccessfulCalls(0L);
+        stats.setFailedCalls(0L);
+        stats.setAverageResponseTime(0.0);
+        stats.setLastCallTime(null);
+        stats.setTodayCalls(0L);
+        stats.setMonthCalls(0L);
+        stats.setErrorRate(0.0);
+        stats.setStatus("active");
+
+        log.info("平台配置使用统计获取完成, configId={}", configId);
+        return stats;
+    }
 }

@@ -72,11 +72,11 @@ public interface ModelConfigService {
     /**
      * 获取指定平台类型的模型配置列表
      *
-     * @param tenantId     租户ID
-     * @param platformType 平台类型
+     * @param tenantId         租户ID
+     * @param platformConfigId 平台配置ID  
      * @return 配置列表
      */
-    List<ModelConfigDTO> getModelConfigsByPlatform(String tenantId, PlatformType platformType);
+    List<ModelConfigDTO> getModelConfigsByPlatform(String tenantId, String platformConfigId);
 
     /**
      * 获取启用的模型配置列表

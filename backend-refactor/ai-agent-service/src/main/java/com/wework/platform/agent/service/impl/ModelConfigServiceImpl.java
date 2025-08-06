@@ -430,6 +430,94 @@ public class ModelConfigServiceImpl implements ModelConfigService {
         return com.wework.platform.agent.dto.ValidationResult.success();
     }
 
+    @Override
+    public List<com.wework.platform.agent.service.ModelConfigService.AvailableModel> getAvailableModels(PlatformType platformType) {
+        log.info("获取可用模型列表, platformType={}", platformType);
+
+        List<com.wework.platform.agent.service.ModelConfigService.AvailableModel> models = new ArrayList<>();
+        
+        try {
+            switch (platformType) {
+                case OPENAI:
+                    models = getOpenAIModels();
+                    break;
+                case ANTHROPIC_CLAUDE:
+                    models = getClaudeModels();
+                    break;
+                case BAIDU_WENXIN:
+                    models = getWenxinModels();
+                    break;
+                case COZE:
+                    models = getCozeModels();
+                    break;
+                case DIFY:
+                    models = getDifyModels();
+                    break;
+                default:
+                    log.warn("不支持的平台类型: {}", platformType);
+                    break;
+            }
+        } catch (Exception e) {
+            log.error("获取可用模型列表失败, platformType={}", platformType, e);
+        }
+
+        log.info("获取可用模型列表完成, platformType={}, count={}", platformType, models.size());
+        return models;
+    }
+
+    private List<com.wework.platform.agent.service.ModelConfigService.AvailableModel> getOpenAIModels() {
+        // TODO: 实现OpenAI模型列表获取逻辑
+        return new ArrayList<>();
+    }
+
+    private List<com.wework.platform.agent.service.ModelConfigService.AvailableModel> getClaudeModels() {
+        // TODO: 实现Claude模型列表获取逻辑
+        return new ArrayList<>();
+    }
+
+    private List<com.wework.platform.agent.service.ModelConfigService.AvailableModel> getWenxinModels() {
+        // TODO: 实现文心一言模型列表获取逻辑
+        return new ArrayList<>();
+    }
+
+    private List<com.wework.platform.agent.service.ModelConfigService.AvailableModel> getCozeModels() {
+        // TODO: 实现Coze模型列表获取逻辑
+        return new ArrayList<>();
+    }
+
+    private List<com.wework.platform.agent.service.ModelConfigService.AvailableModel> getDifyModels() {
+        // TODO: 实现Dify模型列表获取逻辑
+        return new ArrayList<>();
+    }
+
+    @Override
+    public java.math.BigDecimal calculateCost(String modelName, Integer inputTokens, Integer outputTokens) {
+        log.debug("计算模型成本, modelName={}, inputTokens={}, outputTokens={}", modelName, inputTokens, outputTokens);
+
+        // 这里应该根据不同模型的定价来计算成本
+        // 目前返回默认值，实际应该从配置或定价表中获取
+        java.math.BigDecimal inputCost = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal outputCost = java.math.BigDecimal.ZERO;
+
+        if (inputTokens != null && inputTokens > 0) {
+            // 示例：输入Token价格 $0.001 per 1K tokens
+            inputCost = new java.math.BigDecimal("0.001")
+                .multiply(new java.math.BigDecimal(inputTokens))
+                .divide(new java.math.BigDecimal("1000"), 6, java.math.RoundingMode.HALF_UP);
+        }
+
+        if (outputTokens != null && outputTokens > 0) {
+            // 示例：输出Token价格 $0.002 per 1K tokens
+            outputCost = new java.math.BigDecimal("0.002")
+                .multiply(new java.math.BigDecimal(outputTokens))
+                .divide(new java.math.BigDecimal("1000"), 6, java.math.RoundingMode.HALF_UP);
+        }
+
+        java.math.BigDecimal totalCost = inputCost.add(outputCost);
+        log.debug("模型成本计算完成, totalCost={}", totalCost);
+        return totalCost;
+    }
+
     /**
      * 验证平台配置是否存在
      */
