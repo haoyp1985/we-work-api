@@ -34,7 +34,6 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-    @Override
     public ChatResponse callPlatform(PlatformConfig platformConfig, ModelConfig modelConfig, 
                                    ChatRequest request) {
         log.info("调用外部平台, platformType={}, modelName={}", 
@@ -68,14 +67,12 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         }
     }
 
-    @Override
     public CompletableFuture<ChatResponse> callPlatformAsync(PlatformConfig platformConfig, 
                                                            ModelConfig modelConfig, 
                                                            ChatRequest request) {
         return CompletableFuture.supplyAsync(() -> callPlatform(platformConfig, modelConfig, request));
     }
 
-    @Override
     public boolean testConnection(PlatformConfig platformConfig) {
         log.info("测试平台连接, platformType={}", platformConfig.getPlatformType());
         
@@ -104,7 +101,6 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         }
     }
 
-    @Override
     public List<String> getSupportedModels(PlatformConfig platformConfig) {
         log.info("获取支持的模型列表, platformType={}", platformConfig.getPlatformType());
         
@@ -501,7 +497,6 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         );
     }
 
-    @Override
     public Double calculateCost(Integer inputTokens, Integer outputTokens, String modelName) {
         log.debug("计算费用, inputTokens={}, outputTokens={}, modelName={}", 
                  inputTokens, outputTokens, modelName);
@@ -537,7 +532,6 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         return totalCost;
     }
 
-    @Override
     public Integer estimateTokens(String text) {
         if (text == null || text.trim().isEmpty()) {
             return 0;
@@ -576,7 +570,6 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         return Math.max(1, estimatedTokens); // 至少1个token
     }
 
-    @Override
     public PlatformIntegrationService.PlatformCapabilities getCapabilities() {
         log.debug("获取平台功能信息");
         
@@ -599,7 +592,6 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         return capabilities;
     }
 
-    @Override
     public List<PlatformIntegrationService.ModelInfo> getAvailableModels(PlatformConfig platformConfig) {
         log.debug("获取可用模型列表, platformType={}", platformConfig.getPlatformType());
         

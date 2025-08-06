@@ -36,7 +36,6 @@ public class AgentServiceImpl implements AgentService {
 
     private final AgentRepository agentRepository;
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public AgentDTO createAgent(String tenantId, CreateAgentRequest request) {
         log.info("创建智能体, tenantId={}, name={}", tenantId, request.getName());
@@ -73,7 +72,6 @@ public class AgentServiceImpl implements AgentService {
         return convertToDTO(agent);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public AgentDTO updateAgent(String tenantId, String agentId, UpdateAgentRequest request) {
         log.info("更新智能体, tenantId={}, agentId={}", tenantId, agentId);
@@ -129,7 +127,6 @@ public class AgentServiceImpl implements AgentService {
         return convertToDTO(agent);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteAgent(String tenantId, String agentId) {
         log.info("删除智能体, tenantId={}, agentId={}", tenantId, agentId);
@@ -150,7 +147,6 @@ public class AgentServiceImpl implements AgentService {
         log.info("智能体删除成功, agentId={}", agentId);
     }
 
-    @Override
     public AgentDTO getAgent(String tenantId, String agentId) {
         log.debug("查询智能体详情, tenantId={}, agentId={}", tenantId, agentId);
         
@@ -158,7 +154,6 @@ public class AgentServiceImpl implements AgentService {
         return convertToDTO(agent);
     }
 
-    @Override
     public PageResult<AgentDTO> queryAgents(String tenantId, AgentQueryRequest request) {
         log.debug("分页查询智能体, tenantId={}, request={}", tenantId, request);
         
@@ -199,7 +194,6 @@ public class AgentServiceImpl implements AgentService {
             .build();
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public AgentDTO publishAgent(String tenantId, String agentId) {
         log.info("发布智能体, tenantId={}, agentId={}", tenantId, agentId);
@@ -226,7 +220,6 @@ public class AgentServiceImpl implements AgentService {
         return convertToDTO(agent);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public AgentDTO unpublishAgent(String tenantId, String agentId) {
         log.info("下线智能体, tenantId={}, agentId={}", tenantId, agentId);
@@ -247,7 +240,6 @@ public class AgentServiceImpl implements AgentService {
         return convertToDTO(agent);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public AgentDTO createAgentVersion(String tenantId, String agentId) {
         log.info("创建智能体新版本, tenantId={}, agentId={}", tenantId, agentId);
@@ -272,7 +264,6 @@ public class AgentServiceImpl implements AgentService {
         return convertToDTO(newAgent);
     }
 
-    @Override
     public List<AgentDTO> getPublishedAgents(String tenantId) {
         log.debug("查询已发布的智能体, tenantId={}", tenantId);
         
@@ -288,7 +279,6 @@ public class AgentServiceImpl implements AgentService {
             .collect(Collectors.toList());
     }
 
-    @Override
     public long countAgentsByStatus(String tenantId, AgentStatus status) {
         return agentRepository.selectCount(
             new LambdaQueryWrapper<Agent>()
@@ -328,7 +318,6 @@ public class AgentServiceImpl implements AgentService {
         // 可以添加更多验证规则
     }
 
-    @Override
     public AgentService.AgentUsageStats getAgentUsageStats(String tenantId, String agentId) {
         // 验证Agent存在
         getAgentEntity(tenantId, agentId);
@@ -348,7 +337,6 @@ public class AgentServiceImpl implements AgentService {
         return stats;
     }
 
-    @Override
     public String testAgent(String tenantId, String agentId, String testInput) {
         log.info("测试智能体, tenantId={}, agentId={}, testInput={}", tenantId, agentId, testInput);
         
@@ -373,7 +361,6 @@ public class AgentServiceImpl implements AgentService {
         }
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public AgentDTO copyAgent(String tenantId, String sourceAgentId, String newName) {
         log.info("复制智能体, tenantId={}, sourceAgentId={}, newName={}", tenantId, sourceAgentId, newName);
@@ -403,7 +390,6 @@ public class AgentServiceImpl implements AgentService {
         return convertToDTO(newAgent);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public AgentDTO updateAgentStatus(String tenantId, String agentId, AgentStatus status) {
         log.info("更新智能体状态, tenantId={}, agentId={}, status={}", tenantId, agentId, status);
@@ -422,7 +408,6 @@ public class AgentServiceImpl implements AgentService {
         return convertToDTO(agent);
     }
 
-    @Override
     public List<AgentDTO> getUserAccessibleAgents(String tenantId, String userId) {
         log.debug("获取用户可访问的智能体, tenantId={}, userId={}", tenantId, userId);
         
@@ -444,7 +429,6 @@ public class AgentServiceImpl implements AgentService {
         return agentDTOs;
     }
 
-    @Override
     public PageResult<AgentDTO> getAgentList(String tenantId, AgentQueryRequest request) {
         log.debug("获取智能体列表, tenantId={}, request={}", tenantId, request);
         

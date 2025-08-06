@@ -43,7 +43,6 @@ public class MessageServiceImpl implements MessageService {
     private final ConversationRepository conversationRepository;
     private final ObjectMapper objectMapper;
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public MessageDTO createMessage(String tenantId, String conversationId, String userId, 
                                    MessageType type, String content, Map<String, Object> metadata) {
@@ -84,28 +83,24 @@ public class MessageServiceImpl implements MessageService {
         return convertToDTO(message);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public MessageDTO createUserMessage(String tenantId, String conversationId, String userId, 
                                        String content) {
         return createMessage(tenantId, conversationId, userId, MessageType.TEXT, content, null);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public MessageDTO createAssistantMessage(String tenantId, String conversationId, 
                                             String content, Map<String, Object> metadata) {
         return createMessage(tenantId, conversationId, "assistant", MessageType.TEXT, content, metadata);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public MessageDTO createSystemMessage(String tenantId, String conversationId, 
                                          String content, Map<String, Object> metadata) {
         return createMessage(tenantId, conversationId, "system", MessageType.SYSTEM, content, metadata);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public MessageDTO createToolCallMessage(String tenantId, String conversationId, 
                                            String toolName, Map<String, Object> parameters) {
@@ -118,7 +113,6 @@ public class MessageServiceImpl implements MessageService {
                            "调用工具: " + toolName, metadata);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public MessageDTO updateMessageStatus(String tenantId, String messageId, MessageStatus status) {
         log.info("更新消息状态, tenantId={}, messageId={}, status={}", tenantId, messageId, status);
@@ -134,7 +128,6 @@ public class MessageServiceImpl implements MessageService {
         return convertToDTO(message);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateMessageContent(String tenantId, String messageId, String content) {
         log.info("更新消息内容, tenantId={}, messageId={}", tenantId, messageId);
@@ -148,7 +141,6 @@ public class MessageServiceImpl implements MessageService {
         log.info("消息内容更新成功, messageId={}", messageId);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteMessage(String tenantId, String messageId) {
         log.info("删除消息, tenantId={}, messageId={}", tenantId, messageId);
@@ -162,7 +154,6 @@ public class MessageServiceImpl implements MessageService {
         log.info("消息删除成功, messageId={}", messageId);
     }
 
-    @Override
     public MessageDTO getMessage(String tenantId, String messageId) {
         log.debug("查询消息详情, tenantId={}, messageId={}", tenantId, messageId);
         
@@ -170,7 +161,6 @@ public class MessageServiceImpl implements MessageService {
         return convertToDTO(message);
     }
 
-    @Override
     public PageResult<MessageDTO> getConversationMessages(String tenantId, String conversationId, 
                                                          int pageNum, int pageSize) {
         log.debug("分页查询会话消息, tenantId={}, conversationId={}, pageNum={}, pageSize={}", 
@@ -204,7 +194,6 @@ public class MessageServiceImpl implements MessageService {
             .build();
     }
 
-    @Override
     public List<MessageDTO> getRecentMessages(String tenantId, String conversationId, int limit) {
         log.debug("查询最近消息, tenantId={}, conversationId={}, limit={}", 
                  tenantId, conversationId, limit);
@@ -225,7 +214,6 @@ public class MessageServiceImpl implements MessageService {
             .collect(Collectors.toList());
     }
 
-    @Override
     public List<MessageDTO> getUserMessages(String tenantId, String userId, int limit) {
         log.debug("查询用户消息, tenantId={}, userId={}, limit={}", tenantId, userId, limit);
         
@@ -243,7 +231,6 @@ public class MessageServiceImpl implements MessageService {
             .collect(Collectors.toList());
     }
 
-    @Override
     public long countMessagesByType(String tenantId, MessageType type) {
         return messageRepository.selectCount(
             new LambdaQueryWrapper<Message>()
@@ -253,7 +240,6 @@ public class MessageServiceImpl implements MessageService {
         );
     }
 
-    @Override
     public long countMessagesByStatus(String tenantId, MessageStatus status) {
         return messageRepository.selectCount(
             new LambdaQueryWrapper<Message>()
@@ -262,7 +248,6 @@ public class MessageServiceImpl implements MessageService {
         );
     }
 
-    @Override
     public long countConversationMessages(String tenantId, String conversationId) {
         return messageRepository.selectCount(
             new LambdaQueryWrapper<Message>()
@@ -272,7 +257,6 @@ public class MessageServiceImpl implements MessageService {
         );
     }
 
-    @Override
     public long countUserMessages(String tenantId, String userId) {
         return messageRepository.selectCount(
             new LambdaQueryWrapper<Message>()
@@ -282,7 +266,6 @@ public class MessageServiceImpl implements MessageService {
         );
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void cleanupExpiredMessages(int retentionDays) {
         log.info("清理过期消息, retentionDays={}", retentionDays);
@@ -308,7 +291,6 @@ public class MessageServiceImpl implements MessageService {
         }
     }
 
-    @Override
     public List<MessageDTO> searchMessages(String tenantId, String keyword, int limit) {
         log.debug("搜索消息, tenantId={}, keyword={}, limit={}", tenantId, keyword, limit);
         
@@ -326,7 +308,6 @@ public class MessageServiceImpl implements MessageService {
             .collect(Collectors.toList());
     }
 
-    @Override
     public Map<String, Long> getMessageStatistics(String tenantId, LocalDateTime startTime, 
                                                  LocalDateTime endTime) {
         log.debug("获取消息统计, tenantId={}, startTime={}, endTime={}", 
@@ -391,7 +372,6 @@ public class MessageServiceImpl implements MessageService {
         return message;
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public Long cleanupExpiredMessages(LocalDateTime expiredBefore) {
         log.info("清理过期消息, expiredBefore={}", expiredBefore);
@@ -418,7 +398,6 @@ public class MessageServiceImpl implements MessageService {
         return 0L;
     }
 
-    @Override
     public MessageService.MessageStats getMessageStats(String tenantId, String conversationId, String agentId, String userId) {
         log.debug("获取消息统计, tenantId={}, conversationId={}, agentId={}, userId={}", 
                  tenantId, conversationId, agentId, userId);
@@ -490,7 +469,6 @@ public class MessageServiceImpl implements MessageService {
         return stats;
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void removeMessageReaction(String tenantId, String userId, String messageId, String reactionType) {
         log.info("移除消息反应, tenantId={}, userId={}, messageId={}, reactionType={}", 
@@ -506,7 +484,6 @@ public class MessageServiceImpl implements MessageService {
         log.info("消息反应移除成功, messageId={}, reactionType={}", messageId, reactionType);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void addMessageReaction(String tenantId, String userId, String messageId, String reactionType) {
         log.info("添加消息反应, tenantId={}, userId={}, messageId={}, reactionType={}", 
@@ -522,7 +499,6 @@ public class MessageServiceImpl implements MessageService {
         log.info("消息反应添加成功, messageId={}, reactionType={}", messageId, reactionType);
     }
 
-    @Override
     public List<MessageDTO> getMessageQuoteChain(String tenantId, String messageId) {
         log.debug("获取消息引用链, tenantId={}, messageId={}", tenantId, messageId);
         
@@ -539,7 +515,6 @@ public class MessageServiceImpl implements MessageService {
         return quoteChain;
     }
 
-    @Override
     public String exportConversationMessages(String tenantId, String conversationId, String format) {
         log.info("导出会话消息, tenantId={}, conversationId={}, format={}", tenantId, conversationId, format);
         

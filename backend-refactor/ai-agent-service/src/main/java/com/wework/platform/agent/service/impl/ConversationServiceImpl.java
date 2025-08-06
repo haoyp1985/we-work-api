@@ -41,7 +41,6 @@ public class ConversationServiceImpl implements ConversationService {
     private final AgentRepository agentRepository;
     private final ObjectMapper objectMapper;
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public ConversationDTO createConversation(String tenantId, String agentId, String userId, String title) {
         log.info("创建会话, tenantId={}, agentId={}, userId={}", tenantId, agentId, userId);
@@ -67,7 +66,6 @@ public class ConversationServiceImpl implements ConversationService {
         return convertToDTO(conversation);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public ConversationDTO updateConversationTitle(String tenantId, String conversationId, String title) {
         log.info("更新会话标题, tenantId={}, conversationId={}, title={}", tenantId, conversationId, title);
@@ -86,7 +84,6 @@ public class ConversationServiceImpl implements ConversationService {
         return convertToDTO(conversation);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void endConversation(String tenantId, String conversationId) {
         log.info("结束会话, tenantId={}, conversationId={}", tenantId, conversationId);
@@ -107,7 +104,6 @@ public class ConversationServiceImpl implements ConversationService {
         log.info("会话结束成功, conversationId={}", conversationId);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteConversation(String tenantId, String conversationId) {
         log.info("删除会话, tenantId={}, conversationId={}", tenantId, conversationId);
@@ -121,7 +117,6 @@ public class ConversationServiceImpl implements ConversationService {
         log.info("会话删除成功, conversationId={}", conversationId);
     }
 
-    @Override
     public ConversationDTO getConversation(String tenantId, String conversationId) {
         log.debug("查询会话详情, tenantId={}, conversationId={}", tenantId, conversationId);
         
@@ -129,7 +124,6 @@ public class ConversationServiceImpl implements ConversationService {
         return convertToDTO(conversation);
     }
 
-    @Override
     public PageResult<ConversationDTO> getUserConversations(String tenantId, String userId, 
                                                            int pageNum, int pageSize) {
         log.debug("分页查询用户会话, tenantId={}, userId={}, pageNum={}, pageSize={}", 
@@ -160,7 +154,6 @@ public class ConversationServiceImpl implements ConversationService {
             .build();
     }
 
-    @Override
     public PageResult<ConversationDTO> getAgentConversations(String tenantId, String agentId, 
                                                             int pageNum, int pageSize) {
         log.debug("分页查询智能体会话, tenantId={}, agentId={}, pageNum={}, pageSize={}", 
@@ -191,7 +184,6 @@ public class ConversationServiceImpl implements ConversationService {
             .build();
     }
 
-    @Override
     public List<ConversationDTO> getActiveConversations(String tenantId, String userId) {
         log.debug("查询用户活跃会话, tenantId={}, userId={}", tenantId, userId);
         
@@ -209,7 +201,6 @@ public class ConversationServiceImpl implements ConversationService {
             .collect(Collectors.toList());
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void incrementMessageCount(String conversationId) {
         log.debug("增加会话消息计数, conversationId={}", conversationId);
@@ -222,7 +213,6 @@ public class ConversationServiceImpl implements ConversationService {
         }
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateLastMessage(String conversationId, String lastMessage) {
         log.debug("更新会话最后消息, conversationId={}", conversationId);
@@ -235,7 +225,6 @@ public class ConversationServiceImpl implements ConversationService {
         }
     }
 
-    @Override
     public long countConversationsByStatus(String tenantId, ConversationStatus status) {
         return conversationRepository.selectCount(
             new LambdaQueryWrapper<Conversation>()
@@ -244,7 +233,6 @@ public class ConversationServiceImpl implements ConversationService {
         );
     }
 
-    @Override
     public long countUserConversations(String tenantId, String userId) {
         return conversationRepository.selectCount(
             new LambdaQueryWrapper<Conversation>()
@@ -254,7 +242,6 @@ public class ConversationServiceImpl implements ConversationService {
         );
     }
 
-    @Override
     public long countAgentConversations(String tenantId, String agentId) {
         return conversationRepository.selectCount(
             new LambdaQueryWrapper<Conversation>()
@@ -264,7 +251,6 @@ public class ConversationServiceImpl implements ConversationService {
         );
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public Long cleanupExpiredConversations(LocalDateTime expiredBefore) {
         log.info("清理过期会话, expiredBefore={}", expiredBefore);
@@ -291,7 +277,6 @@ public class ConversationServiceImpl implements ConversationService {
         return 0L;
     }
 
-    @Override
     public ConversationService.ConversationStats getConversationStats(String tenantId, String userId) {
         log.debug("获取会话统计, tenantId={}, userId={}", tenantId, userId);
         
@@ -337,7 +322,6 @@ public class ConversationServiceImpl implements ConversationService {
         return stats;
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public ConversationDTO unarchiveConversation(String tenantId, String userId, String conversationId) {
         log.info("取消归档会话, tenantId={}, userId={}, conversationId={}", tenantId, userId, conversationId);
@@ -366,7 +350,6 @@ public class ConversationServiceImpl implements ConversationService {
         return convertToDTO(conversation);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public ConversationDTO archiveConversation(String tenantId, String userId, String conversationId) {
         log.info("归档会话, tenantId={}, userId={}, conversationId={}", tenantId, userId, conversationId);
@@ -396,7 +379,6 @@ public class ConversationServiceImpl implements ConversationService {
         return convertToDTO(conversation);
     }
 
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void clearConversationContext(String tenantId, String conversationId) {
         log.info("清理会话上下文, tenantId={}, conversationId={}", tenantId, conversationId);
@@ -423,7 +405,6 @@ public class ConversationServiceImpl implements ConversationService {
         log.info("会话上下文清理成功, conversationId={}", conversationId);
     }
 
-    @Override
     public Map<String, Object> getConversationContext(String tenantId, String conversationId) {
         log.debug("获取会话上下文, tenantId={}, conversationId={}", tenantId, conversationId);
         
