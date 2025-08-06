@@ -46,7 +46,7 @@ export const useUserStore = defineStore("user", () => {
   });
 
   const token = ref<string>(getToken() || "");
-  const refreshToken = ref<string>(getRefreshToken() || "");
+  const refreshTokenValue = ref<string>(getRefreshToken() || "");
   const isLoggedIn = ref<boolean>(!!getToken());
 
   // ===== Getters =====
@@ -77,7 +77,7 @@ export const useUserStore = defineStore("user", () => {
 
       // 设置token
       token.value = data.token;
-      refreshToken.value = data.refreshToken;
+      refreshTokenValue.value = data.refreshToken;
       setToken(data.token);
       setRefreshToken(data.refreshToken);
 
@@ -158,11 +158,11 @@ export const useUserStore = defineStore("user", () => {
    */
   const refreshAccessToken = async (): Promise<string> => {
     try {
-      const response = await authApi.refreshToken(refreshToken.value);
+      const response = await authApi.refreshToken(refreshTokenValue.value);
       const data = response.data;
 
       token.value = data.token;
-      refreshToken.value = data.refreshToken;
+      refreshTokenValue.value = data.refreshToken;
       setToken(data.token);
       setRefreshToken(data.refreshToken);
       
@@ -196,7 +196,7 @@ export const useUserStore = defineStore("user", () => {
       lastLoginAt: ""
     };
     token.value = "";
-    refreshToken.value = "";
+    refreshTokenValue.value = "";
     isLoggedIn.value = false;
     clearAuth();
   };
@@ -322,7 +322,7 @@ export const useUserStore = defineStore("user", () => {
     // State
     userInfo,
     token,
-    refreshToken,
+    refreshToken: refreshTokenValue,
     isLoggedIn,
 
     // Getters
