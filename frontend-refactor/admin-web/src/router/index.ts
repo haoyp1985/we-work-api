@@ -289,7 +289,7 @@ const staticRoutes: RouteRecordRaw[] = [
       {
         path: "",
         name: "AIAnalyticsDashboard",
-        component: () => import("@/views/ai-analytics/Dashboard.vue"),
+        component: () => import("@/views/ai-analytics/AIAnalyticsDashboard.vue"),
         meta: {
           title: "数据概览",
           permissions: ["analytics:read"],
@@ -308,40 +308,86 @@ const staticRoutes: RouteRecordRaw[] = [
     ],
   },
   {
-    path: "/system",
+    path: "/user-management",
     component: () => import("@/layout/index.vue"),
     meta: {
-      title: "系统管理",
-      icon: "system",
+      title: "用户管理",
+      icon: "user",
       order: 9,
-      permissions: ["system:read"],
     },
     children: [
       {
-        path: "user",
-        name: "SystemUser",
-        component: () => import("@/views/system/UserManagement.vue"),
+        path: "",
+        name: "UserList",
+        component: () => import("@/views/user/UserList.vue"),
         meta: {
-          title: "用户管理",
-          permissions: ["system:user"],
+          title: "用户列表",
+          permissions: ["user:read"],
         },
       },
       {
-        path: "role",
-        name: "SystemRole",
-        component: () => import("@/views/system/RoleManagement.vue"),
+        path: "roles",
+        name: "RoleList",
+        component: () => import("@/views/user/RoleList.vue"),
         meta: {
           title: "角色管理",
-          permissions: ["system:role"],
+          permissions: ["role:read"],
         },
       },
       {
-        path: "permission",
-        name: "SystemPermission",
-        component: () => import("@/views/system/PermissionManagement.vue"),
+        path: "permissions",
+        name: "PermissionList",
+        component: () => import("@/views/user/PermissionList.vue"),
         meta: {
           title: "权限管理",
-          permissions: ["system:permission"],
+          permissions: ["permission:read"],
+        },
+      },
+      {
+        path: "departments",
+        name: "DepartmentList",
+        component: () => import("@/views/user/DepartmentList.vue"),
+        meta: {
+          title: "部门管理",
+          permissions: ["department:read"],
+        },
+      },
+      {
+        path: "audit",
+        name: "AuditLog",
+        component: () => import("@/views/user/AuditLog.vue"),
+        meta: {
+          title: "审计日志",
+          permissions: ["audit:read"],
+        },
+      },
+      {
+        path: "online",
+        name: "OnlineUsers",
+        component: () => import("@/views/user/OnlineUsers.vue"),
+        meta: {
+          title: "在线用户",
+          permissions: ["user:online"],
+        },
+      },
+    ],
+  },
+  {
+    path: "/system",
+    component: () => import("@/layout/index.vue"),
+    meta: {
+      title: "系统设置",
+      icon: "setting",
+      order: 10,
+    },
+    children: [
+      {
+        path: "",
+        name: "SystemSettings",
+        component: () => import("@/views/system/SystemSettings.vue"),
+        meta: {
+          title: "系统配置",
+          permissions: ["system:read"],
         },
       },
     ],
