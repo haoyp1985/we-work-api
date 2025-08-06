@@ -9,13 +9,13 @@
       "name": "app.account.sync",
       "type": "com.wework.platform.account.config.AccountServiceConfig$SyncConfig",
       "sourceType": "com.wework.platform.account.config.AccountServiceConfig",
-      "sourceMethod": "getSync()"
+      "sourceMethod": "public com.wework.platform.account.config.AccountServiceConfig.SyncConfig getSync() "
     },
     {
       "name": "app.account.wework",
       "type": "com.wework.platform.account.config.AccountServiceConfig$WeWorkConfig",
       "sourceType": "com.wework.platform.account.config.AccountServiceConfig",
-      "sourceMethod": "getWework()"
+      "sourceMethod": "public com.wework.platform.account.config.AccountServiceConfig.WeWorkConfig getWework() "
     }
   ],
   "properties": [
@@ -23,64 +23,55 @@
       "name": "app.account.heartbeat-interval",
       "type": "java.lang.Integer",
       "description": "心跳检测间隔（秒）",
-      "sourceType": "com.wework.platform.account.config.AccountServiceConfig",
-      "defaultValue": 30
+      "sourceType": "com.wework.platform.account.config.AccountServiceConfig"
     },
     {
       "name": "app.account.login-timeout",
       "type": "java.lang.Integer",
       "description": "登录超时时间（秒）",
-      "sourceType": "com.wework.platform.account.config.AccountServiceConfig",
-      "defaultValue": 300
+      "sourceType": "com.wework.platform.account.config.AccountServiceConfig"
     },
     {
       "name": "app.account.max-accounts-per-tenant",
       "type": "java.lang.Integer",
       "description": "每个租户最大账号数量",
-      "sourceType": "com.wework.platform.account.config.AccountServiceConfig",
-      "defaultValue": 100
+      "sourceType": "com.wework.platform.account.config.AccountServiceConfig"
     },
     {
       "name": "app.account.sync.batch-size",
       "type": "java.lang.Integer",
       "description": "批量处理大小",
-      "sourceType": "com.wework.platform.account.config.AccountServiceConfig$SyncConfig",
-      "defaultValue": 100
+      "sourceType": "com.wework.platform.account.config.AccountServiceConfig$SyncConfig"
     },
     {
       "name": "app.account.sync.max-retry",
       "type": "java.lang.Integer",
       "description": "最大重试次数",
-      "sourceType": "com.wework.platform.account.config.AccountServiceConfig$SyncConfig",
-      "defaultValue": 3
+      "sourceType": "com.wework.platform.account.config.AccountServiceConfig$SyncConfig"
     },
     {
       "name": "app.account.sync.timeout",
       "type": "java.lang.Integer",
       "description": "超时时间（秒）",
-      "sourceType": "com.wework.platform.account.config.AccountServiceConfig$SyncConfig",
-      "defaultValue": 30
+      "sourceType": "com.wework.platform.account.config.AccountServiceConfig$SyncConfig"
     },
     {
       "name": "app.account.wework.api-base-url",
       "type": "java.lang.String",
       "description": "API基础URL",
-      "sourceType": "com.wework.platform.account.config.AccountServiceConfig$WeWorkConfig",
-      "defaultValue": "http:\/\/localhost:9999"
+      "sourceType": "com.wework.platform.account.config.AccountServiceConfig$WeWorkConfig"
     },
     {
       "name": "app.account.wework.retry",
       "type": "java.lang.Integer",
       "description": "重试次数",
-      "sourceType": "com.wework.platform.account.config.AccountServiceConfig$WeWorkConfig",
-      "defaultValue": 3
+      "sourceType": "com.wework.platform.account.config.AccountServiceConfig$WeWorkConfig"
     },
     {
       "name": "app.account.wework.timeout",
       "type": "java.lang.Integer",
       "description": "超时时间（秒）",
-      "sourceType": "com.wework.platform.account.config.AccountServiceConfig$WeWorkConfig",
-      "defaultValue": 30
+      "sourceType": "com.wework.platform.account.config.AccountServiceConfig$WeWorkConfig"
     }
   ],
   "hints": []

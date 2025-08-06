@@ -9,37 +9,37 @@
       "name": "app.message.rate-limit",
       "type": "com.wework.platform.message.config.MessageServiceConfig$RateLimitConfig",
       "sourceType": "com.wework.platform.message.config.MessageServiceConfig",
-      "sourceMethod": "getRateLimit()"
+      "sourceMethod": "public com.wework.platform.message.config.MessageServiceConfig.RateLimitConfig getRateLimit() "
     },
     {
       "name": "app.message.retry",
       "type": "com.wework.platform.message.config.MessageServiceConfig$RetryConfig",
       "sourceType": "com.wework.platform.message.config.MessageServiceConfig",
-      "sourceMethod": "getRetry()"
+      "sourceMethod": "public com.wework.platform.message.config.MessageServiceConfig.RetryConfig getRetry() "
     },
     {
       "name": "app.message.send",
       "type": "com.wework.platform.message.config.MessageServiceConfig$SendConfig",
       "sourceType": "com.wework.platform.message.config.MessageServiceConfig",
-      "sourceMethod": "getSend()"
+      "sourceMethod": "public com.wework.platform.message.config.MessageServiceConfig.SendConfig getSend() "
     },
     {
       "name": "app.message.task",
       "type": "com.wework.platform.message.config.MessageServiceConfig$TaskConfig",
       "sourceType": "com.wework.platform.message.config.MessageServiceConfig",
-      "sourceMethod": "getTask()"
+      "sourceMethod": "public com.wework.platform.message.config.MessageServiceConfig.TaskConfig getTask() "
     },
     {
       "name": "app.message.template",
       "type": "com.wework.platform.message.config.MessageServiceConfig$TemplateConfig",
       "sourceType": "com.wework.platform.message.config.MessageServiceConfig",
-      "sourceMethod": "getTemplate()"
+      "sourceMethod": "public com.wework.platform.message.config.MessageServiceConfig.TemplateConfig getTemplate() "
     },
     {
       "name": "app.message.we-work",
       "type": "com.wework.platform.message.config.MessageServiceConfig$WeWorkConfig",
       "sourceType": "com.wework.platform.message.config.MessageServiceConfig",
-      "sourceMethod": "getWeWork()"
+      "sourceMethod": "public com.wework.platform.message.config.MessageServiceConfig.WeWorkConfig getWeWork() "
     }
   ],
   "properties": [
@@ -47,99 +47,85 @@
       "name": "app.message.rate-limit.algorithm",
       "type": "java.lang.String",
       "description": "限流算法 (TOKEN_BUCKET, SLIDING_WINDOW)",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RateLimitConfig",
-      "defaultValue": "TOKEN_BUCKET"
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RateLimitConfig"
     },
     {
       "name": "app.message.rate-limit.enabled",
       "type": "java.lang.Boolean",
       "description": "是否启用限流",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RateLimitConfig",
-      "defaultValue": true
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RateLimitConfig"
     },
     {
       "name": "app.message.rate-limit.max-requests-per-day",
       "type": "java.lang.Integer",
       "description": "每天最大请求数",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RateLimitConfig",
-      "defaultValue": 1000000
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RateLimitConfig"
     },
     {
       "name": "app.message.rate-limit.max-requests-per-hour",
       "type": "java.lang.Integer",
       "description": "每小时最大请求数",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RateLimitConfig",
-      "defaultValue": 50000
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RateLimitConfig"
     },
     {
       "name": "app.message.rate-limit.max-requests-per-minute",
       "type": "java.lang.Integer",
       "description": "每分钟最大请求数",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RateLimitConfig",
-      "defaultValue": 3000
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RateLimitConfig"
     },
     {
       "name": "app.message.rate-limit.max-requests-per-second",
       "type": "java.lang.Integer",
       "description": "每秒最大请求数",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RateLimitConfig",
-      "defaultValue": 100
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RateLimitConfig"
     },
     {
       "name": "app.message.rate-limit.tenant-level-enabled",
       "type": "java.lang.Boolean",
       "description": "是否启用租户级别限流",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RateLimitConfig",
-      "defaultValue": true
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RateLimitConfig"
     },
     {
       "name": "app.message.rate-limit.user-level-enabled",
       "type": "java.lang.Boolean",
       "description": "是否启用用户级别限流",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RateLimitConfig",
-      "defaultValue": true
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RateLimitConfig"
     },
     {
       "name": "app.message.retry.backoff-multiplier",
       "type": "java.lang.Double",
       "description": "退避乘数",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RetryConfig",
-      "defaultValue": 2
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RetryConfig"
     },
     {
       "name": "app.message.retry.backoff-strategy",
       "type": "java.lang.String",
       "description": "重试退避策略 (FIXED, EXPONENTIAL, LINEAR)",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RetryConfig",
-      "defaultValue": "EXPONENTIAL"
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RetryConfig"
     },
     {
       "name": "app.message.retry.enabled",
       "type": "java.lang.Boolean",
       "description": "是否启用自动重试",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RetryConfig",
-      "defaultValue": true
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RetryConfig"
     },
     {
       "name": "app.message.retry.max-attempts",
       "type": "java.lang.Integer",
       "description": "最大重试次数",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RetryConfig",
-      "defaultValue": 3
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RetryConfig"
     },
     {
       "name": "app.message.retry.max-retry-interval",
       "type": "java.time.Duration",
       "description": "最大重试间隔(分钟)",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RetryConfig",
-      "defaultValue": "30m"
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RetryConfig"
     },
     {
       "name": "app.message.retry.retry-interval",
       "type": "java.time.Duration",
       "description": "重试间隔(秒)",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RetryConfig",
-      "defaultValue": "30s"
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$RetryConfig"
     },
     {
       "name": "app.message.retry.retryable-exceptions",
@@ -151,50 +137,43 @@
       "name": "app.message.send.async-enabled",
       "type": "java.lang.Boolean",
       "description": "是否启用异步发送",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$SendConfig",
-      "defaultValue": true
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$SendConfig"
     },
     {
       "name": "app.message.send.async-thread-pool-size",
       "type": "java.lang.Integer",
       "description": "异步发送线程池大小",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$SendConfig",
-      "defaultValue": 10
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$SendConfig"
     },
     {
       "name": "app.message.send.deduplication-cache-expire",
       "type": "java.time.Duration",
       "description": "去重缓存过期时间(分钟)",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$SendConfig",
-      "defaultValue": "30m"
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$SendConfig"
     },
     {
       "name": "app.message.send.deduplication-enabled",
       "type": "java.lang.Boolean",
       "description": "是否启用消息去重",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$SendConfig",
-      "defaultValue": true
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$SendConfig"
     },
     {
       "name": "app.message.send.log-enabled",
       "type": "java.lang.Boolean",
       "description": "是否记录发送日志",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$SendConfig",
-      "defaultValue": true
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$SendConfig"
     },
     {
       "name": "app.message.send.max-batch-size",
       "type": "java.lang.Integer",
       "description": "单次最大发送数量",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$SendConfig",
-      "defaultValue": 100
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$SendConfig"
     },
     {
       "name": "app.message.send.send-timeout",
       "type": "java.time.Duration",
       "description": "发送超时时间(毫秒)",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$SendConfig",
-      "defaultValue": "5m"
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$SendConfig"
     },
     {
       "name": "app.message.send.supported-types",
@@ -206,92 +185,79 @@
       "name": "app.message.task.batch-size",
       "type": "java.lang.Integer",
       "description": "单次处理任务数量",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TaskConfig",
-      "defaultValue": 10
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TaskConfig"
     },
     {
       "name": "app.message.task.execution-timeout",
       "type": "java.time.Duration",
       "description": "任务执行超时时间(分钟)",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TaskConfig",
-      "defaultValue": "30m"
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TaskConfig"
     },
     {
       "name": "app.message.task.log-retention-days",
       "type": "java.lang.Integer",
       "description": "任务日志保留天数",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TaskConfig",
-      "defaultValue": 30
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TaskConfig"
     },
     {
       "name": "app.message.task.max-concurrent-tasks",
       "type": "java.lang.Integer",
       "description": "最大并发执行任务数",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TaskConfig",
-      "defaultValue": 5
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TaskConfig"
     },
     {
       "name": "app.message.task.max-queue-size",
       "type": "java.lang.Integer",
       "description": "任务队列最大长度",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TaskConfig",
-      "defaultValue": 1000
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TaskConfig"
     },
     {
       "name": "app.message.task.monitoring-enabled",
       "type": "java.lang.Boolean",
       "description": "是否启用任务监控",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TaskConfig",
-      "defaultValue": true
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TaskConfig"
     },
     {
       "name": "app.message.task.priority-enabled",
       "type": "java.lang.Boolean",
       "description": "是否启用任务优先级",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TaskConfig",
-      "defaultValue": true
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TaskConfig"
     },
     {
       "name": "app.message.task.scan-interval",
       "type": "java.time.Duration",
       "description": "任务扫描间隔(秒)",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TaskConfig",
-      "defaultValue": "30s"
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TaskConfig"
     },
     {
       "name": "app.message.template.cache-enabled",
       "type": "java.lang.Boolean",
       "description": "是否启用模板缓存",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TemplateConfig",
-      "defaultValue": true
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TemplateConfig"
     },
     {
       "name": "app.message.template.cache-expire",
       "type": "java.time.Duration",
       "description": "模板缓存过期时间(分钟)",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TemplateConfig",
-      "defaultValue": "60m"
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TemplateConfig"
     },
     {
       "name": "app.message.template.max-content-length",
       "type": "java.lang.Integer",
       "description": "模板内容最大长度",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TemplateConfig",
-      "defaultValue": 4000
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TemplateConfig"
     },
     {
       "name": "app.message.template.max-parameter-count",
       "type": "java.lang.Integer",
       "description": "模板参数最大数量",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TemplateConfig",
-      "defaultValue": 50
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TemplateConfig"
     },
     {
       "name": "app.message.template.max-parameter-name-length",
       "type": "java.lang.Integer",
       "description": "参数名称最大长度",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TemplateConfig",
-      "defaultValue": 50
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TemplateConfig"
     },
     {
       "name": "app.message.template.placeholder-prefixes",
@@ -309,57 +275,49 @@
       "name": "app.message.template.syntax-check-enabled",
       "type": "java.lang.Boolean",
       "description": "是否启用模板语法检查",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TemplateConfig",
-      "defaultValue": true
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$TemplateConfig"
     },
     {
       "name": "app.message.we-work.api-base-url",
       "type": "java.lang.String",
       "description": "API基础URL",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$WeWorkConfig",
-      "defaultValue": "https:\/\/qyapi.weixin.qq.com"
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$WeWorkConfig"
     },
     {
       "name": "app.message.we-work.connect-timeout",
       "type": "java.time.Duration",
       "description": "连接超时时间(毫秒)",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$WeWorkConfig",
-      "defaultValue": "10s"
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$WeWorkConfig"
     },
     {
       "name": "app.message.we-work.max-retries",
       "type": "java.lang.Integer",
       "description": "最大重试次数",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$WeWorkConfig",
-      "defaultValue": 3
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$WeWorkConfig"
     },
     {
       "name": "app.message.we-work.read-timeout",
       "type": "java.time.Duration",
       "description": "读取超时时间(毫秒)",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$WeWorkConfig",
-      "defaultValue": "30s"
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$WeWorkConfig"
     },
     {
       "name": "app.message.we-work.retry-interval",
       "type": "java.time.Duration",
       "description": "重试间隔(毫秒)",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$WeWorkConfig",
-      "defaultValue": "2s"
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$WeWorkConfig"
     },
     {
       "name": "app.message.we-work.ssl-enabled",
       "type": "java.lang.Boolean",
       "description": "是否启用SSL验证",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$WeWorkConfig",
-      "defaultValue": true
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$WeWorkConfig"
     },
     {
       "name": "app.message.we-work.user-agent",
       "type": "java.lang.String",
       "description": "用户代理",
-      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$WeWorkConfig",
-      "defaultValue": "WeWork-Platform\/2.0.0"
+      "sourceType": "com.wework.platform.message.config.MessageServiceConfig$WeWorkConfig"
     }
   ],
   "hints": []
