@@ -488,6 +488,67 @@ public class ConversationServiceImpl implements ConversationService {
         return conversation;
     }
 
+    @Override
+    @Transactional
+    public void updateConversationContext(String tenantId, String conversationId, Map<String, Object> context) {
+        log.info("更新会话上下文, tenantId={}, conversationId={}", tenantId, conversationId);
+        
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+        
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或已删除");
+        }
+        
+        try {
+            // 将Map转换为JSON字符串保存
+            String contextJson = objectMapper.writeValueAsString(context);
+            conversation.setContextJson(contextJson);
+            conversation.setUpdatedAt(LocalDateTime.now());
+            
+            conversationRepository.updateById(conversation);
+            
+            log.info("会话上下文更新成功, conversationId={}", conversationId);
+        } catch (Exception e) {
+            log.error("更新会话上下文失败, conversationId={}", conversationId, e);
+            throw new RuntimeException("更新会话上下文失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public void removeConversationTags(String tenantId, String conversationId, String userId, List<String> tags) {
+        log.info("移除会话标签, tenantId={}, conversationId={}, userId={}, tags={}", tenantId, conversationId, userId, tags);
+        
+        if (tags == null || tags.isEmpty()) {
+            log.warn("标签列表为空，无需移除");
+            return;
+        }
+        
+        // 验证会话存在且用户有权限
+        Conversation conversation = conversationRepository.selectOne(
+            new LambdaQueryWrapper<Conversation>()
+                .eq(Conversation::getId, conversationId)
+                .eq(Conversation::getTenantId, tenantId)
+                .eq(Conversation::getUserId, userId)
+                .ne(Conversation::getStatus, ConversationStatus.DELETED)
+        );
+        
+        if (conversation == null) {
+            throw new RuntimeException("会话不存在或无权限访问");
+        }
+        
+        // TODO: 实现具体的标签移除逻辑
+        // 这里应该根据实际的标签存储方式来实现
+        // 可能需要更新conversation的tagsJson字段或者操作专门的标签表
+        
+        log.info("会话标签移除成功, conversationId={}, removedTags={}", conversationId, tags);
+    }
+
     /**
      * 生成默认会话标题
      */

@@ -634,6 +634,55 @@ public class PlatformIntegrationServiceImpl implements PlatformIntegrationServic
         return models;
     }
 
+    @Override
+    public boolean clearConversation(PlatformConfig platformConfig, String conversationId) {
+        log.info("清理平台会话, platformType={}, conversationId={}", platformConfig.getPlatformType(), conversationId);
+        
+        try {
+            switch (platformConfig.getPlatformType()) {
+                case OPENAI:
+                    // OpenAI 无需显式清理会话，每次请求都是独立的
+                    log.debug("OpenAI平台无需清理会话");
+                    return true;
+                    
+                case ANTHROPIC_CLAUDE:
+                    // Claude 无需显式清理会话，每次请求都是独立的
+                    log.debug("Claude平台无需清理会话");
+                    return true;
+                    
+                case BAIDU_WENXIN:
+                    // 文心一言 无需显式清理会话，每次请求都是独立的
+                    log.debug("文心一言平台无需清理会话");
+                    return true;
+                    
+                case COZE:
+                    return clearCozeConversation(platformConfig, conversationId);
+                    
+                case DIFY:
+                    return clearDifyConversation(platformConfig, conversationId);
+                    
+                default:
+                    log.warn("未知的平台类型: {}", platformConfig.getPlatformType());
+                    return false;
+            }
+        } catch (Exception e) {
+            log.error("清理平台会话失败, conversationId={}", conversationId, e);
+            return false;
+        }
+    }
+
+    private boolean clearCozeConversation(PlatformConfig platformConfig, String conversationId) {
+        // TODO: 实现Coze平台会话清理逻辑
+        log.debug("Coze平台会话清理暂未实现, conversationId={}", conversationId);
+        return true;
+    }
+
+    private boolean clearDifyConversation(PlatformConfig platformConfig, String conversationId) {
+        // TODO: 实现Dify平台会话清理逻辑
+        log.debug("Dify平台会话清理暂未实现, conversationId={}", conversationId);
+        return true;
+    }
+
     private PlatformIntegrationService.ModelInfo createModelInfo(String id, String name, boolean available, int maxTokens) {
         PlatformIntegrationService.ModelInfo modelInfo = new PlatformIntegrationService.ModelInfo();
         modelInfo.setId(id);

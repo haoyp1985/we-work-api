@@ -31,6 +31,15 @@ public class ChatResponse {
     @Schema(description = "响应消息ID")
     private String responseMessageId;
 
+    @Schema(description = "消息ID(兼容字段)")
+    private String messageId;
+
+    @Schema(description = "请求是否成功")
+    private Boolean success;
+
+    @Schema(description = "时间戳")
+    private LocalDateTime timestamp;
+
     @Schema(description = "智能体ID")
     private String agentId;
 

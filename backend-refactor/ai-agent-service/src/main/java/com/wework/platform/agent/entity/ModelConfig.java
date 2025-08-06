@@ -7,6 +7,10 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.HashMap;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 模型配置实体
@@ -107,4 +111,22 @@ public class ModelConfig {
     @Schema(description = "是否删除")
     @TableLogic
     private Boolean deleted;
+
+    /**
+     * 获取参数配置
+     * 解析configJson字段并返回Map对象
+     */
+    public Map<String, Object> getParameters() {
+        if (configJson == null || configJson.trim().isEmpty()) {
+            return new HashMap<>();
+        }
+        
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(configJson, new TypeReference<Map<String, Object>>() {});
+        } catch (Exception e) {
+            // 如果解析失败，返回空Map
+            return new HashMap<>();
+        }
+    }
 }

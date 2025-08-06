@@ -82,4 +82,7 @@ public class UpdateAgentRequest {
 
     @Schema(description = "备注")
     private String remarks;
+
+    @Schema(description = "是否强制更新")
+    private Boolean forceUpdate = false;
 }

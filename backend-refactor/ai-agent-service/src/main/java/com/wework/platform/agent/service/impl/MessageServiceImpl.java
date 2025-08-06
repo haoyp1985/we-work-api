@@ -570,6 +570,36 @@ public class MessageServiceImpl implements MessageService {
         }
     }
 
+    @Override
+    @Transactional
+    public void clearConversationMessages(String tenantId, String conversationId) {
+        log.info("清理会话消息, tenantId={}, conversationId={}", tenantId, conversationId);
+        
+        // 验证会话是否存在
+        validateConversation(tenantId, conversationId);
+        
+        // 逻辑删除会话中的所有消息
+        List<Message> messages = messageRepository.selectList(
+            new LambdaQueryWrapper<Message>()
+                .eq(Message::getTenantId, tenantId)
+                .eq(Message::getConversationId, conversationId)
+                .ne(Message::getStatus, MessageStatus.DELETED)
+        );
+        
+        if (!messages.isEmpty()) {
+            LocalDateTime now = LocalDateTime.now();
+            for (Message message : messages) {
+                message.setStatus(MessageStatus.DELETED);
+                message.setUpdatedAt(now);
+                messageRepository.updateById(message);
+            }
+            
+            log.info("清理会话消息完成, conversationId={}, 清理数量={}", conversationId, messages.size());
+        } else {
+            log.info("会话无消息需要清理, conversationId={}", conversationId);
+        }
+    }
+
     /**
      * 转换为DTO
      */

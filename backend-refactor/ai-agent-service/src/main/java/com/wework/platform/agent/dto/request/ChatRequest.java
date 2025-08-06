@@ -48,6 +48,18 @@ public class ChatRequest {
     @Schema(description = "是否流式响应")
     private Boolean streaming = false;
 
+    @Schema(description = "用户ID")
+    private String userId;
+
+    @Schema(description = "消息内容(兼容字段)")
+    private String message;
+
+    @Schema(description = "会话历史")
+    private List<Map<String, Object>> history;
+
+    @Schema(description = "是否流式输出(兼容字段)")
+    private Boolean stream = false;
+
     @Schema(description = "会话配置覆盖")
     private ConversationConfigOverride configOverride;
 
