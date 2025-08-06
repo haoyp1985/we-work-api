@@ -159,14 +159,12 @@ export const useUserStore = defineStore("user", () => {
   const refreshAccessToken = async (): Promise<string> => {
     try {
       const response = await authApi.refreshToken(refreshTokenValue.value);
-      const data = response.data;
+      const newToken = response.data;
 
-      token.value = data.token;
-      refreshTokenValue.value = data.refreshToken;
-      setToken(data.token);
-      setRefreshToken(data.refreshToken);
+      token.value = newToken;
+      setToken(newToken);
       
-      return data.token;
+      return newToken;
     } catch (error) {
       console.error("Token刷新失败:", error);
       // Token刷新失败，清除登录状态

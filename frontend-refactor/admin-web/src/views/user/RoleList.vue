@@ -355,33 +355,19 @@ const handleSizeChange = (size: number) => {
 const fetchRoleList = async () => {
   loading.value = true
   try {
-    // 模拟数据
-    setTimeout(() => {
-      tableData.value = [
-        {
-          id: '1',
-          name: '超级管理员',
-          code: 'SUPER_ADMIN',
-          description: '系统超级管理员，拥有所有权限',
-          userCount: 1,
-          status: 'enabled',
-          createdAt: '2024-01-01 10:00:00'
-        },
-        {
-          id: '2',
-          name: '普通用户',
-          code: 'USER',
-          description: '普通用户角色',
-          userCount: 25,
-          status: 'enabled',
-          createdAt: '2024-01-01 10:05:00'
-        }
-      ] as any
-      pagination.total = 2
-      loading.value = false
-    }, 1000)
+    const { getRoleList } = await import('@/api/role')
+    const params = {
+      pageNum: pagination.pageNum,
+      pageSize: pagination.pageSize,
+      keyword: searchForm.roleName || undefined
+    }
+    
+    const response = await getRoleList(params)
+    tableData.value = response.data.records || response.data.items || []
+    pagination.total = response.data.total || 0
   } catch (error) {
     ElMessage.error('获取角色列表失败')
+  } finally {
     loading.value = false
   }
 }

@@ -540,19 +540,15 @@ const loadData = async () => {
   loading.value = true
   try {
     const params = {
-      current: pagination.current,
-      size: pagination.size,
+      pageNum: pagination.current,
+      pageSize: pagination.size,
       keyword: searchForm.keyword || undefined,
-      status: searchForm.status || undefined,
-      roleId: searchForm.roleId || undefined,
-      departmentId: searchForm.departmentId || undefined,
-      createdStartDate: searchForm.createdDateRange[0] || undefined,
-      createdEndDate: searchForm.createdDateRange[1] || undefined
+      status: searchForm.status ? Number(searchForm.status) : undefined
     }
     
-    const response = await userApi.getUsers(params)
-    userList.value = response.data.records
-    pagination.total = response.data.total
+    const response = await userApi.getUserList(params)
+    userList.value = response.data.records || response.data.items || []
+    pagination.total = response.data.total || 0
   } catch (error) {
     console.error('加载用户列表失败:', error)
     ElMessage.error('加载用户列表失败')
@@ -563,8 +559,10 @@ const loadData = async () => {
 
 const loadRoleOptions = async () => {
   try {
-    const response = await userApi.getRoles()
-    roleOptions.value = response.data.records
+    // 导入角色API
+    const { getAllRoles } = await import('@/api/role')
+    const response = await getAllRoles()
+    roleOptions.value = response.data || []
   } catch (error) {
     console.error('加载角色选项失败:', error)
   }

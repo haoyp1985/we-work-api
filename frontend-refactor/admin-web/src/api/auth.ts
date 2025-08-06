@@ -31,16 +31,15 @@ export function logout(): Promise<ApiResult<void>> {
  * 获取当前用户信息
  */
 export function getCurrentUser(): Promise<ApiResult<UserInfo>> {
-  return httpClient.get<UserInfo>('/auth/me')
+  return httpClient.get<UserInfo>('/auth/user-info')
 }
 
 /**
  * 刷新访问令牌
  */
-export function refreshToken(refreshToken: string): Promise<ApiResult<LoginResponse>> {
-  return httpClient.post<LoginResponse>('/auth/refresh', {
-    refreshToken
-  }, {
+export function refreshToken(refreshToken: string): Promise<ApiResult<string>> {
+  return httpClient.post<string>('/auth/refresh', null, {
+    params: { refreshToken },
     skipAuth: true
   })
 }
