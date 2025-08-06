@@ -17,21 +17,21 @@ import type {
  * 获取智能体列表
  */
 export function getAgents(params: AgentQuery): Promise<ApiResult<PageResult<Agent>>> {
-  return httpClient.get<PageResult<Agent>>('/agents', params)
+  return httpClient.get<PageResult<Agent>>('/api/v1/agents', { params })
 }
 
 /**
  * 获取智能体详情
  */
 export function getAgent(id: string): Promise<ApiResult<Agent>> {
-  return httpClient.get<Agent>(`/agents/${id}`)
+  return httpClient.get<Agent>(`/api/v1/agents/${id}`)
 }
 
 /**
  * 创建智能体
  */
 export function createAgent(data: CreateAgentRequest): Promise<ApiResult<Agent>> {
-  return httpClient.post<Agent>('/agents', data, {
+  return httpClient.post<Agent>('/api/v1/agents', data, {
     showSuccessMessage: true
   })
 }
@@ -40,7 +40,7 @@ export function createAgent(data: CreateAgentRequest): Promise<ApiResult<Agent>>
  * 更新智能体
  */
 export function updateAgent(data: UpdateAgentRequest): Promise<ApiResult<Agent>> {
-  return httpClient.put<Agent>(`/agents/${data.id}`, data, {
+  return httpClient.put<Agent>(`/api/v1/agents/${data.id}`, data, {
     showSuccessMessage: true
   })
 }
@@ -49,7 +49,7 @@ export function updateAgent(data: UpdateAgentRequest): Promise<ApiResult<Agent>>
  * 删除智能体
  */
 export function deleteAgent(id: string): Promise<ApiResult<void>> {
-  return httpClient.delete<void>(`/agents/${id}`, {
+  return httpClient.delete<void>(`/api/v1/agents/${id}`, {
     showSuccessMessage: true
   })
 }

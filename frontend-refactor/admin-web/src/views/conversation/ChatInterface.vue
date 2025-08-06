@@ -575,7 +575,7 @@ const handleSendMessage = async () => {
       scrollToBottom()
     })
     
-    // 发送消息 (使用流式响应)
+        // 发送消息 (使用流式响应)
     isStreaming.value = true
     isTyping.value = true
     streamingContent.value = ''
@@ -599,21 +599,33 @@ const handleSendMessage = async () => {
     
     messages.value.push(aiMessage)
     streamingMessageId.value = aiMessage.id
-    
-    // 启动流式响应
-    conversationApi.sendMessageStream(
-      sendRequest,
+
+    // 创建聊天请求
+    const chatRequest = {
+      agentId: agentId.value,
+      conversationId: conversationId.value,
+      content: content,
+      type: sendRequest.type,
+      attachments: sendRequest.attachments
+    }
+
+    // 启动流式响应 - 使用新的聊天API
+    const { sendMessageStream } = await import('@/api/chat')
+    sendMessageStream(
+      chatRequest,
       (chunk: string) => {
         streamingContent.value += chunk
         nextTick(() => {
           scrollToBottom()
         })
       },
-      (completeMessage: Message) => {
-        // 替换临时消息
+      (completeResponse: any) => {
+        // 更新AI消息
         const index = messages.value.findIndex(m => m.id === aiMessage.id)
         if (index > -1) {
-          messages.value[index] = completeMessage
+          messages.value[index].content = completeResponse.content
+          messages.value[index].status = 'SENT'
+          messages.value[index].id = completeResponse.messageId
         }
         
         isStreaming.value = false

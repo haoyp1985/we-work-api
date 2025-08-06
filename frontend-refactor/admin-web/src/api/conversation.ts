@@ -14,7 +14,7 @@ import type {
 } from '@/types/api'
 
 /**
- * 获取对话列表
+ * 获取对话列表  
  */
 export function getConversations(params?: {
   current?: number
@@ -28,41 +28,92 @@ export function getConversations(params?: {
   startDate?: string
   endDate?: string
 }): Promise<ApiResult<PageResult<Conversation>>> {
-  return httpClient.get<PageResult<Conversation>>('/conversations', params)
-}
-
-/**
- * 获取对话详情
- */
-export function getConversation(id: string): Promise<ApiResult<Conversation>> {
-  return httpClient.get<Conversation>(`/conversations/${id}`)
+  return httpClient.get<PageResult<Conversation>>('/api/v1/conversations', { params })
 }
 
 /**
  * 创建对话
  */
 export function createConversation(data: {
-  title: string
   agentId: string
-  description?: string
-  tags?: string[]
+  title?: string
 }): Promise<ApiResult<Conversation>> {
-  return httpClient.post<Conversation>('/conversations', data, {
+  return httpClient.post<Conversation>('/api/v1/conversations', null, {
+    params: data,
     showSuccessMessage: true
   })
 }
 
 /**
- * 更新对话
+ * 获取用户对话列表
  */
-export function updateConversation(id: string, data: {
-  title?: string
-  tags?: string[]
-  isStarred?: boolean
-  isPinned?: boolean
-  status?: ConversationStatus
-}): Promise<ApiResult<Conversation>> {
-  return httpClient.put<Conversation>(`/conversations/${id}`, data, {
+export function getUserConversations(userId: string, params?: {
+  pageNum?: number
+  pageSize?: number
+}): Promise<ApiResult<PageResult<Conversation>>> {
+  return httpClient.get<PageResult<Conversation>>(`/api/v1/conversations/user/${userId}`, { params })
+}
+
+/**
+ * 获取智能体对话列表
+ */
+export function getAgentConversations(agentId: string, params?: {
+  pageNum?: number
+  pageSize?: number
+}): Promise<ApiResult<PageResult<Conversation>>> {
+  return httpClient.get<PageResult<Conversation>>(`/api/v1/conversations/agent/${agentId}`, { params })
+}
+
+/**
+ * 获取用户活跃对话
+ */
+export function getActiveConversations(userId: string): Promise<ApiResult<Conversation[]>> {
+  return httpClient.get<Conversation[]>(`/api/v1/conversations/user/${userId}/active`)
+}
+
+/**
+ * 获取对话统计信息
+ */
+export function getConversationStatistics(): Promise<ApiResult<Record<string, number>>> {
+  return httpClient.get<Record<string, number>>('/api/v1/conversations/statistics')
+}
+
+/**
+ * 获取用户对话数量
+ */
+export function countUserConversations(userId: string): Promise<ApiResult<number>> {
+  return httpClient.get<number>(`/api/v1/conversations/user/${userId}/count`)
+}
+
+/**
+ * 获取智能体对话数量
+ */
+export function countAgentConversations(agentId: string): Promise<ApiResult<number>> {
+  return httpClient.get<number>(`/api/v1/conversations/agent/${agentId}/count`)
+}
+
+/**
+ * 获取对话详情
+ */
+export function getConversation(id: string): Promise<ApiResult<Conversation>> {
+  return httpClient.get<Conversation>(`/api/v1/conversations/${id}`)
+}
+
+/**
+ * 更新对话标题
+ */
+export function updateConversationTitle(id: string, title: string): Promise<ApiResult<Conversation>> {
+  return httpClient.put<Conversation>(`/api/v1/conversations/${id}/title`, null, {
+    params: { title },
+    showSuccessMessage: true
+  })
+}
+
+/**
+ * 结束对话
+ */
+export function endConversation(id: string): Promise<ApiResult<void>> {
+  return httpClient.post<void>(`/api/v1/conversations/${id}/end`, null, {
     showSuccessMessage: true
   })
 }
@@ -71,7 +122,7 @@ export function updateConversation(id: string, data: {
  * 删除对话
  */
 export function deleteConversation(id: string): Promise<ApiResult<void>> {
-  return httpClient.delete<void>(`/conversations/${id}`, {
+  return httpClient.delete<void>(`/api/v1/conversations/${id}`, {
     showSuccessMessage: true
   })
 }
