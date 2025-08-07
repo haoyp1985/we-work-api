@@ -243,7 +243,7 @@ export const useUserStore = defineStore("user", () => {
   /**
    * 更新用户资料
    */
-  const updateProfile = async (profileData: Partial<User>): Promise<User> => {
+  const updateProfile = async (profileData: Partial<UserInfo>): Promise<UserInfo> => {
     try {
       const response = await authApi.updateProfile(profileData);
 

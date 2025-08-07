@@ -130,7 +130,7 @@ class HttpClient {
           // 特殊错误码处理
           switch (data.code) {
             case 401:
-              this.handleUnauthorized(errorMessage)
+              this.handleUnauthorized(errorMessage).catch(() => {})
               break
             case 403:
               this.handleForbidden(errorMessage)
@@ -164,11 +164,23 @@ class HttpClient {
   }
 
   /**
-   * 处理未授权错误
+   * 处理未授权错误 - 尝试刷新token
    */
-  private handleUnauthorized(message: string): void {
+  private async handleUnauthorized(message: string): Promise<void> {
     const userStore = useUserStore()
     
+    // 如果有refreshToken，尝试刷新
+    if (userStore.refreshToken) {
+      try {
+        await userStore.refreshAccessToken()
+        ElMessage.success('登录状态已刷新')
+        return
+      } catch (error) {
+        console.error('Token刷新失败:', error)
+      }
+    }
+    
+    // 刷新失败或没有refreshToken，提示重新登录
     ElMessageBox.confirm(
       message || '登录状态已过期，请重新登录',
       '登录过期',
