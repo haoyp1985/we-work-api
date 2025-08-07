@@ -8,8 +8,6 @@ import com.wework.platform.common.enums.AlertStatus;
 import com.wework.platform.monitor.entity.AlertRule;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,25 +32,7 @@ public interface AlertRuleRepository extends BaseMapper<AlertRule> {
      * @param status 状态
      * @return 分页结果
      */
-    @Select("<script>" +
-            "SELECT * FROM alert_rules " +
-            "WHERE tenant_id = #{tenantId} " +
-            "<if test='ruleName != null and ruleName != \"\"'>" +
-            "AND rule_name LIKE CONCAT('%', #{ruleName}, '%') " +
-            "</if>" +
-            "<if test='metricName != null and metricName != \"\"'>" +
-            "AND metric_name = #{metricName} " +
-            "</if>" +
-            "<if test='alertLevel != null'>" +
-            "AND alert_level = #{alertLevel} " +
-            "</if>" +
-            "<if test='status != null'>" +
-            "AND status = #{status} " +
-            "</if>" +
-            "AND deleted_at IS NULL " +
-            "ORDER BY created_at DESC" +
-            "</script>")
-    IPage<AlertRule> selectPageByConditions(
+        IPage<AlertRule> selectPageByConditions(
             Page<AlertRule> page,
             @Param("tenantId") String tenantId,
             @Param("ruleName") String ruleName,
@@ -67,12 +47,7 @@ public interface AlertRuleRepository extends BaseMapper<AlertRule> {
      * @param tenantId 租户ID
      * @return 规则列表
      */
-    @Select("SELECT * FROM alert_rules " +
-            "WHERE tenant_id = #{tenantId} " +
-            "AND status = 'ENABLED' " +
-            "AND deleted_at IS NULL " +
-            "ORDER BY created_at DESC")
-    List<AlertRule> selectEnabledRules(@Param("tenantId") String tenantId);
+        List<AlertRule> selectEnabledRules(@Param("tenantId") String tenantId);
 
     /**
      * 查询需要执行的告警规则
@@ -80,12 +55,7 @@ public interface AlertRuleRepository extends BaseMapper<AlertRule> {
      * @param currentTime 当前时间
      * @return 规则列表
      */
-    @Select("SELECT * FROM alert_rules " +
-            "WHERE status = 'ENABLED' " +
-            "AND deleted_at IS NULL " +
-            "AND (last_executed_at IS NULL OR " +
-            "TIMESTAMPDIFF(MINUTE, last_executed_at, #{currentTime}) >= evaluation_interval)")
-    List<AlertRule> selectRulesForExecution(@Param("currentTime") LocalDateTime currentTime);
+        List<AlertRule> selectRulesForExecution(@Param("currentTime") LocalDateTime currentTime);
 
     /**
      * 根据指标名称查询规则
@@ -94,12 +64,7 @@ public interface AlertRuleRepository extends BaseMapper<AlertRule> {
      * @param metricName 指标名称
      * @return 规则列表
      */
-    @Select("SELECT * FROM alert_rules " +
-            "WHERE tenant_id = #{tenantId} " +
-            "AND metric_name = #{metricName} " +
-            "AND status = 'ENABLED' " +
-            "AND deleted_at IS NULL")
-    List<AlertRule> selectByMetricName(
+        List<AlertRule> selectByMetricName(
             @Param("tenantId") String tenantId,
             @Param("metricName") String metricName
     );
@@ -111,9 +76,7 @@ public interface AlertRuleRepository extends BaseMapper<AlertRule> {
      * @param executedAt 执行时间
      * @return 影响行数
      */
-    @Update("UPDATE alert_rules SET last_executed_at = #{executedAt} " +
-            "WHERE id = #{id}")
-    int updateLastExecutedAt(
+        int updateLastExecutedAt(
             @Param("id") String id,
             @Param("executedAt") LocalDateTime executedAt
     );
@@ -125,9 +88,7 @@ public interface AlertRuleRepository extends BaseMapper<AlertRule> {
      * @param alertedAt 告警时间
      * @return 影响行数
      */
-    @Update("UPDATE alert_rules SET last_alerted_at = #{alertedAt} " +
-            "WHERE id = #{id}")
-    int updateLastAlertedAt(
+        int updateLastAlertedAt(
             @Param("id") String id,
             @Param("alertedAt") LocalDateTime alertedAt
     );
@@ -139,15 +100,7 @@ public interface AlertRuleRepository extends BaseMapper<AlertRule> {
      * @param status 状态
      * @return 数量
      */
-    @Select("<script>" +
-            "SELECT COUNT(*) FROM alert_rules " +
-            "WHERE tenant_id = #{tenantId} " +
-            "<if test='status != null'>" +
-            "AND status = #{status} " +
-            "</if>" +
-            "AND deleted_at IS NULL" +
-            "</script>")
-    Long countByTenantAndStatus(
+        Long countByTenantAndStatus(
             @Param("tenantId") String tenantId,
             @Param("status") AlertStatus status
     );
@@ -160,16 +113,7 @@ public interface AlertRuleRepository extends BaseMapper<AlertRule> {
      * @param excludeId 排除的ID
      * @return 是否存在
      */
-    @Select("<script>" +
-            "SELECT COUNT(*) FROM alert_rules " +
-            "WHERE tenant_id = #{tenantId} " +
-            "AND rule_name = #{ruleName} " +
-            "<if test='excludeId != null and excludeId != \"\"'>" +
-            "AND id != #{excludeId} " +
-            "</if>" +
-            "AND deleted_at IS NULL" +
-            "</script>")
-    Long countByRuleName(
+        Long countByRuleName(
             @Param("tenantId") String tenantId,
             @Param("ruleName") String ruleName,
             @Param("excludeId") String excludeId

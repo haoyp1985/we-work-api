@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wework.platform.monitor.entity.SystemMetric;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,25 +30,7 @@ public interface SystemMetricRepository extends BaseMapper<SystemMetric> {
      * @param endTime 结束时间
      * @return 分页结果
      */
-    @Select("<script>" +
-            "SELECT * FROM system_metrics " +
-            "WHERE tenant_id = #{tenantId} " +
-            "<if test='serviceName != null and serviceName != \"\"'>" +
-            "AND service_name = #{serviceName} " +
-            "</if>" +
-            "<if test='metricName != null and metricName != \"\"'>" +
-            "AND metric_name = #{metricName} " +
-            "</if>" +
-            "<if test='startTime != null'>" +
-            "AND collected_at >= #{startTime} " +
-            "</if>" +
-            "<if test='endTime != null'>" +
-            "AND collected_at <= #{endTime} " +
-            "</if>" +
-            "AND deleted_at IS NULL " +
-            "ORDER BY collected_at DESC" +
-            "</script>")
-    IPage<SystemMetric> selectPageByConditions(
+        IPage<SystemMetric> selectPageByConditions(
             Page<SystemMetric> page,
             @Param("tenantId") String tenantId,
             @Param("serviceName") String serviceName,
@@ -67,14 +48,7 @@ public interface SystemMetricRepository extends BaseMapper<SystemMetric> {
      * @param limit 限制数量
      * @return 指标列表
      */
-    @Select("SELECT * FROM system_metrics " +
-            "WHERE tenant_id = #{tenantId} " +
-            "AND service_name = #{serviceName} " +
-            "AND metric_name = #{metricName} " +
-            "AND deleted_at IS NULL " +
-            "ORDER BY collected_at DESC " +
-            "LIMIT #{limit}")
-    List<SystemMetric> selectLatestMetrics(
+        List<SystemMetric> selectLatestMetrics(
             @Param("tenantId") String tenantId,
             @Param("serviceName") String serviceName,
             @Param("metricName") String metricName,
@@ -88,11 +62,7 @@ public interface SystemMetricRepository extends BaseMapper<SystemMetric> {
      * @param serviceName 服务名称
      * @return 指标名称列表
      */
-    @Select("SELECT DISTINCT metric_name FROM system_metrics " +
-            "WHERE tenant_id = #{tenantId} " +
-            "AND service_name = #{serviceName} " +
-            "AND deleted_at IS NULL")
-    List<String> selectMetricNamesByService(
+        List<String> selectMetricNamesByService(
             @Param("tenantId") String tenantId,
             @Param("serviceName") String serviceName
     );
@@ -103,10 +73,7 @@ public interface SystemMetricRepository extends BaseMapper<SystemMetric> {
      * @param tenantId 租户ID
      * @return 服务名称列表
      */
-    @Select("SELECT DISTINCT service_name FROM system_metrics " +
-            "WHERE tenant_id = #{tenantId} " +
-            "AND deleted_at IS NULL")
-    List<String> selectServiceNamesByTenant(@Param("tenantId") String tenantId);
+        List<String> selectServiceNamesByTenant(@Param("tenantId") String tenantId);
 
     /**
      * 删除过期的指标数据
@@ -114,9 +81,7 @@ public interface SystemMetricRepository extends BaseMapper<SystemMetric> {
      * @param beforeTime 时间点
      * @return 删除数量
      */
-    @Select("DELETE FROM system_metrics " +
-            "WHERE collected_at < #{beforeTime}")
-    int deleteExpiredMetrics(@Param("beforeTime") LocalDateTime beforeTime);
+        int deleteExpiredMetrics(@Param("beforeTime") LocalDateTime beforeTime);
 
     /**
      * 统计指标数量
@@ -127,21 +92,7 @@ public interface SystemMetricRepository extends BaseMapper<SystemMetric> {
      * @param endTime 结束时间
      * @return 数量
      */
-    @Select("<script>" +
-            "SELECT COUNT(*) FROM system_metrics " +
-            "WHERE tenant_id = #{tenantId} " +
-            "<if test='serviceName != null and serviceName != \"\"'>" +
-            "AND service_name = #{serviceName} " +
-            "</if>" +
-            "<if test='startTime != null'>" +
-            "AND collected_at >= #{startTime} " +
-            "</if>" +
-            "<if test='endTime != null'>" +
-            "AND collected_at <= #{endTime} " +
-            "</if>" +
-            "AND deleted_at IS NULL" +
-            "</script>")
-    Long countByConditions(
+        Long countByConditions(
             @Param("tenantId") String tenantId,
             @Param("serviceName") String serviceName,
             @Param("startTime") LocalDateTime startTime,

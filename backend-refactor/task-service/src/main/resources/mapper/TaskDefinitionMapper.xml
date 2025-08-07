@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wework.platform.task.repository.TaskDefinitionRepository">
+
+    <!-- 分页查询任务定义 -->
+    <select id="selectByPage" resultType="com.wework.platform.task.entity.TaskDefinition">
+        SELECT * FROM task_definitions 
+        WHERE tenant_id = #{tenantId} 
+        <if test="taskName != null">
+            AND task_name LIKE CONCAT('%', #{taskName}, '%')
+        </if>
+        <if test="taskType != null">
+            AND task_type = #{taskType}
+        </if>
+        <if test="isEnabled != null">
+            AND is_enabled = #{isEnabled}
+        </if>
+        AND deleted_at IS NULL 
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 获取启用的任务定义 -->
+    <select id="selectEnabledTasks" resultType="com.wework.platform.task.entity.TaskDefinition">
+        SELECT * FROM task_definitions 
+        WHERE tenant_id = #{tenantId} 
+        AND is_enabled = true 
+        AND deleted_at IS NULL 
+        ORDER BY priority DESC, created_at ASC
+    </select>
+
+    <!-- 获取需要调度的任务定义 -->
+    <select id="selectSchedulableTasks" resultType="com.wework.platform.task.entity.TaskDefinition">
+        SELECT * FROM task_definitions 
+        WHERE is_enabled = true 
+        AND deleted_at IS NULL 
+        AND cron_expression IS NOT NULL 
+        AND cron_expression != '' 
+        ORDER BY priority DESC
+    </select>
+
+    <!-- 根据任务类型查询 -->
+    <select id="selectByTaskType" resultType="com.wework.platform.task.entity.TaskDefinition">
+        SELECT * FROM task_definitions 
+        WHERE tenant_id = #{tenantId} 
+        AND task_type = #{taskType} 
+        AND deleted_at IS NULL 
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 统计任务定义数量 -->
+    <select id="selectStatistics" resultType="com.wework.platform.task.repository.TaskDefinitionRepository$TaskDefinitionStatistics">
+        SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN is_enabled = true THEN 1 ELSE 0 END) as enabled,
+        SUM(CASE WHEN is_enabled = false THEN 1 ELSE 0 END) as disabled
+        FROM task_definitions 
+        WHERE tenant_id = #{tenantId} 
+        AND deleted_at IS NULL
+    </select>
+
+    <!-- 启用任务 -->
+    <update id="enableTask">
+        UPDATE task_definitions SET 
+        is_enabled = true, 
+        updated_at = #{updateTime}, 
+        updated_by = #{updatedBy} 
+        WHERE id = #{id} AND tenant_id = #{tenantId}
+    </update>
+
+    <!-- 禁用任务 -->
+    <update id="disableTask">
+        UPDATE task_definitions SET 
+        is_enabled = false, 
+        updated_at = #{updateTime}, 
+        updated_by = #{updatedBy} 
+        WHERE id = #{id} AND tenant_id = #{tenantId}
+    </update>
+
+    <!-- 软删除任务定义 -->
+    <update id="softDelete">
+        UPDATE task_definitions SET 
+        deleted_at = #{deleteTime}, 
+        updated_at = #{deleteTime}, 
+        updated_by = #{deletedBy} 
+        WHERE id = #{id} AND tenant_id = #{tenantId}
+    </update>
+
+    <!-- 检查任务名称是否存在 -->
+    <select id="countByTaskName" resultType="int">
+        SELECT COUNT(*) FROM task_definitions 
+        WHERE tenant_id = #{tenantId} 
+        AND task_name = #{taskName} 
+        AND id != #{excludeId} 
+        AND deleted_at IS NULL
+    </select>
+
+</mapper>

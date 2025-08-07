@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wework.platform.monitor.repository.AlertRuleRepository">
+
+    <!-- countByTenantAndStatus -->
+    <select id="countByTenantAndStatus" resultType="long">
+        "&lt;script&gt;" +
+        "SELECT COUNT(*
+    </select>
+
+    <!-- countByRuleName -->
+    <select id="countByRuleName" resultType="long">
+        "&lt;script&gt;" +
+        "SELECT COUNT(*
+    </select>
+
+</mapper>

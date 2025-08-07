@@ -5,8 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wework.platform.account.entity.WeWorkAccount;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -26,7 +24,6 @@ public interface WeWorkAccountRepository extends BaseMapper<WeWorkAccount> {
      * @param tenantId 租户ID
      * @return 账号信息
      */
-    @Select("SELECT * FROM wework_accounts WHERE corp_id = #{corpId} AND tenant_id = #{tenantId} AND deleted_at IS NULL")
     WeWorkAccount findByCorpId(@Param("corpId") String corpId, @Param("tenantId") String tenantId);
 
     /**
@@ -35,7 +32,6 @@ public interface WeWorkAccountRepository extends BaseMapper<WeWorkAccount> {
      * @param tenantId 租户ID
      * @return 账号列表
      */
-    @Select("SELECT * FROM wework_accounts WHERE tenant_id = #{tenantId} AND deleted_at IS NULL ORDER BY created_at DESC")
     List<WeWorkAccount> findByTenantId(@Param("tenantId") String tenantId);
 
     /**
@@ -47,17 +43,6 @@ public interface WeWorkAccountRepository extends BaseMapper<WeWorkAccount> {
      * @param status 状态
      * @return 分页结果
      */
-    @Select("<script>" +
-            "SELECT * FROM wework_accounts " +
-            "WHERE tenant_id = #{tenantId} AND deleted_at IS NULL " +
-            "<if test='keyword != null and keyword != &quot;&quot;'>" +
-            "  AND (corp_name LIKE CONCAT('%', #{keyword}, '%') OR corp_id LIKE CONCAT('%', #{keyword}, '%')) " +
-            "</if>" +
-            "<if test='status != null'>" +
-            "  AND status = #{status} " +
-            "</if>" +
-            "ORDER BY created_at DESC" +
-            "</script>")
     Page<WeWorkAccount> findAccountsPage(Page<WeWorkAccount> page, 
                                         @Param("tenantId") String tenantId,
                                         @Param("keyword") String keyword, 
@@ -70,7 +55,6 @@ public interface WeWorkAccountRepository extends BaseMapper<WeWorkAccount> {
      * @param tenantId 租户ID
      * @return 账号列表
      */
-    @Select("SELECT * FROM wework_accounts WHERE status = #{status} AND tenant_id = #{tenantId} AND deleted_at IS NULL")
     List<WeWorkAccount> findByStatus(@Param("status") Integer status, @Param("tenantId") String tenantId);
 
     /**
@@ -79,7 +63,6 @@ public interface WeWorkAccountRepository extends BaseMapper<WeWorkAccount> {
      * @param tenantId 租户ID
      * @return 在线账号数量
      */
-    @Select("SELECT COUNT(*) FROM wework_accounts WHERE status = 1 AND tenant_id = #{tenantId} AND deleted_at IS NULL")
     int countOnlineAccounts(@Param("tenantId") String tenantId);
 
     /**
@@ -88,7 +71,6 @@ public interface WeWorkAccountRepository extends BaseMapper<WeWorkAccount> {
      * @param tenantId 租户ID
      * @return 离线账号数量
      */
-    @Select("SELECT COUNT(*) FROM wework_accounts WHERE status = 2 AND tenant_id = #{tenantId} AND deleted_at IS NULL")
     int countOfflineAccounts(@Param("tenantId") String tenantId);
 
     /**
@@ -97,7 +79,6 @@ public interface WeWorkAccountRepository extends BaseMapper<WeWorkAccount> {
      * @param tenantId 租户ID
      * @return 异常账号数量
      */
-    @Select("SELECT COUNT(*) FROM wework_accounts WHERE status = 3 AND tenant_id = #{tenantId} AND deleted_at IS NULL")
     int countErrorAccounts(@Param("tenantId") String tenantId);
 
     /**
@@ -109,9 +90,6 @@ public interface WeWorkAccountRepository extends BaseMapper<WeWorkAccount> {
      * @param operatorId 操作人ID
      * @return 更新行数
      */
-    @Update("UPDATE wework_accounts SET status = #{status}, error_msg = #{errorMsg}, " +
-            "updated_at = NOW(), updated_by = #{operatorId} " +
-            "WHERE id = #{accountId}")
     int updateAccountStatus(@Param("accountId") String accountId, 
                            @Param("status") Integer status,
                            @Param("errorMsg") String errorMsg, 
@@ -125,9 +103,6 @@ public interface WeWorkAccountRepository extends BaseMapper<WeWorkAccount> {
      * @param expireTime 过期时间
      * @return 更新行数
      */
-    @Update("UPDATE wework_accounts SET access_token = #{accessToken}, " +
-            "access_token_expire_time = #{expireTime}, updated_at = NOW() " +
-            "WHERE id = #{accountId}")
     int updateAccessToken(@Param("accountId") String accountId, 
                          @Param("accessToken") String accessToken,
                          @Param("expireTime") String expireTime);
@@ -138,7 +113,6 @@ public interface WeWorkAccountRepository extends BaseMapper<WeWorkAccount> {
      * @param accountId 账号ID
      * @return 更新行数
      */
-    @Update("UPDATE wework_accounts SET last_heartbeat_time = NOW() WHERE id = #{accountId}")
     int updateHeartbeatTime(@Param("accountId") String accountId);
 
     /**
@@ -147,9 +121,6 @@ public interface WeWorkAccountRepository extends BaseMapper<WeWorkAccount> {
      * @param minutes 多少分钟内未心跳
      * @return 账号列表
      */
-    @Select("SELECT * FROM wework_accounts " +
-            "WHERE status = 1 AND deleted_at IS NULL " +
-            "AND (last_heartbeat_time IS NULL OR last_heartbeat_time < DATE_SUB(NOW(), INTERVAL #{minutes} MINUTE))")
     List<WeWorkAccount> findAccountsNeedHeartbeat(@Param("minutes") int minutes);
 
     /**
@@ -158,12 +129,6 @@ public interface WeWorkAccountRepository extends BaseMapper<WeWorkAccount> {
      * @param tenantId 租户ID
      * @return 统计信息
      */
-    @Select("SELECT " +
-            "COUNT(*) as total, " +
-            "SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as online, " +
-            "SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) as offline, " +
-            "SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as error " +
-            "FROM wework_accounts WHERE tenant_id = #{tenantId} AND deleted_at IS NULL")
     AccountStatistics getAccountStatistics(@Param("tenantId") String tenantId);
 
     /**

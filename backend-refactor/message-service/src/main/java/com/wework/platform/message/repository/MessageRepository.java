@@ -4,8 +4,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.wework.platform.message.entity.Message;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,7 +24,6 @@ public interface MessageRepository extends BaseMapper<Message> {
      * @param sendStatus 发送状态
      * @return 消息数量
      */
-    @Select("SELECT COUNT(*) FROM messages WHERE account_id = #{accountId} AND send_status = #{sendStatus} AND deleted_at IS NULL")
     Long countByAccountIdAndStatus(@Param("accountId") String accountId, @Param("sendStatus") Integer sendStatus);
 
     /**
@@ -37,8 +34,6 @@ public interface MessageRepository extends BaseMapper<Message> {
      * @param endTime 结束时间
      * @return 消息数量
      */
-    @Select("SELECT COUNT(*) FROM messages WHERE tenant_id = #{tenantId} " +
-            "AND send_time >= #{startTime} AND send_time <= #{endTime} AND deleted_at IS NULL")
     Long countByTenantIdAndTimeRange(@Param("tenantId") String tenantId, 
                                     @Param("startTime") LocalDateTime startTime, 
                                     @Param("endTime") LocalDateTime endTime);
@@ -49,11 +44,6 @@ public interface MessageRepository extends BaseMapper<Message> {
      * @param limit 限制数量
      * @return 消息列表
      */
-    @Select("SELECT * FROM messages WHERE send_status = 3 " +
-            "AND retry_count < max_retry_count " +
-            "AND next_retry_time <= NOW() " +
-            "AND deleted_at IS NULL " +
-            "ORDER BY next_retry_time ASC LIMIT #{limit}")
     List<Message> findMessagesForRetry(@Param("limit") Integer limit);
 
     /**
@@ -65,10 +55,6 @@ public interface MessageRepository extends BaseMapper<Message> {
      * @param errorMessage 错误信息
      * @return 更新数量
      */
-    @Update("UPDATE messages SET send_status = #{sendStatus}, " +
-            "error_code = #{errorCode}, error_message = #{errorMessage}, " +
-            "complete_time = NOW(), updated_at = NOW() " +
-            "WHERE id = #{id}")
     int updateMessageStatus(@Param("id") String id, 
                           @Param("sendStatus") Integer sendStatus,
                           @Param("errorCode") String errorCode, 
@@ -82,9 +68,6 @@ public interface MessageRepository extends BaseMapper<Message> {
      * @param nextRetryTime 下次重试时间
      * @return 更新数量
      */
-    @Update("UPDATE messages SET retry_count = #{retryCount}, " +
-            "next_retry_time = #{nextRetryTime}, updated_at = NOW() " +
-            "WHERE id = #{id}")
     int updateRetryInfo(@Param("id") String id, 
                        @Param("retryCount") Integer retryCount,
                        @Param("nextRetryTime") LocalDateTime nextRetryTime);
@@ -96,8 +79,6 @@ public interface MessageRepository extends BaseMapper<Message> {
      * @param sendStatus 发送状态
      * @return 更新数量
      */
-    @Update("UPDATE messages SET send_status = #{sendStatus}, updated_at = NOW() " +
-            "WHERE task_id = #{taskId} AND send_status = 0")
     int updateTaskMessagesStatus(@Param("taskId") String taskId, @Param("sendStatus") Integer sendStatus);
 
     /**
@@ -109,25 +90,6 @@ public interface MessageRepository extends BaseMapper<Message> {
      * @param endTime 结束时间
      * @return 统计信息
      */
-    @Select("<script>" +
-            "SELECT " +
-            "COUNT(*) as totalCount, " +
-            "SUM(CASE WHEN send_status = 2 THEN 1 ELSE 0 END) as successCount, " +
-            "SUM(CASE WHEN send_status = 3 THEN 1 ELSE 0 END) as failCount, " +
-            "SUM(CASE WHEN send_status IN (0,1) THEN 1 ELSE 0 END) as pendingCount " +
-            "FROM messages " +
-            "WHERE tenant_id = #{tenantId} " +
-            "<if test='accountId != null'>" +
-            "  AND account_id = #{accountId} " +
-            "</if>" +
-            "<if test='startTime != null'>" +
-            "  AND send_time >= #{startTime} " +
-            "</if>" +
-            "<if test='endTime != null'>" +
-            "  AND send_time <= #{endTime} " +
-            "</if>" +
-            "AND deleted_at IS NULL" +
-            "</script>")
     MessageStatistics getMessageStatistics(@Param("tenantId") String tenantId,
                                           @Param("accountId") String accountId,
                                           @Param("startTime") LocalDateTime startTime,

@@ -8,8 +8,6 @@ import com.wework.platform.common.enums.AlertStatus;
 import com.wework.platform.monitor.entity.Alert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,31 +34,7 @@ public interface AlertRepository extends BaseMapper<Alert> {
      * @param endTime 结束时间
      * @return 分页结果
      */
-    @Select("<script>" +
-            "SELECT * FROM alerts " +
-            "WHERE tenant_id = #{tenantId} " +
-            "<if test='ruleId != null and ruleId != \"\"'>" +
-            "AND rule_id = #{ruleId} " +
-            "</if>" +
-            "<if test='alertLevel != null'>" +
-            "AND alert_level = #{alertLevel} " +
-            "</if>" +
-            "<if test='status != null'>" +
-            "AND status = #{status} " +
-            "</if>" +
-            "<if test='serviceName != null and serviceName != \"\"'>" +
-            "AND service_name = #{serviceName} " +
-            "</if>" +
-            "<if test='startTime != null'>" +
-            "AND started_at >= #{startTime} " +
-            "</if>" +
-            "<if test='endTime != null'>" +
-            "AND started_at <= #{endTime} " +
-            "</if>" +
-            "AND deleted_at IS NULL " +
-            "ORDER BY started_at DESC" +
-            "</script>")
-    IPage<Alert> selectPageByConditions(
+        IPage<Alert> selectPageByConditions(
             Page<Alert> page,
             @Param("tenantId") String tenantId,
             @Param("ruleId") String ruleId,
@@ -77,12 +51,7 @@ public interface AlertRepository extends BaseMapper<Alert> {
      * @param tenantId 租户ID
      * @return 告警列表
      */
-    @Select("SELECT * FROM alerts " +
-            "WHERE tenant_id = #{tenantId} " +
-            "AND status IN ('FIRING', 'PENDING') " +
-            "AND deleted_at IS NULL " +
-            "ORDER BY started_at DESC")
-    List<Alert> selectActiveAlerts(@Param("tenantId") String tenantId);
+        List<Alert> selectActiveAlerts(@Param("tenantId") String tenantId);
 
     /**
      * 查询未确认的告警
@@ -90,13 +59,7 @@ public interface AlertRepository extends BaseMapper<Alert> {
      * @param tenantId 租户ID
      * @return 告警列表
      */
-    @Select("SELECT * FROM alerts " +
-            "WHERE tenant_id = #{tenantId} " +
-            "AND status IN ('FIRING', 'PENDING') " +
-            "AND acknowledged_at IS NULL " +
-            "AND deleted_at IS NULL " +
-            "ORDER BY started_at DESC")
-    List<Alert> selectUnacknowledgedAlerts(@Param("tenantId") String tenantId);
+        List<Alert> selectUnacknowledgedAlerts(@Param("tenantId") String tenantId);
 
     /**
      * 查询规则的活跃告警
@@ -104,13 +67,7 @@ public interface AlertRepository extends BaseMapper<Alert> {
      * @param ruleId 规则ID
      * @return 告警
      */
-    @Select("SELECT * FROM alerts " +
-            "WHERE rule_id = #{ruleId} " +
-            "AND status IN ('FIRING', 'PENDING') " +
-            "AND deleted_at IS NULL " +
-            "ORDER BY started_at DESC " +
-            "LIMIT 1")
-    Alert selectActiveAlertByRule(@Param("ruleId") String ruleId);
+        Alert selectActiveAlertByRule(@Param("ruleId") String ruleId);
 
     /**
      * 确认告警
@@ -120,11 +77,7 @@ public interface AlertRepository extends BaseMapper<Alert> {
      * @param acknowledgedAt 确认时间
      * @return 影响行数
      */
-    @Update("UPDATE alerts SET " +
-            "acknowledged_by = #{acknowledgedBy}, " +
-            "acknowledged_at = #{acknowledgedAt} " +
-            "WHERE id = #{id}")
-    int acknowledgeAlert(
+        int acknowledgeAlert(
             @Param("id") String id,
             @Param("acknowledgedBy") String acknowledgedBy,
             @Param("acknowledgedAt") LocalDateTime acknowledgedAt
@@ -138,14 +91,7 @@ public interface AlertRepository extends BaseMapper<Alert> {
      * @param endedAt 结束时间
      * @return 影响行数
      */
-    @Update("<script>" +
-            "UPDATE alerts SET status = #{status} " +
-            "<if test='endedAt != null'>" +
-            ", ended_at = #{endedAt} " +
-            "</if>" +
-            "WHERE id = #{id}" +
-            "</script>")
-    int updateAlertStatus(
+        int updateAlertStatus(
             @Param("id") String id,
             @Param("status") AlertStatus status,
             @Param("endedAt") LocalDateTime endedAt
@@ -159,11 +105,7 @@ public interface AlertRepository extends BaseMapper<Alert> {
      * @param notifiedAt 通知时间
      * @return 影响行数
      */
-    @Update("UPDATE alerts SET " +
-            "notification_sent = #{notificationSent}, " +
-            "notified_at = #{notifiedAt} " +
-            "WHERE id = #{id}")
-    int updateNotificationStatus(
+        int updateNotificationStatus(
             @Param("id") String id,
             @Param("notificationSent") Boolean notificationSent,
             @Param("notifiedAt") LocalDateTime notifiedAt
@@ -179,24 +121,7 @@ public interface AlertRepository extends BaseMapper<Alert> {
      * @param endTime 结束时间
      * @return 数量
      */
-    @Select("<script>" +
-            "SELECT COUNT(*) FROM alerts " +
-            "WHERE tenant_id = #{tenantId} " +
-            "<if test='status != null'>" +
-            "AND status = #{status} " +
-            "</if>" +
-            "<if test='alertLevel != null'>" +
-            "AND alert_level = #{alertLevel} " +
-            "</if>" +
-            "<if test='startTime != null'>" +
-            "AND started_at >= #{startTime} " +
-            "</if>" +
-            "<if test='endTime != null'>" +
-            "AND started_at <= #{endTime} " +
-            "</if>" +
-            "AND deleted_at IS NULL" +
-            "</script>")
-    Long countByConditions(
+        Long countByConditions(
             @Param("tenantId") String tenantId,
             @Param("status") AlertStatus status,
             @Param("alertLevel") AlertLevel alertLevel,
@@ -210,8 +135,5 @@ public interface AlertRepository extends BaseMapper<Alert> {
      * @param beforeTime 时间点
      * @return 删除数量
      */
-    @Select("DELETE FROM alerts " +
-            "WHERE ended_at IS NOT NULL " +
-            "AND ended_at < #{beforeTime}")
-    int deleteExpiredAlerts(@Param("beforeTime") LocalDateTime beforeTime);
+        int deleteExpiredAlerts(@Param("beforeTime") LocalDateTime beforeTime);
 }

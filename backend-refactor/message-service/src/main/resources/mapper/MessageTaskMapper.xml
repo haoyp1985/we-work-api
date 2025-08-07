@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wework.platform.message.repository.MessageTaskRepository">
+
+    <!-- findPendingTasks -->
+    <select id="findPendingTasks" resultType="com.wework.platform.message.entity.MessageTask">
+        "SELECT * FROM message_tasks " +
+        "WHERE task_status = 0 " +
+        "AND schedule_time &lt;= NOW(
+    </select>
+
+    <!-- NOW -->
+    <select id="NOW" resultType="com.wework.platform.message.entity.MessageTask">
+        "SELECT * FROM message_tasks " +
+        "WHERE task_type = 3 " +
+        "AND task_status IN (0, 2
+    </select>
+
+    <!-- NOW -->
+    <update id="NOW">
+        "UPDATE message_tasks SET " +
+        "start_time = NOW(
+    </update>
+
+    <!-- NOW -->
+    <update id="NOW">
+        "UPDATE message_tasks SET " +
+        "complete_time = NOW(
+    </update>
+
+    <!-- countByTenantIdAndStatus -->
+    <select id="countByTenantIdAndStatus" resultType="long">
+        "SELECT COUNT(*
+    </select>
+
+    <!-- SUM -->
+    <select id="SUM">
+        "&lt;script&gt;" +
+        "SELECT " +
+        "COUNT(*
+    </select>
+
+</mapper>

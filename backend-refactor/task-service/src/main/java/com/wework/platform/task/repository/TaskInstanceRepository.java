@@ -33,24 +33,7 @@ public interface TaskInstanceRepository extends BaseMapper<TaskInstance> {
      * @param endTime 结束时间
      * @return 分页结果
      */
-    @Select("<script>" +
-            "SELECT * FROM task_instances " +
-            "WHERE tenant_id = #{tenantId} " +
-            "<if test='definitionId != null and definitionId != \"\"'>" +
-            "AND definition_id = #{definitionId} " +
-            "</if>" +
-            "<if test='status != null and status != \"\"'>" +
-            "AND status = #{status} " +
-            "</if>" +
-            "<if test='startTime != null'>" +
-            "AND created_at >= #{startTime} " +
-            "</if>" +
-            "<if test='endTime != null'>" +
-            "AND created_at <= #{endTime} " +
-            "</if>" +
-            "ORDER BY created_at DESC" +
-            "</script>")
-    IPage<TaskInstance> selectPageByConditions(Page<TaskInstance> page,
+        IPage<TaskInstance> selectPageByConditions(Page<TaskInstance> page,
                                               @Param("tenantId") String tenantId,
                                               @Param("definitionId") String definitionId,
                                               @Param("status") String status,
@@ -64,13 +47,7 @@ public interface TaskInstanceRepository extends BaseMapper<TaskInstance> {
      * @param limit 查询数量限制
      * @return 待执行任务列表
      */
-    @Select("SELECT * FROM task_instances " +
-            "WHERE status = 'PENDING' " +
-            "AND scheduled_time <= #{now} " +
-            "AND (lock_expires_at IS NULL OR lock_expires_at < #{now}) " +
-            "ORDER BY priority DESC, scheduled_time ASC " +
-            "LIMIT #{limit}")
-    List<TaskInstance> findReadyTasks(@Param("now") LocalDateTime now, 
+        List<TaskInstance> findReadyTasks(@Param("now") LocalDateTime now, 
                                      @Param("limit") int limit);
 
     /**
@@ -84,17 +61,7 @@ public interface TaskInstanceRepository extends BaseMapper<TaskInstance> {
      * @param status 更新后的状态
      * @return 更新行数（>0表示获取锁成功）
      */
-    @Update("UPDATE task_instances SET " +
-            "execution_node = #{nodeId}, " +
-            "locked_at = #{lockedAt}, " +
-            "lock_expires_at = #{lockExpiresAt}, " +
-            "status = #{status}, " +
-            "lock_version = lock_version + 1, " +
-            "start_time = #{lockedAt} " +
-            "WHERE id = #{taskId} " +
-            "AND lock_version = #{lockVersion} " +
-            "AND (execution_node IS NULL OR lock_expires_at < #{lockedAt})")
-    int acquireTaskLock(@Param("taskId") String taskId,
+        int acquireTaskLock(@Param("taskId") String taskId,
                        @Param("lockVersion") Integer lockVersion,
                        @Param("nodeId") String nodeId,
                        @Param("lockedAt") LocalDateTime lockedAt,
@@ -112,14 +79,7 @@ public interface TaskInstanceRepository extends BaseMapper<TaskInstance> {
      * @param errorMessage 错误信息
      * @return 更新行数
      */
-    @Update("UPDATE task_instances SET " +
-            "status = #{status}, " +
-            "end_time = #{endTime}, " +
-            "lock_expires_at = NULL, " +
-            "result_data = #{resultData}, " +
-            "error_message = #{errorMessage} " +
-            "WHERE id = #{taskId} AND execution_node = #{nodeId}")
-    int releaseTaskLock(@Param("taskId") String taskId,
+        int releaseTaskLock(@Param("taskId") String taskId,
                        @Param("nodeId") String nodeId,
                        @Param("status") TaskStatus status,
                        @Param("endTime") LocalDateTime endTime,
@@ -135,13 +95,7 @@ public interface TaskInstanceRepository extends BaseMapper<TaskInstance> {
      * @param status 任务状态
      * @return 更新行数
      */
-    @Update("UPDATE task_instances SET " +
-            "retry_count = #{retryCount}, " +
-            "next_retry_time = #{nextRetryTime}, " +
-            "status = #{status}, " +
-            "lock_expires_at = NULL " +
-            "WHERE id = #{taskId}")
-    int updateRetryInfo(@Param("taskId") String taskId,
+        int updateRetryInfo(@Param("taskId") String taskId,
                        @Param("retryCount") Integer retryCount,
                        @Param("nextRetryTime") LocalDateTime nextRetryTime,
                        @Param("status") TaskStatus status);
@@ -153,13 +107,7 @@ public interface TaskInstanceRepository extends BaseMapper<TaskInstance> {
      * @param limit 查询数量限制
      * @return 需要重试的任务列表
      */
-    @Select("SELECT * FROM task_instances " +
-            "WHERE status = 'WAITING_RETRY' " +
-            "AND next_retry_time <= #{now} " +
-            "AND (lock_expires_at IS NULL OR lock_expires_at < #{now}) " +
-            "ORDER BY next_retry_time ASC " +
-            "LIMIT #{limit}")
-    List<TaskInstance> findRetryTasks(@Param("now") LocalDateTime now, 
+        List<TaskInstance> findRetryTasks(@Param("now") LocalDateTime now, 
                                      @Param("limit") int limit);
 
     /**
@@ -169,12 +117,7 @@ public interface TaskInstanceRepository extends BaseMapper<TaskInstance> {
      * @param limit 查询数量限制
      * @return 锁过期的任务列表
      */
-    @Select("SELECT * FROM task_instances " +
-            "WHERE status = 'RUNNING' " +
-            "AND lock_expires_at < #{expireTime} " +
-            "ORDER BY lock_expires_at ASC " +
-            "LIMIT #{limit}")
-    List<TaskInstance> findExpiredLockTasks(@Param("expireTime") LocalDateTime expireTime,
+        List<TaskInstance> findExpiredLockTasks(@Param("expireTime") LocalDateTime expireTime,
                                            @Param("limit") int limit);
 
     /**
@@ -184,15 +127,7 @@ public interface TaskInstanceRepository extends BaseMapper<TaskInstance> {
      * @param originalNode 原执行节点
      * @return 更新行数
      */
-    @Update("UPDATE task_instances SET " +
-            "status = 'PENDING', " +
-            "execution_node = NULL, " +
-            "locked_at = NULL, " +
-            "lock_expires_at = NULL " +
-            "WHERE id = #{taskId} " +
-            "AND execution_node = #{originalNode} " +
-            "AND status = 'RUNNING'")
-    int resetExpiredTask(@Param("taskId") String taskId,
+        int resetExpiredTask(@Param("taskId") String taskId,
                         @Param("originalNode") String originalNode);
 
     /**
@@ -204,22 +139,7 @@ public interface TaskInstanceRepository extends BaseMapper<TaskInstance> {
      * @param endTime 结束时间
      * @return 状态统计结果
      */
-    @Select("<script>" +
-            "SELECT status, COUNT(*) as count " +
-            "FROM task_instances " +
-            "WHERE tenant_id = #{tenantId} " +
-            "<if test='definitionId != null and definitionId != \"\"'>" +
-            "AND definition_id = #{definitionId} " +
-            "</if>" +
-            "<if test='startTime != null'>" +
-            "AND created_at >= #{startTime} " +
-            "</if>" +
-            "<if test='endTime != null'>" +
-            "AND created_at <= #{endTime} " +
-            "</if>" +
-            "GROUP BY status" +
-            "</script>")
-    @Results({
+        @Results({
             @Result(column = "status", property = "status"),
             @Result(column = "count", property = "count")
     })
@@ -235,19 +155,7 @@ public interface TaskInstanceRepository extends BaseMapper<TaskInstance> {
      * @param taskIds 任务ID列表
      * @return 更新行数
      */
-    @Update("<script>" +
-            "UPDATE task_instances SET " +
-            "status = 'CANCELLED', " +
-            "end_time = NOW(), " +
-            "lock_expires_at = NULL " +
-            "WHERE tenant_id = #{tenantId} " +
-            "AND status IN ('PENDING', 'WAITING_RETRY') " +
-            "AND id IN " +
-            "<foreach collection='taskIds' item='taskId' open='(' separator=',' close=')'>" +
-            "#{taskId}" +
-            "</foreach>" +
-            "</script>")
-    int batchCancelTasks(@Param("tenantId") String tenantId,
+        int batchCancelTasks(@Param("tenantId") String tenantId,
                         @Param("taskIds") List<String> taskIds);
 
     /**
@@ -258,17 +166,7 @@ public interface TaskInstanceRepository extends BaseMapper<TaskInstance> {
      * @param keepCount 每个任务定义保留的最新实例数
      * @return 删除行数
      */
-    @Delete("DELETE t1 FROM task_instances t1 " +
-            "WHERE t1.tenant_id = #{tenantId} " +
-            "AND t1.created_at < #{beforeTime} " +
-            "AND t1.status IN ('SUCCESS', 'FAILED', 'CANCELLED') " +
-            "AND (" +
-            "  SELECT COUNT(*) FROM task_instances t2 " +
-            "  WHERE t2.definition_id = t1.definition_id " +
-            "  AND t2.tenant_id = t1.tenant_id " +
-            "  AND t2.created_at > t1.created_at" +
-            ") >= #{keepCount}")
-    int cleanHistoryInstances(@Param("tenantId") String tenantId,
+        int cleanHistoryInstances(@Param("tenantId") String tenantId,
                              @Param("beforeTime") LocalDateTime beforeTime,
                              @Param("keepCount") int keepCount);
 

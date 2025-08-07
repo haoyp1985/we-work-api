@@ -8,8 +8,6 @@ import com.wework.platform.agent.enums.CallStatus;
 import com.wework.platform.agent.enums.PlatformType;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -35,36 +33,7 @@ public interface CallRecordRepository extends BaseMapper<CallRecord> {
      * @param endTime      结束时间
      * @return 分页结果
      */
-    @Select({
-        "<script>",
-        "SELECT * FROM call_records",
-        "WHERE tenant_id = #{tenantId}",
-        "AND deleted = 0",
-        "<if test='agentId != null and agentId != \"\"'>",
-        "AND agent_id = #{agentId}",
-        "</if>",
-        "<if test='userId != null and userId != \"\"'>",
-        "AND user_id = #{userId}",
-        "</if>",
-        "<if test='platformType != null'>",
-        "AND platform_type = #{platformType}",
-        "</if>",
-        "<if test='callType != null and callType != \"\"'>",
-        "AND call_type = #{callType}",
-        "</if>",
-        "<if test='callStatus != null'>",
-        "AND call_status = #{callStatus}",
-        "</if>",
-        "<if test='startTime != null'>",
-        "AND start_time >= #{startTime}",
-        "</if>",
-        "<if test='endTime != null'>",
-        "AND end_time <= #{endTime}",
-        "</if>",
-        "ORDER BY start_time DESC",
-        "</script>"
-    })
-    IPage<CallRecord> selectPageByConditions(Page<CallRecord> page,
+        IPage<CallRecord> selectPageByConditions(Page<CallRecord> page,
                                             @Param("tenantId") String tenantId,
                                             @Param("agentId") String agentId,
                                             @Param("userId") String userId,
@@ -81,13 +50,7 @@ public interface CallRecordRepository extends BaseMapper<CallRecord> {
      * @param conversationId 会话ID
      * @return 调用记录列表
      */
-    @Select({
-        "SELECT * FROM call_records",
-        "WHERE tenant_id = #{tenantId} AND conversation_id = #{conversationId}",
-        "AND deleted = 0",
-        "ORDER BY start_time DESC"
-    })
-    List<CallRecord> selectByConversation(@Param("tenantId") String tenantId,
+        List<CallRecord> selectByConversation(@Param("tenantId") String tenantId,
                                          @Param("conversationId") String conversationId);
 
     /**
@@ -97,8 +60,7 @@ public interface CallRecordRepository extends BaseMapper<CallRecord> {
      * @param messageId 消息ID
      * @return 调用记录
      */
-    @Select("SELECT * FROM call_records WHERE tenant_id = #{tenantId} AND message_id = #{messageId} AND deleted = 0")
-    CallRecord selectByMessage(@Param("tenantId") String tenantId,
+        CallRecord selectByMessage(@Param("tenantId") String tenantId,
                               @Param("messageId") String messageId);
 
     /**
@@ -108,15 +70,7 @@ public interface CallRecordRepository extends BaseMapper<CallRecord> {
      * @param limit    限制数量
      * @return 失败调用记录列表
      */
-    @Select({
-        "SELECT * FROM call_records",
-        "WHERE tenant_id = #{tenantId}",
-        "AND call_status IN ('FAILED', 'TIMEOUT', 'AUTH_FAILED', 'SERVICE_UNAVAILABLE')",
-        "AND deleted = 0",
-        "ORDER BY start_time DESC",
-        "LIMIT #{limit}"
-    })
-    List<CallRecord> selectFailedCalls(@Param("tenantId") String tenantId,
+        List<CallRecord> selectFailedCalls(@Param("tenantId") String tenantId,
                                       @Param("limit") Integer limit);
 
     /**
@@ -127,16 +81,7 @@ public interface CallRecordRepository extends BaseMapper<CallRecord> {
      * @param limit       限制数量
      * @return 可重试调用记录列表
      */
-    @Select({
-        "SELECT * FROM call_records",
-        "WHERE tenant_id = #{tenantId}",
-        "AND call_status IN ('FAILED', 'TIMEOUT', 'RATE_LIMITED', 'SERVICE_UNAVAILABLE')",
-        "AND retry_count < #{maxRetries}",
-        "AND deleted = 0",
-        "ORDER BY start_time ASC",
-        "LIMIT #{limit}"
-    })
-    List<CallRecord> selectRetryableCalls(@Param("tenantId") String tenantId,
+        List<CallRecord> selectRetryableCalls(@Param("tenantId") String tenantId,
                                          @Param("maxRetries") Integer maxRetries,
                                          @Param("limit") Integer limit);
 
@@ -148,8 +93,7 @@ public interface CallRecordRepository extends BaseMapper<CallRecord> {
      * @param callStatus 调用状态
      * @return 更新记录数
      */
-    @Update("UPDATE call_records SET call_status = #{callStatus}, updated_at = NOW() WHERE tenant_id = #{tenantId} AND id = #{id} AND deleted = 0")
-    int updateCallStatus(@Param("tenantId") String tenantId,
+        int updateCallStatus(@Param("tenantId") String tenantId,
                         @Param("id") String id,
                         @Param("callStatus") CallStatus callStatus);
 
@@ -170,22 +114,7 @@ public interface CallRecordRepository extends BaseMapper<CallRecord> {
      * @param cost            费用
      * @return 更新记录数
      */
-    @Update({
-        "UPDATE call_records SET",
-        "call_status = #{callStatus},",
-        "response_status = #{responseStatus},",
-        "response_headers = #{responseHeaders},",
-        "response_body = #{responseBody},",
-        "end_time = #{endTime},",
-        "duration_ms = #{durationMs},",
-        "input_tokens = #{inputTokens},",
-        "output_tokens = #{outputTokens},",
-        "total_tokens = #{totalTokens},",
-        "cost = #{cost},",
-        "updated_at = NOW()",
-        "WHERE tenant_id = #{tenantId} AND id = #{id} AND deleted = 0"
-    })
-    int updateCallResult(@Param("tenantId") String tenantId,
+        int updateCallResult(@Param("tenantId") String tenantId,
                         @Param("id") String id,
                         @Param("callStatus") CallStatus callStatus,
                         @Param("responseStatus") Integer responseStatus,
@@ -209,17 +138,7 @@ public interface CallRecordRepository extends BaseMapper<CallRecord> {
      * @param retryCount   重试次数
      * @return 更新记录数
      */
-    @Update({
-        "UPDATE call_records SET",
-        "call_status = #{callStatus},",
-        "error_code = #{errorCode},",
-        "error_message = #{errorMessage},",
-        "retry_count = #{retryCount},",
-        "end_time = NOW(),",
-        "updated_at = NOW()",
-        "WHERE tenant_id = #{tenantId} AND id = #{id} AND deleted = 0"
-    })
-    int updateCallError(@Param("tenantId") String tenantId,
+        int updateCallError(@Param("tenantId") String tenantId,
                        @Param("id") String id,
                        @Param("callStatus") CallStatus callStatus,
                        @Param("errorCode") String errorCode,
@@ -236,33 +155,7 @@ public interface CallRecordRepository extends BaseMapper<CallRecord> {
      * @param endTime       结束时间(可选)
      * @return 调用统计信息
      */
-    @Select({
-        "<script>",
-        "SELECT",
-        "COUNT(*) as total_calls,",
-        "SUM(CASE WHEN call_status = 'SUCCESS' THEN 1 ELSE 0 END) as success_calls,",
-        "SUM(CASE WHEN call_status IN ('FAILED', 'TIMEOUT', 'AUTH_FAILED', 'QUOTA_EXCEEDED', 'SERVICE_UNAVAILABLE') THEN 1 ELSE 0 END) as failed_calls,",
-        "AVG(duration_ms) as avg_duration,",
-        "SUM(COALESCE(total_tokens, 0)) as total_tokens,",
-        "SUM(COALESCE(cost, 0)) as total_cost",
-        "FROM call_records",
-        "WHERE tenant_id = #{tenantId}",
-        "<if test='agentId != null and agentId != \"\"'>",
-        "AND agent_id = #{agentId}",
-        "</if>",
-        "<if test='platformType != null'>",
-        "AND platform_type = #{platformType}",
-        "</if>",
-        "<if test='startTime != null'>",
-        "AND start_time >= #{startTime}",
-        "</if>",
-        "<if test='endTime != null'>",
-        "AND end_time <= #{endTime}",
-        "</if>",
-        "AND deleted = 0",
-        "</script>"
-    })
-    CallStatistics selectStatistics(@Param("tenantId") String tenantId,
+        CallStatistics selectStatistics(@Param("tenantId") String tenantId,
                                    @Param("agentId") String agentId,
                                    @Param("platformType") PlatformType platformType,
                                    @Param("startTime") LocalDateTime startTime,
@@ -276,28 +169,7 @@ public interface CallRecordRepository extends BaseMapper<CallRecord> {
      * @param endTime   结束时间(可选)
      * @return 平台调用统计列表
      */
-    @Select({
-        "<script>",
-        "SELECT platform_type,",
-        "COUNT(*) as total_calls,",
-        "SUM(CASE WHEN call_status = 'SUCCESS' THEN 1 ELSE 0 END) as success_calls,",
-        "AVG(duration_ms) as avg_duration,",
-        "SUM(COALESCE(total_tokens, 0)) as total_tokens,",
-        "SUM(COALESCE(cost, 0)) as total_cost",
-        "FROM call_records",
-        "WHERE tenant_id = #{tenantId}",
-        "<if test='startTime != null'>",
-        "AND start_time >= #{startTime}",
-        "</if>",
-        "<if test='endTime != null'>",
-        "AND end_time <= #{endTime}",
-        "</if>",
-        "AND deleted = 0",
-        "GROUP BY platform_type",
-        "ORDER BY total_calls DESC",
-        "</script>"
-    })
-    List<PlatformCallStatistics> selectStatisticsByPlatform(@Param("tenantId") String tenantId,
+        List<PlatformCallStatistics> selectStatisticsByPlatform(@Param("tenantId") String tenantId,
                                                            @Param("startTime") LocalDateTime startTime,
                                                            @Param("endTime") LocalDateTime endTime);
 

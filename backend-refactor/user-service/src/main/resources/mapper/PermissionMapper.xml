@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wework.platform.user.repository.PermissionRepository">
+
+    <!-- findAll -->
+    <select id="findAll" resultType="com.wework.platform.user.entity.Permission">
+        SELECT * FROM permissions WHERE deleted_at IS NULL ORDER BY sort_order ASC, created_at DESC
+    </select>
+
+    <!-- findRootPermissions -->
+    <select id="findRootPermissions" resultType="com.wework.platform.user.entity.Permission">
+        SELECT * FROM permissions WHERE parent_id IS NULL AND deleted_at IS NULL ORDER BY sort_order ASC
+    </select>
+
+    <!-- CONCAT -->
+    <select id="CONCAT" resultType="com.wework.platform.user.entity.Permission">
+        """
+        WITH RECURSIVE permission_tree AS (
+        -- 根节点
+        SELECT id, permission_code, permission_name, permission_type, parent_id,
+        path, component, icon, sort_order, created_at, updated_at,
+        0 as level, CAST(permission_code AS CHAR(1000
+    </select>
+
+    <!-- countByPermissionCode -->
+    <select id="countByPermissionCode" resultType="long">
+        """
+        SELECT COUNT(*
+    </select>
+
+    <!-- countPermissionRoles -->
+    <select id="countPermissionRoles" resultType="long">
+        """
+        SELECT COUNT(*
+    </select>
+
+</mapper>

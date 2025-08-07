@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wework.platform.account.repository.AccountStatusLogRepository">
+
+    <!-- 根据账号ID查询状态变更日志 -->
+    <select id="findByAccountId" resultType="com.wework.platform.account.entity.AccountStatusLog">
+        SELECT * FROM account_status_logs 
+        WHERE account_id = #{accountId} 
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页查询状态变更日志 -->
+    <select id="findStatusLogsPage" resultType="com.wework.platform.account.entity.AccountStatusLog">
+        SELECT * FROM account_status_logs 
+        WHERE account_id = #{accountId}
+        <if test="operationType != null">
+            AND operation_type = #{operationType}
+        </if>
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 查询最近的状态变更记录 -->
+    <select id="findRecentStatusLogs" resultType="com.wework.platform.account.entity.AccountStatusLog">
+        SELECT * FROM account_status_logs 
+        WHERE account_id = #{accountId} 
+        ORDER BY created_at DESC 
+        LIMIT #{limit}
+    </select>
+
+    <!-- 根据租户ID查询状态变更日志 -->
+    <select id="findByTenantIdAndDays" resultType="com.wework.platform.account.entity.AccountStatusLog">
+        SELECT * FROM account_status_logs 
+        WHERE tenant_id = #{tenantId} 
+        AND created_at >= DATE_SUB(NOW(), INTERVAL #{days} DAY) 
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 统计某个时间段内的状态变更次数 -->
+    <select id="countStatusChangesInHours" resultType="int">
+        SELECT COUNT(*) FROM account_status_logs 
+        WHERE account_id = #{accountId} 
+        AND created_at >= DATE_SUB(NOW(), INTERVAL #{hours} HOUR)
+    </select>
+
+    <!-- 获取状态变更统计 -->
+    <select id="getStatusChangeStatistics" resultType="com.wework.platform.account.service.AccountStatusLogService$StatusChangeStatistics">
+        SELECT 
+        COUNT(*) as totalChanges,
+        SUM(CASE WHEN to_status = 2 THEN 1 ELSE 0 END) as loginCount,
+        SUM(CASE WHEN to_status = 3 THEN 1 ELSE 0 END) as logoutCount,
+        SUM(CASE WHEN to_status = 7 THEN 1 ELSE 0 END) as errorCount,
+        SUM(CASE WHEN from_status = 7 AND to_status != 7 THEN 1 ELSE 0 END) as recoverCount,
+        0 as averageOnlineTime
+        FROM account_status_logs 
+        WHERE tenant_id = #{tenantId}
+        <if test="accountId != null">
+            AND account_id = #{accountId}
+        </if>
+        <if test="startTime != null">
+            AND UNIX_TIMESTAMP(created_at) >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND UNIX_TIMESTAMP(created_at) <= #{endTime}
+        </if>
+    </select>
+
+    <!-- 获取状态趋势 -->
+    <select id="getStatusTrends" resultType="com.wework.platform.account.service.AccountStatusLogService$StatusTrend">
+        SELECT 
+        DATE_FORMAT(created_at, 
+        <choose>
+            <when test="interval == 'HOUR'">'%Y-%m-%d %H'</when>
+            <when test="interval == 'DAY'">'%Y-%m-%d'</when>
+            <otherwise>'%Y-%m-%d %H'</otherwise>
+        </choose>) as timePoint,
+        to_status as status,
+        COUNT(*) as count,
+        UNIX_TIMESTAMP(MAX(created_at)) as timestamp
+        FROM account_status_logs 
+        WHERE tenant_id = #{tenantId}
+        <if test="accountId != null">
+            AND account_id = #{accountId}
+        </if>
+        <if test="startTime != null">
+            AND UNIX_TIMESTAMP(created_at) >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND UNIX_TIMESTAMP(created_at) <= #{endTime}
+        </if>
+        GROUP BY timePoint, to_status 
+        ORDER BY timestamp ASC
+    </select>
+
+</mapper>

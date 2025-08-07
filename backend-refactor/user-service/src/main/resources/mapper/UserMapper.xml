@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wework.platform.user.repository.UserRepository">
+
+    <!-- 根据用户名查询用户 -->
+    <select id="findByUsername" resultType="com.wework.platform.user.entity.User">
+        SELECT * FROM users 
+        WHERE username = #{username} AND deleted_at IS NULL
+    </select>
+
+    <!-- 根据邮箱查询用户 -->
+    <select id="findByEmail" resultType="com.wework.platform.user.entity.User">
+        SELECT * FROM users 
+        WHERE email = #{email} AND deleted_at IS NULL
+    </select>
+
+    <!-- 根据租户ID查询用户列表 -->
+    <select id="findByTenantId" resultType="com.wework.platform.user.entity.User">
+        SELECT * FROM users 
+        WHERE tenant_id = #{tenantId} AND deleted_at IS NULL 
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据用户ID查询用户角色 -->
+    <select id="findUserRoles" resultType="string">
+        SELECT r.role_code FROM roles r 
+        INNER JOIN user_roles ur ON r.id = ur.role_id 
+        WHERE ur.user_id = #{userId} 
+        AND r.deleted_at IS NULL 
+        AND ur.deleted_at IS NULL
+    </select>
+
+    <!-- 根据用户ID查询用户权限 -->
+    <select id="findUserPermissions" resultType="string">
+        SELECT DISTINCT p.permission_code FROM permissions p
+        INNER JOIN role_permissions rp ON p.id = rp.permission_id
+        INNER JOIN user_roles ur ON rp.role_id = ur.role_id
+        WHERE ur.user_id = #{userId} 
+        AND p.deleted_at IS NULL 
+        AND rp.deleted_at IS NULL 
+        AND ur.deleted_at IS NULL
+    </select>
+
+    <!-- 检查用户名是否存在 -->
+    <select id="countByUsername" resultType="int">
+        SELECT COUNT(*) FROM users 
+        WHERE username = #{username} 
+        AND tenant_id = #{tenantId} 
+        AND deleted_at IS NULL
+        <if test="excludeUserId != null">
+            AND id != #{excludeUserId}
+        </if>
+    </select>
+
+    <!-- 检查邮箱是否存在 -->
+    <select id="countByEmail" resultType="int">
+        SELECT COUNT(*) FROM users 
+        WHERE email = #{email} 
+        AND tenant_id = #{tenantId} 
+        AND deleted_at IS NULL
+        <if test="excludeUserId != null">
+            AND id != #{excludeUserId}
+        </if>
+    </select>
+
+</mapper>

@@ -32,24 +32,7 @@ public interface TaskLogRepository extends BaseMapper<TaskLog> {
      * @param endTime 结束时间
      * @return 分页结果
      */
-    @Select("<script>" +
-            "SELECT * FROM task_logs " +
-            "WHERE tenant_id = #{tenantId} " +
-            "<if test='instanceId != null and instanceId != \"\"'>" +
-            "AND instance_id = #{instanceId} " +
-            "</if>" +
-            "<if test='logLevel != null and logLevel != \"\"'>" +
-            "AND log_level = #{logLevel} " +
-            "</if>" +
-            "<if test='startTime != null'>" +
-            "AND log_time >= #{startTime} " +
-            "</if>" +
-            "<if test='endTime != null'>" +
-            "AND log_time <= #{endTime} " +
-            "</if>" +
-            "ORDER BY log_time DESC" +
-            "</script>")
-    IPage<TaskLog> selectPageByConditions(Page<TaskLog> page,
+        IPage<TaskLog> selectPageByConditions(Page<TaskLog> page,
                                          @Param("tenantId") String tenantId,
                                          @Param("instanceId") String instanceId,
                                          @Param("logLevel") String logLevel,
@@ -63,11 +46,7 @@ public interface TaskLogRepository extends BaseMapper<TaskLog> {
      * @param instanceId 任务实例ID
      * @return 日志列表
      */
-    @Select("SELECT * FROM task_logs " +
-            "WHERE tenant_id = #{tenantId} " +
-            "AND instance_id = #{instanceId} " +
-            "ORDER BY log_time ASC")
-    List<TaskLog> findByInstanceId(@Param("tenantId") String tenantId,
+        List<TaskLog> findByInstanceId(@Param("tenantId") String tenantId,
                                   @Param("instanceId") String instanceId);
 
     /**
@@ -77,12 +56,7 @@ public interface TaskLogRepository extends BaseMapper<TaskLog> {
      * @param instanceId 任务实例ID
      * @return 错误日志列表
      */
-    @Select("SELECT * FROM task_logs " +
-            "WHERE tenant_id = #{tenantId} " +
-            "AND instance_id = #{instanceId} " +
-            "AND log_level = 'ERROR' " +
-            "ORDER BY log_time DESC")
-    List<TaskLog> findErrorLogsByInstanceId(@Param("tenantId") String tenantId,
+        List<TaskLog> findErrorLogsByInstanceId(@Param("tenantId") String tenantId,
                                            @Param("instanceId") String instanceId);
 
     /**
@@ -91,18 +65,7 @@ public interface TaskLogRepository extends BaseMapper<TaskLog> {
      * @param logs 日志列表
      * @return 插入行数
      */
-    @Insert("<script>" +
-            "INSERT INTO task_logs " +
-            "(id, tenant_id, instance_id, log_level, log_content, exception_stack, " +
-            "execution_node, execution_step, extra_data, log_time, created_at) " +
-            "VALUES " +
-            "<foreach collection='logs' item='log' separator=','>" +
-            "(#{log.id}, #{log.tenantId}, #{log.instanceId}, #{log.logLevel}, " +
-            "#{log.logContent}, #{log.exceptionStack}, #{log.executionNode}, " +
-            "#{log.executionStep}, #{log.extraData}, #{log.logTime}, #{log.createdAt})" +
-            "</foreach>" +
-            "</script>")
-    int batchInsert(@Param("logs") List<TaskLog> logs);
+        int batchInsert(@Param("logs") List<TaskLog> logs);
 
     /**
      * 统计日志级别分布
@@ -113,22 +76,7 @@ public interface TaskLogRepository extends BaseMapper<TaskLog> {
      * @param endTime 结束时间
      * @return 级别统计结果
      */
-    @Select("<script>" +
-            "SELECT log_level, COUNT(*) as count " +
-            "FROM task_logs " +
-            "WHERE tenant_id = #{tenantId} " +
-            "<if test='instanceId != null and instanceId != \"\"'>" +
-            "AND instance_id = #{instanceId} " +
-            "</if>" +
-            "<if test='startTime != null'>" +
-            "AND log_time >= #{startTime} " +
-            "</if>" +
-            "<if test='endTime != null'>" +
-            "AND log_time <= #{endTime} " +
-            "</if>" +
-            "GROUP BY log_level" +
-            "</script>")
-    @Results({
+        @Results({
             @Result(column = "log_level", property = "logLevel"),
             @Result(column = "count", property = "count")
     })
@@ -144,12 +92,7 @@ public interface TaskLogRepository extends BaseMapper<TaskLog> {
      * @param limit 查询数量限制
      * @return 最近错误日志列表
      */
-    @Select("SELECT * FROM task_logs " +
-            "WHERE tenant_id = #{tenantId} " +
-            "AND log_level = 'ERROR' " +
-            "ORDER BY log_time DESC " +
-            "LIMIT #{limit}")
-    List<TaskLog> findRecentErrorLogs(@Param("tenantId") String tenantId,
+        List<TaskLog> findRecentErrorLogs(@Param("tenantId") String tenantId,
                                      @Param("limit") int limit);
 
     /**
@@ -160,15 +103,7 @@ public interface TaskLogRepository extends BaseMapper<TaskLog> {
      * @param keepErrorLogs 是否保留错误日志
      * @return 删除行数
      */
-    @Delete("<script>" +
-            "DELETE FROM task_logs " +
-            "WHERE tenant_id = #{tenantId} " +
-            "AND log_time < #{beforeTime} " +
-            "<if test='keepErrorLogs'>" +
-            "AND log_level != 'ERROR' " +
-            "</if>" +
-            "</script>")
-    int cleanHistoryLogs(@Param("tenantId") String tenantId,
+        int cleanHistoryLogs(@Param("tenantId") String tenantId,
                         @Param("beforeTime") LocalDateTime beforeTime,
                         @Param("keepErrorLogs") boolean keepErrorLogs);
 
@@ -181,12 +116,7 @@ public interface TaskLogRepository extends BaseMapper<TaskLog> {
      * @param endTime 结束时间
      * @return 日志列表
      */
-    @Select("SELECT * FROM task_logs " +
-            "WHERE tenant_id = #{tenantId} " +
-            "AND execution_node = #{executionNode} " +
-            "AND log_time BETWEEN #{startTime} AND #{endTime} " +
-            "ORDER BY log_time DESC")
-    List<TaskLog> findByExecutionNode(@Param("tenantId") String tenantId,
+        List<TaskLog> findByExecutionNode(@Param("tenantId") String tenantId,
                                      @Param("executionNode") String executionNode,
                                      @Param("startTime") LocalDateTime startTime,
                                      @Param("endTime") LocalDateTime endTime);
@@ -202,23 +132,7 @@ public interface TaskLogRepository extends BaseMapper<TaskLog> {
      * @param limit 查询数量限制
      * @return 日志列表
      */
-    @Select("<script>" +
-            "SELECT * FROM task_logs " +
-            "WHERE tenant_id = #{tenantId} " +
-            "AND log_content LIKE CONCAT('%', #{keyword}, '%') " +
-            "<if test='logLevel != null and logLevel != \"\"'>" +
-            "AND log_level = #{logLevel} " +
-            "</if>" +
-            "<if test='startTime != null'>" +
-            "AND log_time >= #{startTime} " +
-            "</if>" +
-            "<if test='endTime != null'>" +
-            "AND log_time <= #{endTime} " +
-            "</if>" +
-            "ORDER BY log_time DESC " +
-            "LIMIT #{limit}" +
-            "</script>")
-    List<TaskLog> searchLogs(@Param("tenantId") String tenantId,
+        List<TaskLog> searchLogs(@Param("tenantId") String tenantId,
                             @Param("keyword") String keyword,
                             @Param("logLevel") String logLevel,
                             @Param("startTime") LocalDateTime startTime,
@@ -232,16 +146,7 @@ public interface TaskLogRepository extends BaseMapper<TaskLog> {
      * @param instanceId 任务实例ID
      * @return 执行摘要
      */
-    @Select("SELECT " +
-            "COUNT(*) as total_logs, " +
-            "SUM(CASE WHEN log_level = 'ERROR' THEN 1 ELSE 0 END) as error_count, " +
-            "SUM(CASE WHEN log_level = 'WARN' THEN 1 ELSE 0 END) as warn_count, " +
-            "MIN(log_time) as first_log_time, " +
-            "MAX(log_time) as last_log_time " +
-            "FROM task_logs " +
-            "WHERE tenant_id = #{tenantId} " +
-            "AND instance_id = #{instanceId}")
-    @Results({
+        @Results({
             @Result(column = "total_logs", property = "totalLogs"),
             @Result(column = "error_count", property = "errorCount"),
             @Result(column = "warn_count", property = "warnCount"),

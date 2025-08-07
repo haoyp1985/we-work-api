@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wework.platform.agent.repository.ModelConfigRepository">
+
+    <!-- JOIN -->
+    <select id="JOIN" resultType="com.wework.platform.agent.entity.LEFT">
+        {
+        "SELECT mc.*, COALESCE(usage.usage_count, 0
+    </select>
+
+</mapper>

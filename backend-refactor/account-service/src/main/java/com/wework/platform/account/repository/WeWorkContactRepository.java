@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wework.platform.account.entity.WeWorkContact;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -24,8 +23,7 @@ public interface WeWorkContactRepository extends BaseMapper<WeWorkContact> {
      * @param accountId 账号ID
      * @return 联系人列表
      */
-    @Select("SELECT * FROM wework_contacts WHERE account_id = #{accountId} AND deleted_at IS NULL ORDER BY created_at DESC")
-    List<WeWorkContact> findByAccountId(@Param("accountId") String accountId);
+        List<WeWorkContact> findByAccountId(@Param("accountId") String accountId);
 
     /**
      * 分页查询联系人列表
@@ -36,18 +34,7 @@ public interface WeWorkContactRepository extends BaseMapper<WeWorkContact> {
      * @param keyword 关键词
      * @return 分页结果
      */
-    @Select("<script>" +
-            "SELECT * FROM wework_contacts " +
-            "WHERE account_id = #{accountId} AND deleted_at IS NULL " +
-            "<if test='contactType != null'>" +
-            "  AND contact_type = #{contactType} " +
-            "</if>" +
-            "<if test='keyword != null and keyword != &quot;&quot;'>" +
-            "  AND (contact_name LIKE CONCAT('%', #{keyword}, '%') OR nickname LIKE CONCAT('%', #{keyword}, '%')) " +
-            "</if>" +
-            "ORDER BY created_at DESC" +
-            "</script>")
-    Page<WeWorkContact> findContactsPage(Page<WeWorkContact> page,
+        Page<WeWorkContact> findContactsPage(Page<WeWorkContact> page,
                                         @Param("accountId") String accountId,
                                         @Param("contactType") Integer contactType,
                                         @Param("keyword") String keyword);
@@ -59,8 +46,7 @@ public interface WeWorkContactRepository extends BaseMapper<WeWorkContact> {
      * @param contactId 联系人ID
      * @return 联系人信息
      */
-    @Select("SELECT * FROM wework_contacts WHERE account_id = #{accountId} AND contact_id = #{contactId} AND deleted_at IS NULL")
-    WeWorkContact findByContactId(@Param("accountId") String accountId, @Param("contactId") String contactId);
+        WeWorkContact findByContactId(@Param("accountId") String accountId, @Param("contactId") String contactId);
 
     /**
      * 根据联系人类型统计数量
@@ -69,8 +55,7 @@ public interface WeWorkContactRepository extends BaseMapper<WeWorkContact> {
      * @param contactType 联系人类型
      * @return 联系人数量
      */
-    @Select("SELECT COUNT(*) FROM wework_contacts WHERE account_id = #{accountId} AND contact_type = #{contactType} AND deleted_at IS NULL")
-    int countByContactType(@Param("accountId") String accountId, @Param("contactType") Integer contactType);
+        int countByContactType(@Param("accountId") String accountId, @Param("contactType") Integer contactType);
 
     /**
      * 查询账号的联系人统计信息
@@ -78,13 +63,7 @@ public interface WeWorkContactRepository extends BaseMapper<WeWorkContact> {
      * @param accountId 账号ID
      * @return 统计信息
      */
-    @Select("SELECT " +
-            "COUNT(*) as total, " +
-            "SUM(CASE WHEN contact_type = 1 THEN 1 ELSE 0 END) as internal, " +
-            "SUM(CASE WHEN contact_type = 2 THEN 1 ELSE 0 END) as external, " +
-            "SUM(CASE WHEN contact_type = 3 THEN 1 ELSE 0 END) as groups " +
-            "FROM wework_contacts WHERE account_id = #{accountId} AND deleted_at IS NULL")
-    ContactStatistics getContactStatistics(@Param("accountId") String accountId);
+        ContactStatistics getContactStatistics(@Param("accountId") String accountId);
 
     /**
      * 统计账号联系人总数
@@ -92,8 +71,7 @@ public interface WeWorkContactRepository extends BaseMapper<WeWorkContact> {
      * @param accountId 账号ID
      * @return 联系人总数
      */
-    @Select("SELECT COUNT(*) FROM wework_contacts WHERE account_id = #{accountId} AND deleted_at IS NULL")
-    Long countByAccountId(@Param("accountId") String accountId);
+        Long countByAccountId(@Param("accountId") String accountId);
 
     /**
      * 按账号ID和联系人类型统计
@@ -102,8 +80,7 @@ public interface WeWorkContactRepository extends BaseMapper<WeWorkContact> {
      * @param contactType 联系人类型
      * @return 联系人数量
      */
-    @Select("SELECT COUNT(*) FROM wework_contacts WHERE account_id = #{accountId} AND contact_type = #{contactType} AND deleted_at IS NULL")
-    Long countByAccountIdAndContactType(@Param("accountId") String accountId, @Param("contactType") Integer contactType);
+        Long countByAccountIdAndContactType(@Param("accountId") String accountId, @Param("contactType") Integer contactType);
 
     /**
      * 获取账号最近同步时间
@@ -111,8 +88,7 @@ public interface WeWorkContactRepository extends BaseMapper<WeWorkContact> {
      * @param accountId 账号ID
      * @return 最近同步时间戳
      */
-    @Select("SELECT MAX(UNIX_TIMESTAMP(updated_at)) FROM wework_contacts WHERE account_id = #{accountId}")
-    Long getLastSyncTime(@Param("accountId") String accountId);
+        Long getLastSyncTime(@Param("accountId") String accountId);
 
     /**
      * 批量插入联系人

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wework.platform.agent.repository.PlatformConfigRepository">
+
+    <!-- 分页查询平台配置列表 -->
+    <select id="selectPageByConditions" resultType="com.wework.platform.agent.entity.PlatformConfig">
+        SELECT * FROM platform_configs
+        WHERE tenant_id = #{tenantId}
+        AND deleted = 0
+        <if test="name != null and name != ''">
+            AND name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        <if test="platformType != null">
+            AND platform_type = #{platformType}
+        </if>
+        <if test="enabled != null">
+            AND enabled = #{enabled}
+        </if>
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据租户ID和平台类型查询配置列表 -->
+    <select id="selectByTenantAndType" resultType="com.wework.platform.agent.entity.PlatformConfig">
+        SELECT * FROM platform_configs
+        WHERE tenant_id = #{tenantId}
+        AND platform_type = #{platformType}
+        AND deleted = 0
+        <if test="enabled != null">
+            AND enabled = #{enabled}
+        </if>
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据租户ID查询所有启用的平台配置 -->
+    <select id="selectEnabledByTenant" resultType="com.wework.platform.agent.entity.PlatformConfig">
+        SELECT * FROM platform_configs 
+        WHERE tenant_id = #{tenantId} 
+        AND enabled = 1 
+        AND deleted = 0 
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据Bot ID查询配置 -->
+    <select id="selectByBotId" resultType="com.wework.platform.agent.entity.PlatformConfig">
+        SELECT * FROM platform_configs 
+        WHERE tenant_id = #{tenantId} 
+        AND bot_id = #{botId} 
+        AND deleted = 0
+    </select>
+
+    <!-- 检查API密钥是否已存在 -->
+    <select id="countByApiKey" resultType="int">
+        SELECT COUNT(1) FROM platform_configs
+        WHERE tenant_id = #{tenantId}
+        AND platform_type = #{platformType}
+        AND api_key = #{apiKey}
+        AND deleted = 0
+        <if test="excludeId != null and excludeId != ''">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 更新配置启用状态 -->
+    <update id="updateEnabled">
+        UPDATE platform_configs SET 
+        enabled = #{enabled}, 
+        updated_at = NOW() 
+        WHERE tenant_id = #{tenantId} 
+        AND id = #{id} 
+        AND deleted = 0
+    </update>
+
+    <!-- 统计平台配置数量 -->
+    <select id="selectCountByType" resultType="com.wework.platform.agent.repository.PlatformConfigRepository$PlatformTypeCount">
+        SELECT platform_type, COUNT(*) as count
+        FROM platform_configs
+        WHERE tenant_id = #{tenantId} AND deleted = 0
+        GROUP BY platform_type
+    </select>
+
+</mapper>

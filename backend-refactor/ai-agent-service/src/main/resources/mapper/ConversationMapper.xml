@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wework.platform.agent.repository.ConversationRepository">
+
+    <!-- SUM -->
+    <select id="SUM">
+        {
+        "&lt;script&gt;",
+        "SELECT",
+        "COUNT(*
+    </select>
+
+    <!-- DATE_SUB -->
+    <select id="DATE_SUB">
+        {
+        "SELECT * FROM conversations",
+        "WHERE status IN ('WAITING_AI', 'PROCESSING'
+    </select>
+
+</mapper>

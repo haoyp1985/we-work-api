@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wework.platform.user.entity.Role;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -25,8 +24,7 @@ public interface RoleRepository extends BaseMapper<Role> {
      * @param tenantId 租户ID
      * @return 角色信息
      */
-    @Select("SELECT * FROM roles WHERE role_code = #{roleCode} AND tenant_id = #{tenantId} AND deleted_at IS NULL")
-    Role findByRoleCode(@Param("roleCode") String roleCode, @Param("tenantId") String tenantId);
+        Role findByRoleCode(@Param("roleCode") String roleCode, @Param("tenantId") String tenantId);
 
     /**
      * 根据租户ID查询角色列表
@@ -35,8 +33,7 @@ public interface RoleRepository extends BaseMapper<Role> {
      * @param page 分页参数
      * @return 角色列表
      */
-    @Select("SELECT * FROM roles WHERE tenant_id = #{tenantId} AND deleted_at IS NULL ORDER BY created_at DESC")
-    Page<Role> findByTenantId(@Param("tenantId") String tenantId, Page<Role> page);
+        Page<Role> findByTenantId(@Param("tenantId") String tenantId, Page<Role> page);
 
     /**
      * 查询所有角色（不分页）
@@ -44,8 +41,7 @@ public interface RoleRepository extends BaseMapper<Role> {
      * @param tenantId 租户ID
      * @return 角色列表
      */
-    @Select("SELECT * FROM roles WHERE tenant_id = #{tenantId} AND deleted_at IS NULL ORDER BY sort_order ASC, created_at DESC")
-    List<Role> findAllByTenantId(@Param("tenantId") String tenantId);
+        List<Role> findAllByTenantId(@Param("tenantId") String tenantId);
 
     /**
      * 根据角色ID查询角色权限
@@ -53,15 +49,7 @@ public interface RoleRepository extends BaseMapper<Role> {
      * @param roleId 角色ID
      * @return 权限代码列表
      */
-    @Select("""
-        SELECT p.permission_code FROM permissions p
-        INNER JOIN role_permissions rp ON p.id = rp.permission_id
-        WHERE rp.role_id = #{roleId} 
-        AND p.deleted_at IS NULL 
-        AND rp.deleted_at IS NULL
-        ORDER BY p.sort_order ASC
-        """)
-    List<String> findRolePermissions(@Param("roleId") String roleId);
+        List<String> findRolePermissions(@Param("roleId") String roleId);
 
     /**
      * 检查角色代码是否存在
@@ -71,14 +59,7 @@ public interface RoleRepository extends BaseMapper<Role> {
      * @param excludeRoleId 排除的角色ID（用于更新时检查）
      * @return 存在数量
      */
-    @Select("""
-        SELECT COUNT(*) FROM roles 
-        WHERE role_code = #{roleCode} 
-        AND tenant_id = #{tenantId} 
-        AND deleted_at IS NULL
-        ${excludeRoleId != null ? 'AND id != #{excludeRoleId}' : ''}
-        """)
-    int countByRoleCode(@Param("roleCode") String roleCode, 
+        int countByRoleCode(@Param("roleCode") String roleCode, 
                        @Param("tenantId") String tenantId, 
                        @Param("excludeRoleId") String excludeRoleId);
 
@@ -88,12 +69,5 @@ public interface RoleRepository extends BaseMapper<Role> {
      * @param roleId 角色ID
      * @return 用户数量
      */
-    @Select("""
-        SELECT COUNT(*) FROM user_roles ur
-        INNER JOIN users u ON ur.user_id = u.id
-        WHERE ur.role_id = #{roleId} 
-        AND ur.deleted_at IS NULL 
-        AND u.deleted_at IS NULL
-        """)
-    int countRoleUsers(@Param("roleId") String roleId);
+        int countRoleUsers(@Param("roleId") String roleId);
 }

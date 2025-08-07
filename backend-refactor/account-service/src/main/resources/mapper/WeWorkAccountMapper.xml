@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wework.platform.account.repository.WeWorkAccountRepository">
+
+    <!-- 根据企业ID查询账号 -->
+    <select id="findByCorpId" resultType="com.wework.platform.account.entity.WeWorkAccount">
+        SELECT * FROM wework_accounts 
+        WHERE corp_id = #{corpId} AND tenant_id = #{tenantId} AND deleted_at IS NULL
+    </select>
+
+    <!-- 根据租户ID查询账号列表 -->
+    <select id="findByTenantId" resultType="com.wework.platform.account.entity.WeWorkAccount">
+        SELECT * FROM wework_accounts 
+        WHERE tenant_id = #{tenantId} AND deleted_at IS NULL 
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页查询账号列表 -->
+    <select id="findAccountsPage" resultType="com.wework.platform.account.entity.WeWorkAccount">
+        SELECT * FROM wework_accounts 
+        WHERE tenant_id = #{tenantId} AND deleted_at IS NULL
+        <if test="keyword != null and keyword != ''">
+            AND (corp_name LIKE CONCAT('%', #{keyword}, '%') OR corp_id LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据状态查询账号列表 -->
+    <select id="findByStatus" resultType="com.wework.platform.account.entity.WeWorkAccount">
+        SELECT * FROM wework_accounts 
+        WHERE status = #{status} AND tenant_id = #{tenantId} AND deleted_at IS NULL
+    </select>
+
+    <!-- 查询在线账号数量 -->
+    <select id="countOnlineAccounts" resultType="int">
+        SELECT COUNT(*) FROM wework_accounts 
+        WHERE status = 1 AND tenant_id = #{tenantId} AND deleted_at IS NULL
+    </select>
+
+    <!-- 查询离线账号数量 -->
+    <select id="countOfflineAccounts" resultType="int">
+        SELECT COUNT(*) FROM wework_accounts 
+        WHERE status = 2 AND tenant_id = #{tenantId} AND deleted_at IS NULL
+    </select>
+
+    <!-- 查询异常账号数量 -->
+    <select id="countErrorAccounts" resultType="int">
+        SELECT COUNT(*) FROM wework_accounts 
+        WHERE status = 3 AND tenant_id = #{tenantId} AND deleted_at IS NULL
+    </select>
+
+    <!-- 更新账号状态 -->
+    <update id="updateAccountStatus">
+        UPDATE wework_accounts SET 
+        status = #{status}, 
+        error_msg = #{errorMsg}, 
+        updated_at = NOW(), 
+        updated_by = #{operatorId} 
+        WHERE id = #{accountId}
+    </update>
+
+    <!-- 更新访问令牌 -->
+    <update id="updateAccessToken">
+        UPDATE wework_accounts SET 
+        access_token = #{accessToken}, 
+        access_token_expire_time = #{expireTime}, 
+        updated_at = NOW() 
+        WHERE id = #{accountId}
+    </update>
+
+    <!-- 更新心跳时间 -->
+    <update id="updateHeartbeatTime">
+        UPDATE wework_accounts SET 
+        last_heartbeat_time = NOW() 
+        WHERE id = #{accountId}
+    </update>
+
+    <!-- 查询需要心跳检测的账号 -->
+    <select id="findAccountsNeedHeartbeat" resultType="com.wework.platform.account.entity.WeWorkAccount">
+        SELECT * FROM wework_accounts 
+        WHERE status = 1 AND deleted_at IS NULL 
+        AND (last_heartbeat_time IS NULL OR last_heartbeat_time &lt; DATE_SUB(NOW(), INTERVAL #{minutes} MINUTE))
+    </select>
+
+    <!-- 查询指定租户的账号统计信息 -->
+    <select id="getAccountStatistics" resultType="com.wework.platform.account.repository.WeWorkAccountRepository$AccountStatistics">
+        SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as online,
+        SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) as offline,
+        SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) as error
+        FROM wework_accounts 
+        WHERE tenant_id = #{tenantId} AND deleted_at IS NULL
+    </select>
+
+</mapper>

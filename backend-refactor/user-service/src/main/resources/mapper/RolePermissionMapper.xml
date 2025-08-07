@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wework.platform.user.repository.RolePermissionRepository">
+
+    <!-- countByRoleIdAndPermissionId -->
+    <select id="countByRoleIdAndPermissionId" resultType="long">
+        "SELECT COUNT(*
+    </select>
+
+    <!-- UUID -->
+    <insert id="UUID">
+        """
+        &lt;script&gt;
+        INSERT INTO role_permissions (id, role_id, permission_id, created_at, updated_at, created_by, updated_by
+    </insert>
+
+    <!-- deleteByRoleId -->
+    <delete id="deleteByRoleId">
+        """
+        UPDATE role_permissions SET deleted_at = NOW(
+    </delete>
+
+    <!-- deleteByPermissionId -->
+    <delete id="deleteByPermissionId">
+        """
+        UPDATE role_permissions SET deleted_at = NOW(
+    </delete>
+
+    <!-- size -->
+    <delete id="size">
+        """
+        &lt;script&gt;
+        UPDATE role_permissions SET deleted_at = NOW(
+    </delete>
+
+</mapper>

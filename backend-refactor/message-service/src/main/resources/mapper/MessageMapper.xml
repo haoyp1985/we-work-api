@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wework.platform.message.repository.MessageRepository">
+
+    <!-- 统计账号消息数量 -->
+    <select id="countByAccountIdAndStatus" resultType="long">
+        SELECT COUNT(*) FROM messages 
+        WHERE account_id = #{accountId} AND send_status = #{sendStatus} AND deleted_at IS NULL
+    </select>
+
+    <!-- 统计租户消息数量 -->
+    <select id="countByTenantIdAndTimeRange" resultType="long">
+        SELECT COUNT(*) FROM messages 
+        WHERE tenant_id = #{tenantId} 
+        AND send_time >= #{startTime} AND send_time &lt;= #{endTime} 
+        AND deleted_at IS NULL
+    </select>
+
+    <!-- 查询待重试的消息 -->
+    <select id="findMessagesForRetry" resultType="com.wework.platform.message.entity.Message">
+        SELECT * FROM messages 
+        WHERE send_status = 3 
+        AND retry_count &lt; max_retry_count 
+        AND next_retry_time &lt;= NOW() 
+        AND deleted_at IS NULL 
+        ORDER BY next_retry_time ASC 
+        LIMIT #{limit}
+    </select>
+
+    <!-- 更新消息状态 -->
+    <update id="updateMessageStatus">
+        UPDATE messages SET 
+        send_status = #{sendStatus}, 
+        error_code = #{errorCode}, 
+        error_message = #{errorMessage}, 
+        complete_time = NOW(), 
+        updated_at = NOW() 
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新重试信息 -->
+    <update id="updateRetryInfo">
+        UPDATE messages SET 
+        retry_count = #{retryCount}, 
+        next_retry_time = #{nextRetryTime}, 
+        updated_at = NOW() 
+        WHERE id = #{id}
+    </update>
+
+    <!-- 批量更新任务消息状态 -->
+    <update id="updateTaskMessagesStatus">
+        UPDATE messages SET 
+        send_status = #{sendStatus}, 
+        updated_at = NOW() 
+        WHERE task_id = #{taskId} AND send_status = 0
+    </update>
+
+    <!-- 获取消息发送统计 -->
+    <select id="getMessageStatistics" resultType="com.wework.platform.message.repository.MessageRepository$MessageStatistics">
+        SELECT 
+        COUNT(*) as totalCount,
+        SUM(CASE WHEN send_status = 2 THEN 1 ELSE 0 END) as successCount,
+        SUM(CASE WHEN send_status = 3 THEN 1 ELSE 0 END) as failCount,
+        SUM(CASE WHEN send_status IN (0,1) THEN 1 ELSE 0 END) as pendingCount
+        FROM messages 
+        WHERE tenant_id = #{tenantId}
+        <if test="accountId != null">
+            AND account_id = #{accountId}
+        </if>
+        <if test="startTime != null">
+            AND send_time >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND send_time &lt;= #{endTime}
+        </if>
+        AND deleted_at IS NULL
+    </select>
+
+</mapper>
