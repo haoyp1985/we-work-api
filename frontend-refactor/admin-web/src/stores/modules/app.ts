@@ -22,6 +22,9 @@ export const useAppStore = defineStore("app", () => {
   const deviceType = ref<DeviceType>("desktop");
   const loading = ref<boolean>(false);
   const pageLoading = ref<boolean>(false);
+  const loadingText = ref<string>("加载中...");
+  const networkOnline = ref<boolean>(true);
+  const pageVisible = ref<boolean>(true);
 
   // 应用设置
   const settings = ref<AppSettings>({
@@ -53,6 +56,7 @@ export const useAppStore = defineStore("app", () => {
   const isMobile = computed(() => deviceType.value === "mobile");
   const isTablet = computed(() => deviceType.value === "tablet");
   const isDesktop = computed(() => deviceType.value === "desktop");
+  const isLoading = computed(() => loading.value);
 
   const sidebarWidth = computed(() => {
     if (isMobile.value) {
@@ -282,6 +286,33 @@ export const useAppStore = defineStore("app", () => {
   };
 
   /**
+   * 设置网络状态
+   */
+  const setNetworkStatus = (isOnline: boolean): void => {
+    networkOnline.value = isOnline;
+  };
+
+  /**
+   * 设置页面可见性
+   */
+  const setPageVisible = (isVisible: boolean): void => {
+    pageVisible.value = isVisible;
+  };
+
+  /**
+   * 刷新数据
+   */
+  const refreshData = (): void => {
+    console.log("页面重新可见，正在刷新数据...");
+    // 在这里添加刷新数据的逻辑
+  };
+
+  /**
+   * 设置设备类型的别名方法
+   */
+  const setDevice = setDeviceType;
+
+  /**
    * 初始化应用
    */
   const initializeApp = (): void => {
@@ -314,6 +345,9 @@ export const useAppStore = defineStore("app", () => {
     deviceType,
     loading,
     pageLoading,
+    loadingText,
+    networkOnline,
+    pageVisible,
     settings,
     breadcrumbs,
     visitedViews,
@@ -324,6 +358,7 @@ export const useAppStore = defineStore("app", () => {
     isMobile,
     isTablet,
     isDesktop,
+    isLoading,
     sidebarWidth,
 
     // Actions
@@ -333,8 +368,12 @@ export const useAppStore = defineStore("app", () => {
     toggleSidebar,
     setSidebarState,
     setDeviceType,
+    setDevice,
     setLoading,
     setPageLoading,
+    setNetworkStatus,
+    setPageVisible,
+    refreshData,
     updateSettings,
     setBreadcrumbs,
     addVisitedView,
