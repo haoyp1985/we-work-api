@@ -61,11 +61,4 @@ public class CustomTenantLineHandler implements TenantLineHandler {
         }
         return ignore;
     }
-
-    @Override
-    public boolean ignoreInsert(List<net.sf.jsqlparser.schema.Column> columns, String tenantIdColumn) {
-        // 如果插入语句中已经包含租户ID列，则忽略自动添加
-        return columns.stream().anyMatch(column -> 
-                tenantIdColumn.equalsIgnoreCase(column.getColumnName()));
-    }
 }

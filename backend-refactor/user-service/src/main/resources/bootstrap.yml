@@ -6,15 +6,15 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: ${NACOS_ADDR:localhost:8848}
-        namespace: ${NACOS_NAMESPACE:dev}
+        server-addr: ${NACOS_ADDR:localhost:28848}
+        namespace: ${NACOS_NAMESPACE:2e42fb0d-3ea7-47b9-8680-c7c615eb95f0}
         group: ${NACOS_GROUP:DEFAULT_GROUP}
         metadata:
           version: ${app.version:2.0.0}
           zone: ${app.zone:default}
       config:
-        server-addr: ${NACOS_ADDR:localhost:8848}
-        namespace: ${NACOS_NAMESPACE:dev}
+        server-addr: ${NACOS_ADDR:localhost:28848}
+        namespace: ${NACOS_NAMESPACE:2e42fb0d-3ea7-47b9-8680-c7c615eb95f0}
         group: ${NACOS_GROUP:DEFAULT_GROUP}
         file-extension: yml
         refresh-enabled: true
@@ -42,7 +42,7 @@ management:
 
 # Server
 server:
-  port: ${PORT:8081}
+  port: ${PORT:18085}
 
 # Logging
 logging:

@@ -82,10 +82,11 @@
             <artifactId>mysql-connector-java</artifactId>
         </dependency>
 
-        <dependency>
+        <!-- MyBatis Plus - 已通过common包引入，无需重复依赖 -->
+        <!-- <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
-        </dependency>
+        </dependency> -->
 
         <!-- 工具类 -->
         <dependency>

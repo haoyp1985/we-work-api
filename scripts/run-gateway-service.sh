@@ -16,8 +16,8 @@ NC='\033[0m' # No Color
 # 项目配置
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SERVICE_NAME="gateway-service"
-SERVICE_PATH="$PROJECT_ROOT/backend/$SERVICE_NAME"
-JAR_NAME="gateway-service-1.0.0.jar"
+SERVICE_PATH="$PROJECT_ROOT/backend-refactor/$SERVICE_NAME"
+JAR_NAME="gateway-service.jar"
 JAR_PATH="$SERVICE_PATH/target/$JAR_NAME"
 
 echo -e "${BLUE}🚀 启动 $SERVICE_NAME${NC}"

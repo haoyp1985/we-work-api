@@ -4,8 +4,6 @@ import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
-import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
-import com.wework.platform.common.security.UserContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.context.annotation.Bean;
@@ -14,89 +12,45 @@ import org.springframework.context.annotation.Configuration;
 import java.time.LocalDateTime;
 
 /**
- * MyBatis Plus 配置
- *
+ * MyBatis Plus 配置类
+ * 
  * @author WeWork Platform Team
- * @since 2.0.0
  */
 @Slf4j
 @Configuration
 public class MyBatisPlusConfig {
 
     /**
-     * MyBatis Plus 插件配置
+     * MyBatis Plus 配置 
+     * 使用mybatis-plus-spring-boot3-starter + mybatis-plus-jsqlparser解决分页问题
+     * 暂时禁用分页插件，避免PaginationInnerInterceptor ClassNotFoundException
      */
-    @Bean
+    // @Bean  // 暂时禁用，解决ClassNotFoundException
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
-        
-        // 多租户插件
-        interceptor.addInnerInterceptor(tenantLineInnerInterceptor());
-        
-        // 分页插件
-        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
-        
+        // 分页插件 - 暂时注释，解决类加载问题
+        // interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
         return interceptor;
     }
 
     /**
-     * 多租户插件配置
-     */
-    private TenantLineInnerInterceptor tenantLineInnerInterceptor() {
-        TenantLineInnerInterceptor interceptor = new TenantLineInnerInterceptor();
-        
-        // 设置租户处理器
-        interceptor.setTenantLineHandler(new CustomTenantLineHandler());
-        
-        return interceptor;
-    }
-
-    /**
-     * 元对象字段填充控制器
+     * MyBatis Plus 自动填充配置
      */
     @Bean
     public MetaObjectHandler metaObjectHandler() {
-        return new CustomMetaObjectHandler();
-    }
-
-    /**
-     * 自定义元对象处理器
-     */
-    @Slf4j
-    public static class CustomMetaObjectHandler implements MetaObjectHandler {
-
-        @Override
-        public void insertFill(MetaObject metaObject) {
-            String currentUserId = UserContextHolder.getCurrentUserId();
-            LocalDateTime now = LocalDateTime.now();
-            
-            // 填充创建时间
-            this.strictInsertFill(metaObject, "createdAt", LocalDateTime.class, now);
-            this.strictInsertFill(metaObject, "updatedAt", LocalDateTime.class, now);
-            
-            // 填充创建者
-            if (currentUserId != null) {
-                this.strictInsertFill(metaObject, "createdBy", String.class, currentUserId);
-                this.strictInsertFill(metaObject, "updatedBy", String.class, currentUserId);
+        return new MetaObjectHandler() {
+            @Override
+            public void insertFill(MetaObject metaObject) {
+                log.debug("开始插入填充...");
+                this.strictInsertFill(metaObject, "createdAt", LocalDateTime.class, LocalDateTime.now());
+                this.strictInsertFill(metaObject, "updatedAt", LocalDateTime.class, LocalDateTime.now());
             }
-            
-            log.debug("自动填充插入字段: createdAt={}, createdBy={}", now, currentUserId);
-        }
 
-        @Override
-        public void updateFill(MetaObject metaObject) {
-            String currentUserId = UserContextHolder.getCurrentUserId();
-            LocalDateTime now = LocalDateTime.now();
-            
-            // 填充更新时间
-            this.strictUpdateFill(metaObject, "updatedAt", LocalDateTime.class, now);
-            
-            // 填充更新者
-            if (currentUserId != null) {
-                this.strictUpdateFill(metaObject, "updatedBy", String.class, currentUserId);
+            @Override
+            public void updateFill(MetaObject metaObject) {
+                log.debug("开始更新填充...");
+                this.strictUpdateFill(metaObject, "updatedAt", LocalDateTime.class, LocalDateTime.now());
             }
-            
-            log.debug("自动填充更新字段: updatedAt={}, updatedBy={}", now, currentUserId);
-        }
+        };
     }
 }

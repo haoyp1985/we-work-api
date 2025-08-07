@@ -42,7 +42,7 @@ public interface WeWorkContactRepository extends BaseMapper<WeWorkContact> {
             "<if test='contactType != null'>" +
             "  AND contact_type = #{contactType} " +
             "</if>" +
-            "<if test='keyword != null and keyword != \"\"'>" +
+            "<if test='keyword != null and keyword != &quot;&quot;'>" +
             "  AND (contact_name LIKE CONCAT('%', #{keyword}, '%') OR nickname LIKE CONCAT('%', #{keyword}, '%')) " +
             "</if>" +
             "ORDER BY created_at DESC" +

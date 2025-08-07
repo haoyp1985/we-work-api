@@ -1,0 +1,42 @@
+# =================================================================
+# WeWork Platform - 通用配置 (开发环境)
+# Data ID: common-config-dev.yml
+# Group: DEFAULT_GROUP
+# =================================================================
+
+# 日志配置
+logging:
+  level:
+    com.wework.platform: DEBUG
+    com.alibaba.nacos: INFO
+    org.springframework.cloud: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+  file:
+    name: logs/${spring.application.name}.log
+
+# 管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  health:
+    defaults:
+      enabled: true
+
+# 应用信息
+info:
+  app:
+    name: ${spring.application.name}
+    version: 2.0.0-SNAPSHOT
+    description: WeWork Platform Service
+    java:
+      version: ${java.version}
+    spring-boot:
+      version: ${spring-boot.version}

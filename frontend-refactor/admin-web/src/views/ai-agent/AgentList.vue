@@ -90,10 +90,10 @@ const loadData = async () => {
   loading.value = true
   try {
     const response = await agentApi.getAgents(searchForm)
-    tableData.value = response.data.records
-    total.value = response.data.total
-    searchForm.current = response.data.current
-    searchForm.size = response.data.size
+    tableData.value = response.data.records || response.data.items || []
+    total.value = response.data.total || 0
+    searchForm.current = response.data.current || searchForm.current
+    searchForm.size = response.data.size || searchForm.size
   } catch (error) {
     console.error('加载智能体列表失败:', error)
     ElMessage.error('加载数据失败')

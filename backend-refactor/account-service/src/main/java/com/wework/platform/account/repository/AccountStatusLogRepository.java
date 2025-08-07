@@ -133,9 +133,9 @@ public interface AccountStatusLogRepository extends BaseMapper<AccountStatusLog>
             "SELECT " +
             "DATE_FORMAT(created_at, " +
             "<choose>" +
-            "  <when test='interval == \"HOUR\"'>'%Y-%m-%d %H'</when>" +
-            "  <when test='interval == \"DAY\"'>'%Y-%m-%d'</when>" +
-            "  <otherwise>'%Y-%m-%d %H'</otherwise>" +
+            "  <when test=\\\"interval == &quot;HOUR&quot;\\\">&apos;%Y-%m-%d %H&apos;</when>" +
+            "  <when test=\\\"interval == &quot;DAY&quot;\\\">&apos;%Y-%m-%d&apos;</when>" +
+            "  <otherwise>&apos;%Y-%m-%d %H&apos;</otherwise>" +
             "</choose>) as timePoint, " +
             "to_status as status, " +
             "COUNT(*) as count, " +

@@ -1,0 +1,28 @@
+# =================================================================
+# WeWork Platform - Redis配置 (开发环境)
+# Data ID: redis-config-dev.yml
+# Group: DEFAULT_GROUP
+# =================================================================
+
+spring:
+  # Redis配置  
+  data:
+    redis:
+      host: localhost
+      port: 26379
+      database: 0
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+
+  # 缓存配置
+  cache:
+    type: redis
+    redis:
+      time-to-live: 1800000
+      key-prefix: "wework:cache:"
+      use-key-prefix: true

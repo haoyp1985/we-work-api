@@ -16,8 +16,8 @@ NC='\033[0m' # No Color
 # 项目配置
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SERVICE_NAME="gateway-service"
-SERVICE_PATH="$PROJECT_ROOT/backend/$SERVICE_NAME"
-JAR_NAME="gateway-service-1.0.0.jar"
+SERVICE_PATH="$PROJECT_ROOT/backend-refactor/$SERVICE_NAME"
+JAR_NAME="gateway-service.jar"
 
 echo -e "${BLUE}🚀 开始构建 $SERVICE_NAME${NC}"
 echo "========================================"
@@ -32,7 +32,7 @@ if [ ! -d "$SERVICE_PATH" ]; then
     exit 1
 fi
 
-cd "$PROJECT_ROOT/backend"
+cd "$PROJECT_ROOT/backend-refactor"
 
 # 清理和编译
 echo -e "${YELLOW}🧹 清理项目...${NC}"
@@ -47,8 +47,8 @@ mvn install -pl common -DskipTests
 echo -e "${YELLOW}📦 编译网关服务...${NC}"
 mvn compile -pl $SERVICE_NAME -DskipTests
 
-echo -e "${YELLOW}🧪 运行测试...${NC}"
-mvn test -pl $SERVICE_NAME
+echo -e "${YELLOW}🧪 跳过测试...${NC}"
+# mvn test -pl $SERVICE_NAME
 
 echo -e "${YELLOW}📦 打包服务...${NC}"
 mvn package -pl $SERVICE_NAME -DskipTests

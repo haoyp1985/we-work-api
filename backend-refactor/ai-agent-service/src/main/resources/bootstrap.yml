@@ -6,8 +6,8 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: ${NACOS_ADDR:localhost:8848}
-        namespace: ${NACOS_NAMESPACE:dev}
+        server-addr: ${NACOS_ADDR:localhost:28848}
+        namespace: ${NACOS_NAMESPACE:2e42fb0d-3ea7-47b9-8680-c7c615eb95f0}
         group: ${NACOS_GROUP:DEFAULT_GROUP}
         register-enabled: true
         instance-enabled: true
@@ -19,8 +19,8 @@ spring:
           zone: ${app.zone:default}
           service-type: ai-agent
       config:
-        server-addr: ${NACOS_ADDR:localhost:8848}
-        namespace: ${NACOS_NAMESPACE:dev}
+        server-addr: ${NACOS_ADDR:localhost:28848}
+        namespace: ${NACOS_NAMESPACE:2e42fb0d-3ea7-47b9-8680-c7c615eb95f0}
         group: ${NACOS_GROUP:DEFAULT_GROUP}
         file-extension: yml
         shared-configs:

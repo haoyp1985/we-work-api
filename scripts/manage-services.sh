@@ -17,11 +17,11 @@ NC='\033[0m' # No Color
 
 # 项目配置
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BACKEND_PATH="$PROJECT_ROOT/backend"
+BACKEND_PATH="$PROJECT_ROOT/backend-refactor"
 SCRIPTS_PATH="$PROJECT_ROOT/scripts"
 
 # 服务配置 (使用简单数组，兼容性更好)
-SERVICES="gateway:gateway-service:18080 account:account-service:18081 message:message-service:18082"
+SERVICES="gateway:gateway-service:18080 account:account-service:18081 message:message-service:18082 monitor:monitor-service:18083 user:user-service:18084 task:task-service:18085"
 
 # 获取服务信息的函数
 get_service_info() {
@@ -177,7 +177,7 @@ start_single_service() {
     echo -e "${YELLOW}🚀 启动服务: $service_name (端口: $port)${NC}"
     
     # 检查JAR文件是否存在
-    local jar_path="$BACKEND_PATH/$service_name/target/$service_name-1.0.0.jar"
+    local jar_path="$BACKEND_PATH/$service_name/target/$service_name.jar"
     if [ ! -f "$jar_path" ]; then
         echo -e "${RED}❌ JAR文件不存在: $jar_path${NC}"
         echo -e "${YELLOW}请先构建服务: $0 build $service${NC}"
@@ -194,7 +194,7 @@ start_single_service() {
         -Dspring.cloud.nacos.config.password=nacos \
         -Dspring.cloud.nacos.discovery.username=nacos \
         -Dspring.cloud.nacos.discovery.password=nacos \
-        -jar "target/$service_name-1.0.0.jar" > "logs/$service_name.log" 2>&1 &
+        -jar "target/$service_name.jar" > "logs/$service_name.log" 2>&1 &
     
     local pid=$!
     echo "$pid" > "logs/$service_name.pid"
@@ -243,7 +243,7 @@ stop_single_service() {
     else
         echo -e "${YELLOW}⚠️  未找到服务 $service_name 的PID文件${NC}"
         # 尝试通过进程名停止
-        pkill -f "$service_name-1.0.0.jar" || true
+        pkill -f "$service_name.jar" || true
     fi
 }
 

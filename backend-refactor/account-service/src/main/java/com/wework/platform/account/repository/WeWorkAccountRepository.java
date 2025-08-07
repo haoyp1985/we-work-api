@@ -50,7 +50,7 @@ public interface WeWorkAccountRepository extends BaseMapper<WeWorkAccount> {
     @Select("<script>" +
             "SELECT * FROM wework_accounts " +
             "WHERE tenant_id = #{tenantId} AND deleted_at IS NULL " +
-            "<if test='keyword != null and keyword != \"\"'>" +
+            "<if test='keyword != null and keyword != &quot;&quot;'>" +
             "  AND (corp_name LIKE CONCAT('%', #{keyword}, '%') OR corp_id LIKE CONCAT('%', #{keyword}, '%')) " +
             "</if>" +
             "<if test='status != null'>" +

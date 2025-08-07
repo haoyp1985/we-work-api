@@ -77,10 +77,11 @@
         </dependency>
         
         <!-- MyBatis Plus -->
-        <dependency>
+        <!-- MyBatis Plus - 已通过common包引入，无需重复依赖 -->
+        <!-- <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
-        </dependency>
+        </dependency> -->
         
         <!-- MySQL Driver -->
         <dependency>

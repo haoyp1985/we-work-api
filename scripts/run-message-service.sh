@@ -76,7 +76,7 @@ fi
 echo "✅ 服务连接性检查通过"
 
 # 检查jar文件是否存在
-JAR_FILE="backend/message-service/target/message-service-1.0.0.jar"
+JAR_FILE="backend-refactor/message-service/target/message-service.jar"
 if [ ! -f "$JAR_FILE" ]; then
     echo "❌ 找不到jar文件: $JAR_FILE"
     echo "   请先执行构建: ./scripts/build-message-service.sh"

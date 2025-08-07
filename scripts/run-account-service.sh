@@ -58,10 +58,10 @@ fi
 echo "✅ 所有服务连接正常"
 
 # 进入账号服务目录
-cd "$(dirname "$0")/../backend/account-service"
+cd "$(dirname "$0")/../backend-refactor/account-service"
 
 # 检查jar文件是否存在
-if [ ! -f "target/account-service-1.0.0.jar" ]; then
+if [ ! -f "target/account-service.jar" ]; then
     echo "❌ 找不到构建产物，请先构建服务"
     echo "   执行: ./scripts/build-account-service.sh"
     exit 1
@@ -77,4 +77,4 @@ echo ""
 
 # 启动服务
 export SPRING_PROFILES_ACTIVE=dev
-java -jar target/account-service-1.0.0.jar
+java -jar target/account-service.jar

@@ -17,17 +17,19 @@
     <description>WeWork Platform Account Management Service</description>
 
     <dependencies>
+        <!-- Spring Boot Web Starter -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
         <!-- Common Module -->
         <dependency>
             <groupId>com.wework.platform</groupId>
             <artifactId>wework-platform-common</artifactId>
         </dependency>
 
-        <!-- Spring Boot Web -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
+
 
         <!-- Validation -->
         <dependency>
@@ -36,9 +38,10 @@
         </dependency>
 
         <!-- Database -->
+        <!-- MyBatis Plus for Spring Boot 3 - 使用与common一致的版本 -->
         <dependency>
             <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
         </dependency>
 
         <dependency>

@@ -7,7 +7,7 @@ set -e
 echo "🚀 开始构建消息发送服务..."
 
 # 进入项目根目录
-cd "$(dirname "$0")/../backend"
+cd "$(dirname "$0")/../backend-refactor"
 
 # 检查Java和Maven环境
 echo "📋 检查构建环境..."
@@ -45,12 +45,12 @@ echo "📦 打包服务..."
 mvn package -pl message-service -DskipTests
 
 # 检查构建结果
-if [ -f "message-service/target/message-service-1.0.0.jar" ]; then
+if [ -f "message-service/target/message-service.jar" ]; then
     echo "✅ 消息发送服务构建成功！"
-    echo "📄 构建产物: message-service/target/message-service-1.0.0.jar"
+    echo "📄 构建产物: message-service/target/message-service.jar"
     
     # 显示jar文件信息
-    ls -lh message-service/target/message-service-1.0.0.jar
+    ls -lh message-service/target/message-service.jar
     
     echo ""
     echo "🎯 下一步操作："
