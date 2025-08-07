@@ -141,7 +141,7 @@
             <div class="message-actions">
               <el-button-group size="small">
                 <el-button 
-                  :icon="Copy" 
+                  :icon="CopyDocument" 
                   @click="copyMessage(message.content)"
                   title="复制"
                 />
@@ -152,7 +152,7 @@
                   title="重新生成"
                 />
                 <el-button 
-                  :icon="message.reactions?.some(r => r.type === 'LIKE') ? ThumbsUp : ThumbsUpOutline"
+                  :icon="message.reactions?.some(r => r.type === 'LIKE') ? StarFilled : ThumbsUpOutline"
                   @click="toggleReaction(message, 'LIKE')"
                   title="点赞"
                 />
@@ -251,7 +251,7 @@
         <div class="input-send">
           <el-button 
             type="primary" 
-            :icon="isStreaming ? Stop : Send"
+            :icon="isStreaming ? VideoPause : Position"
             :loading="sending"
             :disabled="!canSend"
             @click="isStreaming ? stopGeneration() : handleSendMessage()"
@@ -353,14 +353,13 @@ import {
   Download, 
   Star, 
   StarFilled,
-  Send,
-  Stop,
+  Position,
+  VideoPause,
   Paperclip,
   Picture,
   Close,
-  Copy,
+  CopyDocument,
   Refresh,
-  ThumbsUp,
   Document,
   Loading,
   CircleCloseFilled
@@ -378,7 +377,7 @@ import type {
 } from '@/types/api'
 
 // 图标导入修复
-const ThumbsUpOutline = ThumbsUp
+const ThumbsUpOutline = StarFilled
 
 const route = useRoute()
 const router = useRouter()

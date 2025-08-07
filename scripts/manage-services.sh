@@ -21,7 +21,7 @@ BACKEND_PATH="$PROJECT_ROOT/backend-refactor"
 SCRIPTS_PATH="$PROJECT_ROOT/scripts"
 
 # 服务配置 (使用简单数组，兼容性更好)
-SERVICES="gateway:gateway-service:18080 account:account-service:18081 message:message-service:18082 monitor:monitor-service:18083 user:user-service:18084 task:task-service:18085"
+SERVICES="gateway:gateway-service:18080 account:account-service:18081 message:message-service:18082 monitor:monitor-service:18083 user:user-service:18085 task:task-service:18084"
 
 # 获取服务信息的函数
 get_service_info() {

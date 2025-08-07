@@ -22,6 +22,9 @@ export const useAppStore = defineStore("app", () => {
   const deviceType = ref<DeviceType>("desktop");
   const loading = ref<boolean>(false);
   const pageLoading = ref<boolean>(false);
+  const loadingText = ref<string>("加载中...");
+  const networkOnline = ref<boolean>(true);
+  const pageVisible = ref<boolean>(true);
 
   // 应用设置
   const settings = ref<AppSettings>({
@@ -126,6 +129,8 @@ export const useAppStore = defineStore("app", () => {
       setSidebarState("collapsed");
     }
   };
+  
+  const setDevice = setDeviceType;
 
   /**
    * 设置全局加载状态
@@ -139,6 +144,28 @@ export const useAppStore = defineStore("app", () => {
    */
   const setPageLoading = (isLoading: boolean): void => {
     pageLoading.value = isLoading;
+  };
+
+  /**
+   * 设置网络状态
+   */
+  const setNetworkStatus = (isOnline: boolean): void => {
+    networkOnline.value = isOnline;
+  };
+
+  /**
+   * 设置页面可见性
+   */
+  const setPageVisible = (isVisible: boolean): void => {
+    pageVisible.value = isVisible;
+  };
+
+  /**
+   * 刷新数据（示例）
+   */
+  const refreshData = (): void => {
+    console.log("页面重新可见，正在刷新数据...");
+    // 在这里添加刷新数据的逻辑
   };
 
   /**
@@ -305,6 +332,10 @@ export const useAppStore = defineStore("app", () => {
     applySettings();
   };
 
+  // 计算属性
+  const isLoading = computed(() => loading.value);
+  const networkStatus = computed(() => networkOnline.value);
+
   return {
     // State
     theme,
@@ -314,6 +345,9 @@ export const useAppStore = defineStore("app", () => {
     deviceType,
     loading,
     pageLoading,
+    loadingText,
+    networkOnline,
+    pageVisible,
     settings,
     breadcrumbs,
     visitedViews,
@@ -324,6 +358,8 @@ export const useAppStore = defineStore("app", () => {
     isMobile,
     isTablet,
     isDesktop,
+    isLoading,
+    networkStatus,
     sidebarWidth,
 
     // Actions
@@ -333,6 +369,7 @@ export const useAppStore = defineStore("app", () => {
     toggleSidebar,
     setSidebarState,
     setDeviceType,
+    setDevice,
     setLoading,
     setPageLoading,
     updateSettings,
@@ -343,5 +380,8 @@ export const useAppStore = defineStore("app", () => {
     removeAllVisitedViews,
     resetAppState,
     initializeApp,
+    setNetworkStatus,
+    setPageVisible,
+    refreshData,
   };
 });

@@ -4,13 +4,11 @@
  */
 
 import type { BaseEntity, PageQuery } from "./index";
+import type { UserStatus } from "./api";
 
 // ===== 用户基础类型 =====
 
-/**
- * 用户状态
- */
-export type UserStatus = "active" | "inactive" | "locked" | "expired";
+// UserStatus 已移动到 types/api.ts 中作为 enum 定义
 
 /**
  * 用户性别

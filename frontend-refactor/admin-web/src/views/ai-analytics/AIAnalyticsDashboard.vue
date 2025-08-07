@@ -71,7 +71,7 @@
           <el-card class="stat-card">
             <div class="stat-content">
               <div class="stat-icon agents">
-                <el-icon><Robot /></el-icon>
+                <el-icon><Sunrise /></el-icon>
               </div>
               <div class="stat-info">
                 <div class="stat-value">
@@ -434,7 +434,8 @@ import {
   User, 
   Robot, 
   ChatDotRound, 
-  Money 
+  Money, 
+  Sunrise
 } from '@element-plus/icons-vue'
 import BaseChart from '@/components/charts/BaseChart.vue'
 import * as analyticsApi from '@/api/analytics'

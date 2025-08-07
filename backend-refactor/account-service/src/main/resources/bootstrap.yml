@@ -2,25 +2,52 @@ spring:
   application:
     name: account-service
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}
+    active: ${PROFILE:dev}
   cloud:
     nacos:
       discovery:
-        server-addr: ${NACOS_SERVER_ADDR:localhost:28848}
+        server-addr: ${NACOS_ADDR:localhost:28848}
         namespace: ${NACOS_NAMESPACE:2e42fb0d-3ea7-47b9-8680-c7c615eb95f0}
         group: ${NACOS_GROUP:DEFAULT_GROUP}
+        metadata:
+          version: ${app.version:2.0.0}
+          zone: ${app.zone:default}
       config:
-        server-addr: ${NACOS_SERVER_ADDR:localhost:28848}
+        server-addr: ${NACOS_ADDR:localhost:28848}
         namespace: ${NACOS_NAMESPACE:2e42fb0d-3ea7-47b9-8680-c7c615eb95f0}
         group: ${NACOS_GROUP:DEFAULT_GROUP}
         file-extension: yml
+        refresh-enabled: true
         shared-configs:
-          - data-id: database-config-${spring.profiles.active}.yml
+          - data-id: data-config-${spring.profiles.active}.yml
             group: ${NACOS_GROUP:DEFAULT_GROUP}
             refresh: true
-          - data-id: redis-config-${spring.profiles.active}.yml
+          - data-id: basic-config-${spring.profiles.active}.yml
             group: ${NACOS_GROUP:DEFAULT_GROUP}
             refresh: true
-          - data-id: common-config-${spring.profiles.active}.yml
-            group: ${NACOS_GROUP:DEFAULT_GROUP}
-            refresh: true
+
+# Management
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Server
+server:
+  port: ${PORT:18081}
+
+# Logging
+logging:
+  level:
+    com.wework.platform: debug
+    org.springframework.cloud: info
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%logger{50}] - %msg%n"

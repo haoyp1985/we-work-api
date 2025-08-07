@@ -1,82 +1,215 @@
 // ==========================================================================
-// CSS Reset - WeWork Platform
+// CSS Reset Styles
 // ==========================================================================
 
-// HTML5元素重置
-article,
-aside,
-details,
-figcaption,
-figure,
-footer,
-header,
-hgroup,
-main,
-menu,
-nav,
-section,
-summary {
-  display: block;
+/* Reset and normalize */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-// 音频和视频元素
-audio,
-canvas,
-progress,
-video {
-  display: inline-block;
+html {
+  line-height: 1.15;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  font-family: $font-family-primary;
+  font-size: $font-size-base;
+  font-weight: $font-weight-normal;
+  line-height: $line-height-base;
+  color: $text-color-primary;
+  background-color: $bg-color-page;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Reset headings */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: $font-weight-medium;
+  line-height: 1.2;
+}
+
+h1 { font-size: 2rem; }
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+h5 { font-size: 1rem; }
+h6 { font-size: 0.875rem; }
+
+/* Reset paragraphs */
+p {
+  margin: 0 0 1rem 0;
+}
+
+/* Reset lists */
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Reset links */
+a {
+  color: inherit;
+  text-decoration: none;
+  background-color: transparent;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+/* Reset images */
+img {
+  border-style: none;
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+/* Reset buttons */
+button {
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+button:focus {
+  outline: none;
+}
+
+button::-moz-focus-inner {
+  border-style: none;
+  padding: 0;
+}
+
+/* Reset form elements */
+input,
+button,
+select,
+optgroup,
+textarea {
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Reset tables */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+th,
+td {
+  padding: 0;
+  text-align: left;
+}
+
+/* Reset fieldset */
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+legend {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  line-height: inherit;
+  color: inherit;
+  white-space: normal;
+}
+
+/* Reset progress */
+progress {
   vertical-align: baseline;
 }
 
-audio:not([controls]) {
-  display: none;
-  height: 0;
+/* Reset textarea */
+textarea {
+  overflow: auto;
+  resize: vertical;
 }
 
-[hidden],
+/* Reset summary */
+summary {
+  display: list-item;
+  cursor: pointer;
+}
+
+/* Reset template */
 template {
   display: none;
 }
 
-// 链接重置
-a {
-  background-color: transparent;
-  text-decoration: none;
-  
-  &:active,
-  &:hover {
-    outline: 0;
-  }
+/* Reset hidden */
+[hidden] {
+  display: none !important;
 }
 
-// 文本元素重置
-abbr[title] {
-  border-bottom: 1px dotted;
+/* Reset HR */
+hr {
+  box-sizing: content-box;
+  height: 0;
+  overflow: visible;
+  margin: 1rem 0;
+  border: 0;
+  border-top: 1px solid $border-color-light;
 }
 
-b,
-strong {
-  font-weight: bold;
+/* Reset code */
+code,
+kbd,
+pre,
+samp {
+  font-family: $font-family-mono;
+  font-size: 1em;
 }
 
-dfn {
-  font-style: italic;
+pre {
+  margin: 0;
+  overflow: auto;
 }
 
-h1 {
-  font-size: 2em;
-  margin: 0.67em 0;
-}
-
-mark {
-  background: #ff0;
-  color: #000;
-}
-
+/* Reset small */
 small {
   font-size: 80%;
 }
 
+/* Reset sub and sup */
 sub,
 sup {
   font-size: 75%;
@@ -85,282 +218,10 @@ sup {
   vertical-align: baseline;
 }
 
-sup {
-  top: -0.5em;
-}
-
 sub {
   bottom: -0.25em;
 }
 
-// 图片重置
-img {
-  border: 0;
-  vertical-align: middle;
-}
-
-svg:not(:root) {
-  overflow: hidden;
-}
-
-// 分组元素重置
-figure {
-  margin: 1em 40px;
-}
-
-hr {
-  box-sizing: content-box;
-  height: 0;
-}
-
-pre {
-  overflow: auto;
-}
-
-code,
-kbd,
-pre,
-samp {
-  font-family: monospace, monospace;
-  font-size: 1em;
-}
-
-// 表单元素重置
-button,
-input,
-optgroup,
-select,
-textarea {
-  color: inherit;
-  font: inherit;
-  margin: 0;
-}
-
-button {
-  overflow: visible;
-  text-transform: none;
-}
-
-button,
-html input[type="button"],
-input[type="reset"],
-input[type="submit"] {
-  -webkit-appearance: button;
-  cursor: pointer;
-}
-
-button[disabled],
-html input[disabled] {
-  cursor: default;
-}
-
-button::-moz-focus-inner,
-input::-moz-focus-inner {
-  border: 0;
-  padding: 0;
-}
-
-input {
-  line-height: normal;
-}
-
-input[type="checkbox"],
-input[type="radio"] {
-  box-sizing: border-box;
-  padding: 0;
-}
-
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-  height: auto;
-}
-
-input[type="search"] {
-  -webkit-appearance: textfield;
-  box-sizing: content-box;
-}
-
-input[type="search"]::-webkit-search-cancel-button,
-input[type="search"]::-webkit-search-decoration {
-  -webkit-appearance: none;
-}
-
-fieldset {
-  border: 1px solid #c0c0c0;
-  margin: 0 2px;
-  padding: 0.35em 0.625em 0.75em;
-}
-
-legend {
-  border: 0;
-  padding: 0;
-}
-
-textarea {
-  overflow: auto;
-  resize: vertical;
-}
-
-optgroup {
-  font-weight: bold;
-}
-
-// 表格重置
-table {
-  border-collapse: collapse;
-  border-spacing: 0;
-}
-
-td,
-th {
-  padding: 0;
-}
-
-// 自定义重置
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  margin: 0;
-  padding: 0;
-  font-weight: normal;
-}
-
-p {
-  margin: 0;
-  padding: 0;
-}
-
-ul,
-ol {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-li {
-  list-style: none;
-}
-
-dl,
-dt,
-dd {
-  margin: 0;
-  padding: 0;
-}
-
-// 移除默认外观
-button,
-input,
-select,
-textarea {
-  outline: none;
-  border: none;
-  background: transparent;
-  
-  &:focus {
-    outline: none;
-  }
-}
-
-// 移除选择高亮
-::selection {
-  background: $primary-light-8;
-  color: $primary-dark-1;
-}
-
-::-moz-selection {
-  background: $primary-light-8;
-  color: $primary-dark-1;
-}
-
-// 移除移动端点击高亮
-* {
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-}
-
-// 移除IE的清除按钮
-input::-ms-clear {
-  display: none;
-}
-
-// 移除Chrome的密码显示按钮
-input::-ms-reveal {
-  display: none;
-}
-
-// 移除Firefox的数字输入框按钮
-input[type="number"] {
-  -moz-appearance: textfield;
-}
-
-// 移除Safari的搜索框样式
-input[type="search"] {
-  -webkit-appearance: none;
-  
-  &::-webkit-search-decoration,
-  &::-webkit-search-cancel-button {
-    -webkit-appearance: none;
-  }
-}
-
-// 统一表单元素的外观
-input,
-textarea,
-select {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-}
-
-// 移除iOS的圆角和阴影
-input,
-textarea,
-button {
-  border-radius: 0;
-  -webkit-appearance: none;
-}
-
-// 移除Android的默认样式
-input,
-textarea,
-select,
-button {
-  -webkit-user-modify: read-write-plaintext-only;
-}
-
-// 修复移动端1px边框问题
-.hairline {
-  position: relative;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border: 1px solid $border-color-base;
-    transform-origin: 0 0;
-    pointer-events: none;
-  }
-  
-  @media (-webkit-min-device-pixel-ratio: 2) {
-    &::after {
-      transform: scale(0.5);
-      width: 200%;
-      height: 200%;
-    }
-  }
-  
-  @media (-webkit-min-device-pixel-ratio: 3) {
-    &::after {
-      transform: scale(0.33);
-      width: 300%;
-      height: 300%;
-    }
-  }
+sup {
+  top: -0.5em;
 }

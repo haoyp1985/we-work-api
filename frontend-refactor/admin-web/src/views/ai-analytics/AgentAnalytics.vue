@@ -7,7 +7,7 @@
           <el-card class="stats-card">
             <div class="stats-content">
               <div class="stats-icon active">
-                <el-icon><Robot /></el-icon>
+                <el-icon><Sunrise /></el-icon>
               </div>
               <div class="stats-info">
                 <div class="stats-value">{{ stats.activeAgents }}</div>

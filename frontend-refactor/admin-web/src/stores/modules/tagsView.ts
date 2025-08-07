@@ -157,9 +157,9 @@ export const useTagsViewStore = defineStore("tagsView", () => {
 
   const addRouteView = (route: RouteLocationNormalized) => {
     const view: TagView = {
-      name: route.name as string,
+      name: (route.name as string) || route.path,
       path: route.path,
-      title: (route.meta?.title as string) || route.name as string || "未命名页面",
+      title: (route.meta?.title as string) || (route.name as string) || route.path || "未命名页面",
       fullPath: route.fullPath,
       meta: route.meta,
       query: route.query,
@@ -171,9 +171,9 @@ export const useTagsViewStore = defineStore("tagsView", () => {
 
   const delRouteView = (route: RouteLocationNormalized) => {
     const view: TagView = {
-      name: route.name as string,
+      name: (route.name as string) || route.path,
       path: route.path,
-      title: (route.meta?.title as string) || route.name as string || "未命名页面",
+      title: (route.meta?.title as string) || (route.name as string) || route.path || "未命名页面",
       fullPath: route.fullPath,
       meta: route.meta,
       query: route.query,

@@ -99,5 +99,5 @@ const loading = {
  * @param app Vue应用实例
  */
 export function setupLoadingDirective(app: App): void {
-  app.directive("loading", loading);
+  app.directive("custom-loading", loading);
 }

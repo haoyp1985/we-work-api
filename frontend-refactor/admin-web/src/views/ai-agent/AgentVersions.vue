@@ -141,7 +141,7 @@
             <el-icon v-if="version.status === 'PUBLISHED'" color="#67c23a"><CircleCheck /></el-icon>
             <el-icon v-else-if="version.status === 'TESTING'" color="#e6a23c"><Clock /></el-icon>
             <el-icon v-else-if="version.status === 'DRAFT'" color="#909399"><Edit /></el-icon>
-            <el-icon v-else color="#c0c4cc"><Archive /></el-icon>
+            <el-icon v-else color="#c0c4cc"><Box /></el-icon>
           </div>
           
           <div class="version-content">
@@ -331,7 +331,7 @@ import {
   CircleCheck,
   Clock,
   Edit,
-  Archive,
+  Box,
   ArrowDown,
   Promotion,
   Platform,

@@ -29,7 +29,7 @@ const staticRoutes: RouteRecordRaw[] = [
   {
     path: "/login",
     name: "Login",
-    component: () => import("@/views/auth/Login.vue"),
+    component: () => import("@/views/auth/login.vue"),
     meta: {
       title: "用户登录",
       requiresAuth: false,
@@ -48,6 +48,7 @@ const staticRoutes: RouteRecordRaw[] = [
           title: "仪表板",
           icon: "dashboard",
           order: 1,
+          requiresAuth: true,
         },
       },
     ],
@@ -59,6 +60,7 @@ const staticRoutes: RouteRecordRaw[] = [
       title: "账号管理",
       icon: "account",
       order: 2,
+      requiresAuth: true,
     },
     children: [
       {
@@ -99,6 +101,7 @@ const staticRoutes: RouteRecordRaw[] = [
       title: "消息管理",
       icon: "message",
       order: 3,
+      requiresAuth: true,
     },
     children: [
       {
@@ -137,6 +140,7 @@ const staticRoutes: RouteRecordRaw[] = [
       title: "系统监控",
       icon: "monitor",
       order: 4,
+      requiresAuth: true,
     },
     children: [
       {
@@ -175,6 +179,7 @@ const staticRoutes: RouteRecordRaw[] = [
       title: "AI智能体管理",
       icon: "robot",
       order: 5,
+      requiresAuth: true,
     },
     children: [
       {
@@ -235,6 +240,7 @@ const staticRoutes: RouteRecordRaw[] = [
       title: "对话管理",
       icon: "chat",
       order: 6,
+      requiresAuth: true,
     },
     children: [
       {
@@ -265,6 +271,7 @@ const staticRoutes: RouteRecordRaw[] = [
       title: "平台集成",
       icon: "connection",
       order: 7,
+      requiresAuth: true,
     },
     children: [
       {
@@ -294,6 +301,7 @@ const staticRoutes: RouteRecordRaw[] = [
       title: "AI数据分析",
       icon: "chart",
       order: 8,
+      requiresAuth: true,
     },
     children: [
       {
@@ -324,6 +332,7 @@ const staticRoutes: RouteRecordRaw[] = [
       title: "用户管理",
       icon: "user",
       order: 9,
+      requiresAuth: true,
     },
     children: [
       {
@@ -389,6 +398,7 @@ const staticRoutes: RouteRecordRaw[] = [
       title: "系统设置",
       icon: "setting",
       order: 10,
+      requiresAuth: true,
     },
     children: [
       {
@@ -462,7 +472,7 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // 检查是否需要认证
-  if (to.meta.requiresAuth !== false) {
+  if (to.meta.requiresAuth) {
     const token = getToken();
     if (!token) {
       next({ name: "Login", query: { redirect: to.fullPath } });

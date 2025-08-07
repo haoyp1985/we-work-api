@@ -5,7 +5,7 @@ import { ElMessage, ElForm } from "element-plus";
 import { useUserStore } from "@/stores/modules/user";
 import { APP_INFO, STORAGE_KEYS, REGEX } from "@/constants";
 import { setPageTitle } from "@/utils";
-import type { LoginData } from "@/types/user";
+import type { LoginRequest } from "@/types/api";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -14,7 +14,7 @@ const userStore = useUserStore();
 const loginFormRef = ref<InstanceType<typeof ElForm>>();
 
 // 表单数据
-const loginForm = reactive<LoginData>({
+const loginForm = reactive<LoginRequest>({
   username: "",
   password: "",
 });
@@ -54,7 +54,7 @@ const handleLogin = async () => {
 
     loading.value = true;
 
-    await userStore.userLogin(loginForm);
+    await userStore.login(loginForm);
 
     // 保存记住密码状态
     if (rememberPassword.value) {
@@ -107,7 +107,7 @@ onMounted(() => {
       <div class="login-form-container">
         <div class="login-header">
           <div class="logo">
-            <img src="/logo.png"
+            <img src="/logo.svg"
 alt="WeWork Platform"
 />
           </div>

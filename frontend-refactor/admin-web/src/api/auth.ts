@@ -153,3 +153,17 @@ export function verifyTwoFactorCode(code: string): Promise<ApiResult<void>> {
     code
   })
 }
+
+/**
+ * 上传用户头像
+ */
+export function uploadAvatar(file: File): Promise<ApiResult<{avatarUrl: string}>> {
+  const formData = new FormData()
+  formData.append('avatar', file)
+  
+  return httpClient.post<{avatarUrl: string}>('/auth/upload-avatar', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}

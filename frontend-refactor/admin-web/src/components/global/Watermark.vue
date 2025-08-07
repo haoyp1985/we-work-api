@@ -1,97 +1,118 @@
-<script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
-import { useSettingsStore } from "@/stores/modules/settings";
-
-const settingsStore = useSettingsStore();
-const canvasRef = ref<HTMLCanvasElement>();
-
-// 水印配置
-const watermarkConfig = computed(() => settingsStore.watermark);
-
-// 创建水印
-const createWatermark = () => {
-  if (!canvasRef.value || !watermarkConfig.value.enabled) {
-    return "";
-  }
-
-  const canvas = canvasRef.value;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return "";
-
-  const { text, fontSize = 16, color = "#000000", opacity = 0.1 } = watermarkConfig.value;
-
-  // 设置画布尺寸
-  canvas.width = 200;
-  canvas.height = 100;
-
-  // 设置文字样式
-  ctx.font = `${fontSize}px Arial`;
-  ctx.fillStyle = color;
-  ctx.globalAlpha = opacity;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-
-  // 绘制水印文字
-  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-
-  return canvas.toDataURL();
-};
-
-// 水印样式
-const watermarkStyle = computed(() => {
-  if (!watermarkConfig.value.enabled) {
-    return { display: "none" };
-  }
-
-  const watermarkUrl = createWatermark();
-  return {
-    position: "fixed" as const,
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    zIndex: 9999,
-    pointerEvents: "none" as const,
-    backgroundImage: `url(${watermarkUrl})`,
-    backgroundRepeat: "repeat",
-    backgroundPosition: "0 0",
-  };
-});
-
-// 监听配置变化
-watch(
-  () => watermarkConfig.value,
-  () => {
-    // 水印配置变化时重新创建
-  },
-  { deep: true }
-);
-
-onMounted(() => {
-  // 组件挂载时创建水印
-  createWatermark();
-});
-</script>
-
 <template>
-  <div>
-    <!-- 隐藏的画布用于生成水印 -->
-    <canvas ref="canvasRef" style="display: none;" />
-    
-    <!-- 水印层 -->
-    <div
-      v-if="watermarkConfig.enabled"
-      :style="watermarkStyle"
-      class="watermark-overlay"
-    />
+  <div v-if="visible" class="watermark" ref="watermarkRef">
+    <canvas ref="canvasRef" :style="canvasStyle"></canvas>
   </div>
 </template>
 
-<style scoped>
-.watermark-overlay {
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+
+interface Props {
+  text?: string
+  fontSize?: number
+  fontColor?: string
+  fontFamily?: string
+  angle?: number
+  spacing?: number
+  opacity?: number
+  zIndex?: number
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  text: 'WeWork Platform',
+  fontSize: 16,
+  fontColor: '#000',
+  fontFamily: 'Arial',
+  angle: -20,
+  spacing: 100,
+  opacity: 0.1,
+  zIndex: 1000
+})
+
+const watermarkRef = ref<HTMLElement>()
+const canvasRef = ref<HTMLCanvasElement>()
+const visible = ref(true)
+
+const canvasStyle = ref({
+  position: 'fixed',
+  top: '0',
+  left: '0',
+  width: '100%',
+  height: '100%',
+  pointerEvents: 'none',
+  zIndex: props.zIndex,
+  opacity: props.opacity
+})
+
+const drawWatermark = () => {
+  const canvas = canvasRef.value
+  if (!canvas) return
+
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+
+  // 设置画布大小
+  canvas.width = window.innerWidth
+  canvas.height = window.innerHeight
+
+  // 设置字体样式
+  ctx.font = `${props.fontSize}px ${props.fontFamily}`
+  ctx.fillStyle = props.fontColor
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+
+  // 计算文字尺寸
+  const textMetrics = ctx.measureText(props.text)
+  const textWidth = textMetrics.width
+  const textHeight = props.fontSize
+
+  // 计算网格间距
+  const xSpacing = textWidth + props.spacing
+  const ySpacing = textHeight + props.spacing
+
+  // 绘制水印网格
+  for (let x = 0; x < canvas.width + xSpacing; x += xSpacing) {
+    for (let y = 0; y < canvas.height + ySpacing; y += ySpacing) {
+      ctx.save()
+      ctx.translate(x, y)
+      ctx.rotate((props.angle * Math.PI) / 180)
+      ctx.fillText(props.text, 0, 0)
+      ctx.restore()
+    }
+  }
+}
+
+const handleResize = () => {
+  nextTick(() => {
+    drawWatermark()
+  })
+}
+
+onMounted(() => {
+  nextTick(() => {
+    drawWatermark()
+  })
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
+
+// 监听属性变化重新绘制
+watch(() => [props.text, props.fontSize, props.fontColor, props.angle], () => {
+  nextTick(() => {
+    drawWatermark()
+  })
+})
+
+defineOptions({
+  name: 'Watermark'
+})
+</script>
+
+<style lang="scss" scoped>
+.watermark {
+  position: relative;
 }
 </style>

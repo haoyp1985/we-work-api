@@ -78,7 +78,7 @@ const initTheme = () => {
 // 生命周期
 onMounted(async () => {
   // 初始化应用
-  await appStore.initApp();
+  await appStore.initializeApp();
 
   // 监听窗口大小变化
   window.addEventListener("resize", handleResize);
