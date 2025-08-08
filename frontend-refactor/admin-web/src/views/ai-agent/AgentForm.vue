@@ -20,10 +20,9 @@ import type {
   Agent, 
   CreateAgentRequest, 
   UpdateAgentRequest, 
-  AgentStatus, 
-  AgentType, 
-  PlatformType 
+  AgentStatus
 } from '@/types/api'
+import { AgentType, PlatformType } from '@/types/api'
 
 const router = useRouter()
 const route = useRoute()
@@ -785,12 +784,12 @@ onMounted(() => {
               <el-descriptions-item label="类型">
                 {{ typeOptions.find(t => t.value === formData.type)?.label }}
               </el-descriptions-item>
-              <el-descriptions-item label="描述" span="2">{{ formData.description }}</el-descriptions-item>
+              <el-descriptions-item label="描述" :span="2">{{ formData.description }}</el-descriptions-item>
               <el-descriptions-item label="平台">
                 {{ platformOptions.find(p => p.value === formData.platformType)?.label }}
               </el-descriptions-item>
               <el-descriptions-item label="模型">{{ formData.modelName }}</el-descriptions-item>
-              <el-descriptions-item label="标签" span="2">
+              <el-descriptions-item label="标签" :span="2">
                 <el-tag v-for="tag in formData.tags" :key="tag" size="small" class="tag-preview">
                   {{ tag }}
                 </el-tag>
@@ -929,9 +928,11 @@ onMounted(() => {
 
 .type-radio-group {
   width: 100%;
+  display: block; /* 防止内联布局导致项重叠 */
   
   .type-radio {
     width: 100%;
+    display: block; /* 每个选项独占一行 */
     margin-right: 0;
     margin-bottom: 16px;
     
@@ -1116,17 +1117,15 @@ onMounted(() => {
 }
 
 .action-bar {
-  position: fixed;
+  position: sticky; /* 与内容同宽，避免跑到侧边栏下方 */
   bottom: 0;
-  left: 0;
-  right: 0;
-  background: white;
+  background: #fff;
   border-top: 1px solid #ebeef5;
   padding: 16px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  z-index: 100;
+  z-index: 1002; /* 保证在页面内置footer之上 */
   
   .step-actions {
     display: flex;
@@ -1141,6 +1140,6 @@ onMounted(() => {
 
 // 为底部固定按钮留出空间
 .agent-form-container {
-  padding-bottom: 80px;
+  padding-bottom: 96px; /* 预留更大空间，避免被全局footer遮挡 */
 }
 </style>
