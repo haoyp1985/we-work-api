@@ -29,9 +29,9 @@ public class User extends BaseEntity {
     private String username;
 
     /**
-     * 密码（加密）
+     * 明文密码占位（不落库）。为兼容旧表字段名而保留，实际不使用。
      */
-    @TableField("password")
+    @TableField(exist = false)
     private String password;
 
     /**
