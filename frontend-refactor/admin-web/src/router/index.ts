@@ -92,6 +92,16 @@ const staticRoutes: RouteRecordRaw[] = [
           hideInMenu: true,
         },
       },
+      {
+        path: "detail/:id",
+        name: "AccountDetail",
+        component: () => import("@/views/account/AccountDetail.vue"),
+        meta: {
+          title: "账号详情",
+          permissions: ["account:read"],
+          hideInMenu: true,
+        },
+      },
     ],
   },
   {

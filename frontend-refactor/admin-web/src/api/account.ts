@@ -29,6 +29,24 @@ export const accountApi = {
   ): Promise<ApiResponse<PageResult<WeWorkAccount>>> {
     return request.get("/accounts", { params });
   },
+  /**
+   * 获取状态日志（分页）
+   */
+  getStatusLogs(params: {
+    accountId?: string;
+    fromStatus?: number;
+    toStatus?: number;
+    pageNum?: number;
+    pageSize?: number;
+  }): Promise<ApiResponse<PageResult<any>>> {
+    return request.get("/status-logs", { params });
+  },
+  /**
+   * 获取某账号最近状态日志
+   */
+  getStatusLogsByAccountId(accountId: string, limit = 50): Promise<ApiResponse<any[]>> {
+    return request.get(`/status-logs/account/${accountId}`, { params: { limit } });
+  },
 
   /**
    * 获取账号详情
