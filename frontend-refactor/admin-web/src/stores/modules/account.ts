@@ -11,7 +11,7 @@ import type {
   AccountSearchForm,
   AccountCreateForm,
   AccountUpdateForm,
-  AccountStatistics,
+  AccountTotalStatistics,
   PageResult,
 } from "@/types/account";
 
@@ -31,19 +31,26 @@ export const useAccountStore = defineStore("account", () => {
   });
 
   // 统计信息
-  const statistics = ref<AccountStatistics>({
+  const statistics = ref<AccountTotalStatistics>({
     totalCount: 0,
     onlineCount: 0,
     offlineCount: 0,
     errorCount: 0,
     statusDistribution: {},
     dailyStats: [],
+    typeDistribution: {},
+    performanceStats: {
+      avgOnlineTime: 0,
+      avgMessageSent: 0,
+      successRate: 0,
+      errorRate: 0,
+    },
   });
 
   // 搜索条件
   const searchForm = ref<AccountSearchForm>({
     accountName: "",
-    status: "",
+    status: undefined,
     pageNum: 1,
     pageSize: 20,
   });
@@ -146,7 +153,7 @@ export const useAccountStore = defineStore("account", () => {
   const resetSearch = async (): Promise<void> => {
     searchForm.value = {
       accountName: "",
-      status: "",
+      status: undefined,
       pageNum: 1,
       pageSize: 20,
     };
@@ -356,7 +363,7 @@ export const useAccountStore = defineStore("account", () => {
   /**
    * 获取账号统计信息
    */
-  const fetchAccountStatistics = async (): Promise<AccountStatistics> => {
+  const fetchAccountStatistics = async (): Promise<AccountTotalStatistics> => {
     try {
       const response = await accountApi.getAccountStatistics();
 

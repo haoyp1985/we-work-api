@@ -150,6 +150,20 @@ export const accountApi = {
   },
 
   /**
+   * 批量心跳检测（对当前租户在线账号批量执行心跳）
+   */
+  batchHeartbeat(): Promise<ApiResponse<string[]>> {
+    return request.post("/accounts/batch-heartbeat");
+  },
+
+  /**
+   * 自动恢复异常账号
+   */
+  autoRecoverErrorAccounts(): Promise<ApiResponse<string[]>> {
+    return request.post("/accounts/auto-recover");
+  },
+
+  /**
    * 获取单个账号统计
    */
   getAccountStatisticsById(
