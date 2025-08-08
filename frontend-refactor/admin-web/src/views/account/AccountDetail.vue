@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import BaseChart from "@/components/charts/BaseChart.vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { useAccountStore } from "@/stores/modules/account";
@@ -13,6 +14,11 @@ const accountId = route.params.id as string;
 const loading = ref(false);
 const logsLoading = ref(false);
 const statusLogs = ref<any[]>([]);
+const stats = ref<any>();
+const trends = ref<any[]>([]);
+
+const timeRange = ref<[Date, Date]>([new Date(Date.now() - 24 * 3600 * 1000), new Date()]);
+const interval = ref("HOUR");
 
 onMounted(async () => {
   if (!accountId) {
@@ -26,6 +32,13 @@ onMounted(async () => {
     logsLoading.value = true;
     const res = await accountApi.getStatusLogsByAccountId(accountId, 50);
     if (res.code === 200) statusLogs.value = res.data || [];
+    // 统计/趋势
+    const startTime = timeRange.value[0].getTime();
+    const endTime = timeRange.value[1].getTime();
+    const s = await accountApi.getStatusChangeStatistics({ accountId, startTime, endTime });
+    if (s.code === 200) stats.value = s.data;
+    const t = await accountApi.getStatusTrends({ accountId, startTime, endTime, interval: interval.value });
+    if (t.code === 200) trends.value = t.data || [];
   } finally {
     loading.value = false;
     logsLoading.value = false;
@@ -65,6 +78,23 @@ onMounted(async () => {
         <el-table-column prop="createdAt" label="时间" width="180" />
       </el-table>
     </el-card>
+
+    <el-card shadow="never" class="trend-card">
+      <template #header>
+        <div class="header">
+          <h3>状态趋势</h3>
+          <div>
+            <el-date-picker v-model="timeRange" type="datetimerange" start-placeholder="开始时间" end-placeholder="结束时间" size="small" />
+          </div>
+        </div>
+      </template>
+      <BaseChart :options="{
+        tooltip: { trigger: 'axis' },
+        xAxis: { type: 'category', data: trends.map(i => i.timePoint) },
+        yAxis: { type: 'value' },
+        series: [{ type: 'line', data: trends.map(i => i.count) }]
+      }" height="320px" />
+    </el-card>
   </div>
 </template>
 
@@ -72,6 +102,7 @@ onMounted(async () => {
 .account-detail { padding: 20px; }
 .header { display: flex; justify-content: space-between; align-items: center; }
 .base-card { margin-bottom: 12px; }
+.trend-card { margin-top: 12px; }
 </style>
 
 

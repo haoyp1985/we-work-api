@@ -47,6 +47,14 @@ export const accountApi = {
   getStatusLogsByAccountId(accountId: string, limit = 50): Promise<ApiResponse<any[]>> {
     return request.get(`/status-logs/account/${accountId}`, { params: { limit } });
   },
+  /** 状态变更统计 */
+  getStatusChangeStatistics(params: { accountId?: string; startTime?: number; endTime?: number }): Promise<ApiResponse<any>> {
+    return request.get("/status-logs/statistics", { params });
+  },
+  /** 状态趋势 */
+  getStatusTrends(params: { accountId?: string; startTime: number; endTime: number; interval?: string }): Promise<ApiResponse<any[]>> {
+    return request.get("/status-logs/trends", { params });
+  },
 
   /**
    * 获取账号详情
