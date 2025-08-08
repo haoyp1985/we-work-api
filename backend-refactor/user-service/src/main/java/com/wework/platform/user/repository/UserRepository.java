@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wework.platform.user.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -23,6 +24,7 @@ public interface UserRepository extends BaseMapper<User> {
      * @param username 用户名
      * @return 用户信息
      */
+    @Select("SELECT * FROM saas_users WHERE username = #{username} AND deleted_at IS NULL LIMIT 1")
     User findByUsername(@Param("username") String username);
 
     /**
@@ -31,6 +33,7 @@ public interface UserRepository extends BaseMapper<User> {
      * @param email 邮箱
      * @return 用户信息
      */
+    @Select("SELECT * FROM saas_users WHERE email = #{email} AND deleted_at IS NULL LIMIT 1")
     User findByEmail(@Param("email") String email);
 
     /**
