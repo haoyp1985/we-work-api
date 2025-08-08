@@ -205,6 +205,13 @@ GATEWAY_CONFIG='spring:
             - Path=/api/v1/accounts/**
           filters:
             - StripPrefix=2
+        # 用户认证路由（新增）
+        - id: user-auth
+          uri: lb://user-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=2
         # 消息服务路由
         - id: message-service
           uri: lb://message-service

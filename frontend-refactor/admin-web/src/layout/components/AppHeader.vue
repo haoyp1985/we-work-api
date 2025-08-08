@@ -24,7 +24,8 @@ const route = useRoute();
 const appStore = useAppStore();
 const userStore = useUserStore();
 
-const { sidebarOpened } = storeToRefs(appStore);
+// 统一使用计算属性：展开=非折叠
+const sidebarOpened = computed(() => !appStore.sidebarCollapsed);
 
 // 搜索关键词
 const searchKeyword = ref("");

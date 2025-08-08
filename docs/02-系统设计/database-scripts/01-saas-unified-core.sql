@@ -74,7 +74,7 @@ CREATE TABLE saas_tenants (
     INDEX idx_subscription_end (subscription_end_date),
     INDEX idx_created_at (created_at),
     INDEX idx_tenant_type (tenant_type)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='SaaS租户主表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='SaaS Tenants Table';
 
 -- 用户主表
 CREATE TABLE saas_users (
@@ -157,7 +157,7 @@ CREATE TABLE saas_users (
     INDEX idx_created_at (created_at),
     INDEX idx_department (department),
     INDEX idx_is_admin (is_super_admin, is_tenant_admin)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='SaaS用户主表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='SaaS Users Table';
 
 -- 角色管理表
 CREATE TABLE saas_roles (
@@ -215,7 +215,7 @@ CREATE TABLE saas_roles (
     INDEX idx_role_category (role_category),
     INDEX idx_parent_role (parent_role_id),
     INDEX idx_role_level (role_level)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色管理表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Roles Management Table';
 
 -- 权限管理表
 CREATE TABLE saas_permissions (
@@ -268,7 +268,7 @@ CREATE TABLE saas_permissions (
     INDEX idx_module_action (module, action),
     INDEX idx_parent_permission (parent_permission_id),
     INDEX idx_permission_type (is_menu_permission, is_button_permission, is_data_permission)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='权限管理表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Permissions Management Table';
 
 -- 用户角色关联表
 CREATE TABLE saas_user_roles (
@@ -299,7 +299,7 @@ CREATE TABLE saas_user_roles (
     revoke_reason VARCHAR(500) COMMENT '撤销原因',
     
     -- 约束和索引
-    UNIQUE KEY uk_user_role_scope (user_id, role_id, scope_type, scope_value(100)),
+    UNIQUE KEY uk_user_role_scope (user_id, role_id, scope_type),
     FOREIGN KEY (tenant_id) REFERENCES saas_tenants(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES saas_users(id) ON DELETE CASCADE,
     FOREIGN KEY (role_id) REFERENCES saas_roles(id) ON DELETE CASCADE,
@@ -311,7 +311,7 @@ CREATE TABLE saas_user_roles (
     INDEX idx_expires_at (expires_at),
     INDEX idx_status (status),
     INDEX idx_effective_period (effective_start, effective_end)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户角色关联表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='User Roles Association Table';
 
 -- 角色权限关联表
 CREATE TABLE saas_role_permissions (
@@ -344,7 +344,7 @@ CREATE TABLE saas_role_permissions (
     INDEX idx_tenant_role (tenant_id, role_id),
     INDEX idx_role_permission (role_id, permission_id),
     INDEX idx_permission_type (permission_type)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色权限关联表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Role Permissions Association Table';
 
 -- =====================================================
 -- 2. 安全审计层
@@ -407,7 +407,7 @@ CREATE TABLE saas_api_keys (
     INDEX idx_status (status),
     INDEX idx_expires_at (expires_at),
     INDEX idx_last_used (last_used_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='API密钥管理表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='API Keys Management Table';
 
 -- 用户会话管理表
 CREATE TABLE saas_user_sessions (
@@ -467,50 +467,50 @@ CREATE TABLE saas_user_sessions (
     INDEX idx_last_activity (last_activity_at),
     INDEX idx_device_fingerprint (device_fingerprint),
     INDEX idx_login_ip (login_ip)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户会话管理表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='User Sessions Management Table';
 
--- 统一审计日志表 (分区表)
+-- Unified Audit Logs Table (Partitioned)
 CREATE TABLE saas_unified_audit_logs (
-    id VARCHAR(36) NOT NULL COMMENT '日志ID',
-    tenant_id VARCHAR(36) NOT NULL COMMENT '租户ID',
+    id VARCHAR(36) NOT NULL COMMENT 'Log ID',
+    tenant_id VARCHAR(36) NOT NULL COMMENT 'Tenant ID',
     
     -- 基础信息
-    log_type ENUM('operation', 'security', 'business', 'system') NOT NULL COMMENT '日志类型',
-    module VARCHAR(50) NOT NULL COMMENT '业务模块 (wework/ai/health/system)',
-    sub_module VARCHAR(50) COMMENT '子模块',
+    log_type ENUM('operation', 'security', 'business', 'system') NOT NULL COMMENT 'Log Type',
+    module VARCHAR(50) NOT NULL COMMENT 'Business Module',
+    sub_module VARCHAR(50) COMMENT 'Sub Module',
     
     -- 操作者信息
-    operator_id VARCHAR(36) COMMENT '操作者ID',
-    operator_type ENUM('user', 'system', 'api', 'scheduled') DEFAULT 'user' COMMENT '操作者类型',
-    session_id VARCHAR(36) COMMENT '会话ID',
+    operator_id VARCHAR(36) COMMENT 'Operator ID',
+    operator_type ENUM('user', 'system', 'api', 'scheduled') DEFAULT 'user' COMMENT 'Operator Type',
+    session_id VARCHAR(36) COMMENT 'Session ID',
     
     -- 操作详情
-    action ENUM('create', 'read', 'update', 'delete', 'login', 'logout', 'status_change', 'config', 'alert') NOT NULL COMMENT '操作类型',
-    target_type VARCHAR(50) COMMENT '目标类型 (account/agent/patient等)',
-    target_id VARCHAR(36) COMMENT '目标ID',
-    target_name VARCHAR(200) COMMENT '目标名称',
+    action ENUM('create', 'read', 'update', 'delete', 'login', 'logout', 'status_change', 'config', 'alert') NOT NULL COMMENT 'Action Type',
+    target_type VARCHAR(50) COMMENT 'Target Type',
+    target_id VARCHAR(36) COMMENT 'Target ID',
+    target_name VARCHAR(200) COMMENT 'Target Name',
     
     -- 变更数据 (JSON统一存储)
-    change_data JSON COMMENT '变更数据 {old_values, new_values, extra_info}',
+    change_data JSON COMMENT 'Change Data',
     
     -- 执行结果
-    status ENUM('success', 'failure', 'partial') DEFAULT 'success' COMMENT '执行状态',
-    error_info JSON COMMENT '错误信息',
-    execution_time_ms INT COMMENT '执行时间(毫秒)',
+    status ENUM('success', 'failure', 'partial') DEFAULT 'success' COMMENT 'Status',
+    error_info JSON COMMENT 'Error Info',
+    execution_time_ms INT COMMENT 'Execution Time (ms)',
     
     -- 环境信息
-    ip_address VARCHAR(45) COMMENT 'IP地址',
-    user_agent TEXT COMMENT '用户代理',
-    request_info JSON COMMENT '请求信息',
+    ip_address VARCHAR(45) COMMENT 'IP Address',
+    user_agent TEXT COMMENT 'User Agent',
+    request_info JSON COMMENT 'Request Info',
     
     -- 业务扩展
-    business_context JSON COMMENT '业务上下文 (可存储模块特定信息)',
-    tags JSON COMMENT '标签 (便于查询和分类)',
+    business_context JSON COMMENT 'Business Context',
+    tags JSON COMMENT 'Tags',
     
     -- 时间信息
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Created At',
     
-    -- 复合主键，包含分区键
+    -- 复合主键
     PRIMARY KEY (id, created_at),
     
     -- 索引设计
@@ -520,16 +520,7 @@ CREATE TABLE saas_unified_audit_logs (
     INDEX idx_log_type (log_type, created_at),
     INDEX idx_action (action, created_at),
     
-    -- 外键约束
-    FOREIGN KEY (tenant_id) REFERENCES saas_tenants(id) ON DELETE CASCADE,
-    FOREIGN KEY (operator_id) REFERENCES saas_users(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='统一审计日志表'
-PARTITION BY RANGE (UNIX_TIMESTAMP(created_at)) (
-    PARTITION p202501 VALUES LESS THAN (UNIX_TIMESTAMP('2025-02-01 00:00:00')),
-    PARTITION p202502 VALUES LESS THAN (UNIX_TIMESTAMP('2025-03-01 00:00:00')),
-    PARTITION p202503 VALUES LESS THAN (UNIX_TIMESTAMP('2025-04-01 00:00:00')),
-    PARTITION p_future VALUES LESS THAN MAXVALUE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Unified Audit Logs Table';
 
 -- 登录尝试记录表
 CREATE TABLE saas_login_attempts (
@@ -567,7 +558,7 @@ CREATE TABLE saas_login_attempts (
     
     -- 外键约束
     FOREIGN KEY (tenant_id) REFERENCES saas_tenants(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='登录尝试记录表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Login Attempts Table';
 
 -- =====================================================
 -- 3. 配额计费层
@@ -666,7 +657,7 @@ CREATE TABLE saas_tenant_quotas (
     
     INDEX idx_effective_period (effective_from, effective_to),
     INDEX idx_plan_id (plan_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='租户配额管理表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tenant Quotas Management Table';
 
 -- 使用统计表
 CREATE TABLE saas_usage_statistics (
@@ -711,7 +702,7 @@ CREATE TABLE saas_usage_statistics (
     
     -- 外键约束
     FOREIGN KEY (tenant_id) REFERENCES saas_tenants(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='使用统计表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Usage Statistics Table';
 
 -- 实时配额使用表
 CREATE TABLE saas_quota_usage_realtime (
@@ -749,7 +740,7 @@ CREATE TABLE saas_quota_usage_realtime (
     
     -- 外键约束
     FOREIGN KEY (tenant_id) REFERENCES saas_tenants(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='实时配额使用表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Real-time Quota Usage Table';
 
 -- =====================================================
 -- 4. 系统管理层
@@ -814,7 +805,7 @@ CREATE TABLE saas_unified_configs (
     FOREIGN KEY (tenant_id) REFERENCES saas_tenants(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES saas_users(id) ON DELETE CASCADE,
     FOREIGN KEY (parent_config_id) REFERENCES saas_unified_configs(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='统一配置管理表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Unified Configuration Management Table';
 
 -- 统一告警管理表 (分区表)
 CREATE TABLE saas_unified_alerts (
@@ -890,7 +881,7 @@ CREATE TABLE saas_unified_alerts (
     FOREIGN KEY (tenant_id) REFERENCES saas_tenants(id) ON DELETE CASCADE,
     FOREIGN KEY (acknowledged_by) REFERENCES saas_users(id) ON DELETE SET NULL,
     FOREIGN KEY (resolved_by) REFERENCES saas_users(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='统一告警管理表'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Unified Alerts Management Table'
 PARTITION BY RANGE (UNIX_TIMESTAMP(created_at)) (
     PARTITION p202501 VALUES LESS THAN (UNIX_TIMESTAMP('2025-02-01 00:00:00')),
     PARTITION p202502 VALUES LESS THAN (UNIX_TIMESTAMP('2025-03-01 00:00:00')),
@@ -950,7 +941,7 @@ CREATE TABLE saas_monitor_rules (
     -- 外键约束
     FOREIGN KEY (tenant_id) REFERENCES saas_tenants(id) ON DELETE CASCADE,
     FOREIGN KEY (created_by) REFERENCES saas_users(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='监控规则表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Monitoring Rules Table';
 
 -- 系统指标表
 CREATE TABLE saas_system_metrics (
@@ -978,7 +969,7 @@ CREATE TABLE saas_system_metrics (
     
     -- 外键约束
     FOREIGN KEY (tenant_id) REFERENCES saas_tenants(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统指标表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='System Metrics Table';
 
 -- 健康检查表
 CREATE TABLE saas_health_checks (
@@ -1013,7 +1004,7 @@ CREATE TABLE saas_health_checks (
     
     -- 外键约束
     FOREIGN KEY (tenant_id) REFERENCES saas_tenants(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='健康检查表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Health Checks Table';
 
 -- =====================================================
 -- 5. 通知消息层
@@ -1061,7 +1052,7 @@ CREATE TABLE saas_message_templates (
     -- 外键约束
     FOREIGN KEY (tenant_id) REFERENCES saas_tenants(id) ON DELETE CASCADE,
     FOREIGN KEY (created_by) REFERENCES saas_users(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='消息模板表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Message Templates Table';
 
 -- 站内通知表
 CREATE TABLE saas_notifications (
@@ -1110,7 +1101,7 @@ CREATE TABLE saas_notifications (
     -- 外键约束
     FOREIGN KEY (tenant_id) REFERENCES saas_tenants(id) ON DELETE CASCADE,
     FOREIGN KEY (created_by) REFERENCES saas_users(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='站内通知表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Internal Notifications Table';
 
 -- 消息发送记录表
 CREATE TABLE saas_message_logs (
@@ -1163,7 +1154,7 @@ CREATE TABLE saas_message_logs (
     FOREIGN KEY (tenant_id) REFERENCES saas_tenants(id) ON DELETE CASCADE,
     FOREIGN KEY (template_id) REFERENCES saas_message_templates(id) ON DELETE SET NULL,
     FOREIGN KEY (notification_id) REFERENCES saas_notifications(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='消息发送记录表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Message Sending Records Table';
 
 -- =====================================================
 -- 6. 文件存储层
@@ -1226,7 +1217,7 @@ CREATE TABLE saas_files (
     -- 外键约束
     FOREIGN KEY (tenant_id) REFERENCES saas_tenants(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES saas_users(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文件存储表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='File Storage Table';
 
 -- 文件分享表
 CREATE TABLE saas_file_shares (
@@ -1274,7 +1265,7 @@ CREATE TABLE saas_file_shares (
     FOREIGN KEY (tenant_id) REFERENCES saas_tenants(id) ON DELETE CASCADE,
     FOREIGN KEY (file_id) REFERENCES saas_files(id) ON DELETE CASCADE,
     FOREIGN KEY (created_by) REFERENCES saas_users(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文件分享表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='File Sharing Table';
 
 -- =====================================================
 -- 7. 创建视图

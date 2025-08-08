@@ -18,6 +18,9 @@ declare global {
     readonly VITE_BUILD_TIME: string
     readonly VITE_USE_CDN: string
     readonly VITE_BUILD_ENV: string
+    readonly VITE_BYPASS_AUTH?: string
+    readonly VITE_DEV_TOKEN?: string
+    readonly VITE_DEV_TENANT_ID?: string
   }
 
   interface ImportMeta {

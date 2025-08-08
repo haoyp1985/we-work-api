@@ -71,7 +71,7 @@ setupErrorHandler(app);
 
 // 配置性能监控
 if (import.meta.env.VITE_USE_PERFORMANCE_MONITOR === "true") {
-  setupPerformanceMonitor();
+  setupPerformanceMonitor(app);
 }
 
 // 全局配置
@@ -101,6 +101,21 @@ if (import.meta.env.DEV) {
 
 // 挂载应用
 app.mount("#app");
+
+// 强制显示应用并隐藏启动遮罩（避免某些环境下 window.onload 未触发导致 #app 透明）
+(() => {
+  try {
+    const appEl = document.getElementById('app');
+    const loadingEl = document.getElementById('loading');
+    if (appEl) {
+      appEl.classList.add('loaded');
+    }
+    if (loadingEl) {
+      loadingEl.style.opacity = '0';
+      loadingEl.style.display = 'none';
+    }
+  } catch {}
+})();
 
 // 导出应用实例（用于测试）
 export default app;

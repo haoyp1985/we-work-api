@@ -19,12 +19,13 @@ spring:
         file-extension: yml
         refresh-enabled: true
         shared-configs:
-          - data-id: data-config-${spring.profiles.active}.yml
-            group: ${NACOS_GROUP:DEFAULT_GROUP}
-            refresh: true
           - data-id: basic-config-${spring.profiles.active}.yml
             group: ${NACOS_GROUP:DEFAULT_GROUP}
             refresh: true
+          # 暂时移除data-config以避免Redis端口冲突
+          # - data-id: data-config-${spring.profiles.active}.yml
+          #   group: ${NACOS_GROUP:DEFAULT_GROUP}
+          #   refresh: true
 
 # Management
 management:

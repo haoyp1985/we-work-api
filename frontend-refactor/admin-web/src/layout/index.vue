@@ -1,17 +1,13 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { storeToRefs } from "pinia";
 import { useAppStore } from "@/stores/modules/app";
 import AppHeader from "./components/AppHeader.vue";
 import AppSidebar from "./components/AppSidebar.vue";
 
 const appStore = useAppStore();
-const { sidebarOpened } = storeToRefs(appStore);
 
-// 侧边栏宽度
-const sidebarWidth = computed(() => {
-  return sidebarOpened.value ? "250px" : "64px";
-});
+// 侧边栏宽度（统一从 appStore 计算值拼接 px）
+const sidebarWidth = computed(() => `${appStore.sidebarWidth}px`);
 </script>
 
 <template>

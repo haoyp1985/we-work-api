@@ -11,6 +11,9 @@ import NProgress from "nprogress";
 // 白名单路由，不需要登录即可访问
 const whiteList = ["/login", "/register", "/404", "/403", "/500"];
 
+// 开发开关：是否跳过前端认证与权限校验
+const BYPASS_AUTH = import.meta.env.VITE_BYPASS_AUTH === "true";
+
 /**
  * 设置路由守卫
  * @param router Vue Router实例
@@ -26,6 +29,12 @@ export function setupRouterGuard(router: Router): void {
       document.title = `${to.meta.title} - WeWork Management Platform`;
     } else {
       document.title = "WeWork Management Platform";
+    }
+
+    // 开发模式：跳过认证与权限，直接放行
+    if (BYPASS_AUTH) {
+      next();
+      return;
     }
 
     const userStore = useUserStore();
@@ -102,6 +111,10 @@ export function setupRouterGuard(router: Router): void {
  * @returns 是否有权限访问
  */
 async function checkPermission(to: any, userStore: any): Promise<boolean> {
+  // 开发模式：直接放行
+  if (BYPASS_AUTH) {
+    return true;
+  }
   // 如果路由不需要权限验证
   if (!to.meta?.requiresAuth) {
     return true;

@@ -59,12 +59,6 @@ public interface PermissionRepository extends BaseMapper<Permission> {
      * 
      * @return 权限树列表
      */
-                FROM permissions p
-            INNER JOIN permission_tree pt ON p.parent_id = pt.id
-            WHERE p.deleted_at IS NULL
-        )
-        SELECT * FROM permission_tree ORDER BY tree_path, sort_order
-        """)
     List<Permission> findPermissionTree();
 
     /**

@@ -48,9 +48,6 @@ public interface RolePermissionRepository extends BaseMapper<RolePermission> {
      * @param permissionIds 权限ID列表
      * @param operatorId 操作人ID
      */
-            </foreach>
-        </script>
-        """)
     void batchInsertRolePermissions(@Param("roleId") String roleId, 
                                    @Param("permissionIds") List<String> permissionIds, 
                                    @Param("operatorId") String operatorId);

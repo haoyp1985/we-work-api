@@ -57,10 +57,10 @@
             AND account_id = #{accountId}
         </if>
         <if test="startTime != null">
-            AND UNIX_TIMESTAMP(created_at) >= #{startTime}
+            AND UNIX_TIMESTAMP(created_at) &gt;= #{startTime}
         </if>
         <if test="endTime != null">
-            AND UNIX_TIMESTAMP(created_at) <= #{endTime}
+            AND UNIX_TIMESTAMP(created_at) &lt;= #{endTime}
         </if>
     </select>
 
@@ -82,10 +82,10 @@
             AND account_id = #{accountId}
         </if>
         <if test="startTime != null">
-            AND UNIX_TIMESTAMP(created_at) >= #{startTime}
+            AND UNIX_TIMESTAMP(created_at) &gt;= #{startTime}
         </if>
         <if test="endTime != null">
-            AND UNIX_TIMESTAMP(created_at) <= #{endTime}
+            AND UNIX_TIMESTAMP(created_at) &lt;= #{endTime}
         </if>
         GROUP BY timePoint, to_status 
         ORDER BY timestamp ASC

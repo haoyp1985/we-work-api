@@ -1,3 +1,49 @@
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      routes:
+        - id: user-auth
+          uri: lb://user-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=1
+        - id: account-service
+          uri: lb://account-service
+          predicates:
+            - Path=/api/v1/accounts/**
+          filters:
+            - StripPrefix=2
+        - id: message-service
+          uri: lb://message-service
+          predicates:
+            - Path=/api/v1/messages/**
+          filters:
+            - StripPrefix=2
+        - id: monitor-service
+          uri: lb://monitor-service
+          predicates:
+            - Path=/api/v1/monitor/**
+          filters:
+            - StripPrefix=2
+        - id: task-service
+          uri: lb://task-service
+          predicates:
+            - Path=/api/v1/tasks/**
+          filters:
+            - StripPrefix=2
+        - id: ai-agent-service
+          uri: lb://ai-agent-service
+          predicates:
+            - Path=/api/v1/agents/**
+          filters:
+            - StripPrefix=2
+server:
+  port: ${SERVER_PORT:18080}
+
+# 共享配置导入由Nacos管理
 # =================================================================
 # WeWork Platform - 网关服务配置 (开发环境)
 # Data ID: gateway-service-dev.yml
@@ -51,9 +97,9 @@ spring:
           filters:
             - StripPrefix=1
             
-        # 认证服务路由 (指向账号管理服务)
+        # 认证服务路由 (指向用户管理服务)
         - id: auth-service
-          uri: lb://account-service
+          uri: lb://user-service
           predicates:
             - Path=/api/auth/**
           filters:

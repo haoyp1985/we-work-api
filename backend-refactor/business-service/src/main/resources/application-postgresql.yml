@@ -1,0 +1,62 @@
+# business-service PostgreSQL数据库配置
+spring:
+  # PostgreSQL数据源配置
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:25432/core_business?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: wework
+    password: wework123456
+    hikari:
+      pool-name: BusinessServiceHikariPool
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1
+      leak-detection-threshold: 60000
+
+  # Redis配置
+  redis:
+    host: localhost
+    port: 26379
+    database: 6
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+
+# MyBatis Plus配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+    lazy-loading-enabled: true
+    auto-mapping-behavior: partial
+    # PostgreSQL特定配置
+    jdbc-type-for-null: null
+    call-setters-on-nulls: true
+  global-config:
+    db-config:
+      id-type: assign_uuid
+      logic-delete-field: deleted_at
+      logic-delete-value: now()
+      logic-not-delete-value: null
+      # PostgreSQL特定配置
+      key-generator: com.baomidou.mybatisplus.extension.incrementer.PostgreKeyGenerator
+  mapper-locations: classpath*:/mapper/**/*.xml
+
+# JPA配置（如果使用JPA）
+spring:
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true

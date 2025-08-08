@@ -2,16 +2,67 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.wework.platform.user.repository.RoleRepository">
 
-    <!-- countByRoleCode -->
+    <!-- 根据角色代码统计数量 -->
     <select id="countByRoleCode" resultType="long">
-        """
-        SELECT COUNT(*
+        SELECT COUNT(*) FROM saas_roles 
+        WHERE role_code = #{roleCode} 
+        AND tenant_id = #{tenantId} 
+        AND deleted_at IS NULL
+        <if test="excludeRoleId != null">
+            AND id != #{excludeRoleId}
+        </if>
     </select>
 
-    <!-- countRoleUsers -->
+    <!-- 统计角色关联的用户数量 -->
     <select id="countRoleUsers" resultType="long">
-        """
-        SELECT COUNT(*
+        SELECT COUNT(*) FROM saas_user_roles 
+        WHERE role_id = #{roleId} 
+        AND deleted_at IS NULL
     </select>
+
+    <!-- 根据角色代码查询角色 -->
+    <select id="findByRoleCode" resultType="com.wework.platform.user.entity.Role">
+        SELECT * FROM saas_roles 
+        WHERE role_code = #{roleCode} 
+        AND tenant_id = #{tenantId} 
+        AND deleted_at IS NULL
+    </select>
+
+    <!-- 根据租户ID查询角色列表 -->
+    <select id="findByTenantId" resultType="com.wework.platform.user.entity.Role">
+        SELECT * FROM saas_roles 
+        WHERE tenant_id = #{tenantId} 
+        AND deleted_at IS NULL
+        ORDER BY sort_order ASC, created_at DESC
+    </select>
+
+    <!-- 根据角色ID查询角色权限 -->
+    <select id="findRolePermissions" resultType="string">
+        SELECT p.permission_code FROM saas_permissions p
+        INNER JOIN saas_role_permissions rp ON p.id = rp.permission_id
+        WHERE rp.role_id = #{roleId} 
+        AND p.deleted_at IS NULL 
+        AND rp.deleted_at IS NULL
+        ORDER BY p.sort_order ASC
+    </select>
+
+    <!-- 批量插入角色权限关联 -->
+    <insert id="batchInsertRolePermissions" parameterType="java.util.List">
+        INSERT INTO saas_role_permissions (id, role_id, permission_id, created_at, updated_at, created_by, updated_by)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id}, #{item.roleId}, #{item.permissionId}, 
+             #{item.createdAt}, #{item.updatedAt}, #{item.createdBy}, #{item.updatedBy})
+        </foreach>
+        ON CONFLICT (role_id, permission_id) DO UPDATE SET
+        updated_at = EXCLUDED.updated_at,
+        updated_by = EXCLUDED.updated_by
+    </insert>
+
+    <!-- 删除角色权限关联 -->
+    <delete id="deleteRolePermissions">
+        DELETE FROM saas_role_permissions 
+        WHERE role_id = #{roleId}
+    </delete>
 
 </mapper>

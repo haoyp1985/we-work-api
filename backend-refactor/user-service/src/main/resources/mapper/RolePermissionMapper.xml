@@ -2,35 +2,61 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.wework.platform.user.repository.RolePermissionRepository">
 
-    <!-- countByRoleIdAndPermissionId -->
+    <!-- 根据角色ID和权限ID统计数量 -->
     <select id="countByRoleIdAndPermissionId" resultType="long">
-        "SELECT COUNT(*
+        SELECT COUNT(*) FROM saas_role_permissions 
+        WHERE role_id = #{roleId} 
+        AND permission_id = #{permissionId} 
+        AND deleted_at IS NULL
     </select>
 
-    <!-- UUID -->
-    <insert id="UUID">
-        """
-        &lt;script&gt;
-        INSERT INTO role_permissions (id, role_id, permission_id, created_at, updated_at, created_by, updated_by
+    <!-- 批量插入角色权限关联 -->
+    <insert id="batchInsertRolePermissions" parameterType="java.util.List">
+        INSERT INTO saas_role_permissions (id, role_id, permission_id, created_at, updated_at, created_by, updated_by)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id}, #{item.roleId}, #{item.permissionId}, 
+             #{item.createdAt}, #{item.updatedAt}, #{item.createdBy}, #{item.updatedBy})
+        </foreach>
+        ON CONFLICT (role_id, permission_id) DO UPDATE SET
+        updated_at = EXCLUDED.updated_at,
+        updated_by = EXCLUDED.updated_by
     </insert>
 
-    <!-- deleteByRoleId -->
-    <delete id="deleteByRoleId">
-        """
-        UPDATE role_permissions SET deleted_at = NOW(
-    </delete>
+    <!-- 根据角色ID删除权限关联 -->
+    <update id="deleteByRoleId">
+        UPDATE saas_role_permissions 
+        SET deleted_at = NOW(), updated_at = NOW(), updated_by = #{operatorId}
+        WHERE role_id = #{roleId}
+    </update>
 
-    <!-- deleteByPermissionId -->
-    <delete id="deleteByPermissionId">
-        """
-        UPDATE role_permissions SET deleted_at = NOW(
-    </delete>
+    <!-- 根据权限ID删除角色关联 -->
+    <update id="deleteByPermissionId">
+        UPDATE saas_role_permissions 
+        SET deleted_at = NOW(), updated_at = NOW(), updated_by = #{operatorId}
+        WHERE permission_id = #{permissionId}
+    </update>
 
-    <!-- size -->
-    <delete id="size">
-        """
-        &lt;script&gt;
-        UPDATE role_permissions SET deleted_at = NOW(
-    </delete>
+    <!-- 根据角色ID查询权限列表 -->
+    <select id="findByRoleId" resultType="com.wework.platform.user.entity.RolePermission">
+        SELECT * FROM saas_role_permissions 
+        WHERE role_id = #{roleId} 
+        AND deleted_at IS NULL
+    </select>
+
+    <!-- 根据权限ID查询角色列表 -->
+    <select id="findByPermissionId" resultType="com.wework.platform.user.entity.RolePermission">
+        SELECT * FROM saas_role_permissions 
+        WHERE permission_id = #{permissionId} 
+        AND deleted_at IS NULL
+    </select>
+
+    <!-- 检查角色是否有指定权限 -->
+    <select id="hasPermission" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM saas_role_permissions 
+        WHERE role_id = #{roleId} 
+        AND permission_id = #{permissionId} 
+        AND deleted_at IS NULL
+    </select>
 
 </mapper>

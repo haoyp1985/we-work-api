@@ -47,9 +47,6 @@ public interface UserRoleRepository extends BaseMapper<UserRole> {
      * @param userId 用户ID
      * @param roleIds 角色ID列表
      */
-            </foreach>
-        </script>
-        """)
     void batchInsertUserRoles(@Param("userId") String userId, 
                              @Param("roleIds") List<String> roleIds, 
                              @Param("operatorId") String operatorId);

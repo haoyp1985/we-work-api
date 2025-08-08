@@ -44,8 +44,8 @@ if ! nc -z localhost 3306; then
 fi
 
 # 检查Redis连接
-if ! nc -z localhost 6379; then
-    echo "❌ Redis连接失败 (localhost:6379)"
+if ! nc -z localhost 26379; then
+    echo "❌ Redis连接失败 (localhost:26379)"
     exit 1
 fi
 

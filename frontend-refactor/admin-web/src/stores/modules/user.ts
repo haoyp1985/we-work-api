@@ -18,6 +18,7 @@ import router from '@/router'
 import * as ApiTypes from '@/types/api'
 
 export const useUserStore = defineStore('user', () => {
+  const BYPASS_AUTH = import.meta.env.VITE_BYPASS_AUTH === 'true'
   // ===== State =====
   const userInfo = ref<ApiTypes.UserInfo>({
     id: '',
@@ -47,10 +48,10 @@ export const useUserStore = defineStore('user', () => {
     userInfo.value.roles.map((role) => role.code),
   )
 
-  const isAdmin = computed(
-    () =>
-      roleCodes.value.includes('SUPER_ADMIN') ||
-      roleCodes.value.includes('TENANT_ADMIN'),
+  const isAdmin = computed(() =>
+    BYPASS_AUTH ||
+    roleCodes.value.includes('SUPER_ADMIN') ||
+    roleCodes.value.includes('TENANT_ADMIN'),
   )
 
   // 删除了单独的menuPermissions和buttonPermissions计算属性
@@ -65,6 +66,42 @@ export const useUserStore = defineStore('user', () => {
     loginForm: ApiTypes.LoginRequest,
   ): Promise<ApiTypes.LoginResponse> => {
     try {
+      if (BYPASS_AUTH) {
+        // 构造一个本地假的登录结果
+        const fake: ApiTypes.LoginResponse = {
+          token: 'dev-token',
+          refreshToken: 'dev-refresh',
+          expiresIn: 7200,
+          userInfo: {
+            id: 'dev-user',
+            username: loginForm.username || 'dev',
+            realName: 'Developer',
+            email: 'dev@example.com',
+            phone: '',
+            avatar: '',
+            status: ApiTypes.UserStatus.ACTIVE,
+            roles: [
+              { id: 'r-super', code: 'SUPER_ADMIN', name: '超级管理员' } as any,
+              { id: 'r-tenant', code: 'TENANT_ADMIN', name: '租户管理员' } as any,
+            ],
+            permissions: ['*:*'],
+            tenantId: import.meta.env.VITE_DEV_TENANT_ID || 'tenant-dev',
+            organizationId: '',
+            createdAt: '',
+            updatedAt: '',
+            lastLoginAt: '',
+          },
+        }
+        token.value = fake.token
+        refreshTokenValue.value = fake.refreshToken
+        setToken(fake.token)
+        setRefreshToken(fake.refreshToken)
+        userInfo.value = fake.userInfo
+        setUserInfoCache(fake.userInfo)
+        isLoggedIn.value = true
+        return fake
+      }
+
       const response = await authApi.login(loginForm)
       const data = response.data
 
@@ -91,6 +128,9 @@ export const useUserStore = defineStore('user', () => {
    */
   const getUserInfo = async (): Promise<ApiTypes.UserInfo> => {
     try {
+      if (BYPASS_AUTH) {
+        return userInfo.value
+      }
       const response = await authApi.getCurrentUser()
       const userData = response.data
 
@@ -196,8 +236,8 @@ export const useUserStore = defineStore('user', () => {
    * 检查是否有指定权限
    */
   const hasPermission = (permissionCode: string): boolean => {
-    // 超级管理员拥有所有权限
-    if (isAdmin.value) {
+    // 开发模式或超级管理员拥有所有权限
+    if (BYPASS_AUTH || isAdmin.value) {
       return true
     }
 
@@ -208,6 +248,7 @@ export const useUserStore = defineStore('user', () => {
    * 检查是否有指定角色
    */
   const hasRole = (roleCode: string): boolean => {
+    if (BYPASS_AUTH) return true
     return roleCodes.value.includes(roleCode)
   }
 
@@ -215,7 +256,7 @@ export const useUserStore = defineStore('user', () => {
    * 检查是否有任一权限
    */
   const hasAnyPermission = (permissionCodeList: string[]): boolean => {
-    if (isAdmin.value) {
+    if (BYPASS_AUTH || isAdmin.value) {
       return true
     }
 
@@ -228,6 +269,7 @@ export const useUserStore = defineStore('user', () => {
    * 检查是否有任一角色
    */
   const hasAnyRole = (roleCodeList: string[]): boolean => {
+    if (BYPASS_AUTH) return true
     return roleCodeList.some((code) => roleCodes.value.includes(code))
   }
 

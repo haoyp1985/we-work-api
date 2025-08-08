@@ -105,6 +105,15 @@ const notifications = ref([
   },
 ]);
 
+// 将通知类型映射为 Element Plus 支持的 Tag 类型
+const mapTagType = (type: string): "primary" | "success" | "info" | "warning" | "danger" => {
+  if (type === "error") return "danger";
+  if (["primary", "success", "info", "warning", "danger"].includes(type)) {
+    return type as any;
+  }
+  return "info";
+};
+
   // 图表数据
   const _chartData = ref({
     userGrowth: [
@@ -352,7 +361,7 @@ onMounted(() => {
             >
               <div class="notification-header">
                 <span class="notification-title">{{ notification.title }}</span>
-                <el-tag :type="notification.type" size="small">
+                <el-tag :type="mapTagType(notification.type)" size="small">
                   {{ notification.type }}
                 </el-tag>
               </div>

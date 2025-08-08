@@ -25,6 +25,38 @@ services:
     networks:
       - wework-network
 
+  # PostgreSQL 15 数据库
+  postgresql:
+    image: postgres:15-alpine
+    container_name: wework-postgresql
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    environment:
+      POSTGRES_DB: wework_platform
+      POSTGRES_USER: wework
+      POSTGRES_PASSWORD: wework123456
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "25432:5432"
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+      - ./database/init/postgresql:/docker-entrypoint-initdb.d
+      - ./database/conf/postgresql.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    networks:
+      - wework-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wework -d wework_platform"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
   # Redis 7.0 缓存和消息队列
   redis:
     image: redis:7.0-alpine
@@ -598,6 +630,7 @@ services:
 
 volumes:
   mysql_data:
+  postgresql_data:
   redis_data:
   rocketmq_nameserver_logs:
   rocketmq_nameserver_store:
@@ -614,7 +647,3 @@ volumes:
 networks:
   wework-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.25.0.0/16
-          gateway: 172.25.0.1

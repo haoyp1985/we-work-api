@@ -27,7 +27,7 @@ spring:
       pool-prepared-statements: true
       max-pool-prepared-statement-per-connection-size: 20
 
-  # Redis配置  
+  # Redis配置 (Spring Data Redis)
   data:
     redis:
       host: localhost
@@ -40,6 +40,19 @@ spring:
           max-idle: 8
           min-idle: 0
           max-wait: -1ms
+  
+  # Redis配置 (兼容标准格式)
+  redis:
+    host: localhost
+    port: 26379
+    database: 0
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
 
   # 缓存配置
   cache:

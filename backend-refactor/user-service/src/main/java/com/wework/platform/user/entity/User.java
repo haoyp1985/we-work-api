@@ -13,7 +13,7 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("users")
+@TableName("saas_users")
 public class User extends BaseEntity {
 
     /**
@@ -106,10 +106,5 @@ public class User extends BaseEntity {
     @TableField("locked_until")
     private Long lockedUntil;
 
-    /**
-     * 是否删除（软删除）
-     */
-    @TableLogic
-    @TableField("deleted")
-    private Boolean deleted;
+    // 软删除统一由 BaseEntity.deletedAt 管理
 }

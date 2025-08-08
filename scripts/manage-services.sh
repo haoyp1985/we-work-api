@@ -150,6 +150,12 @@ start_service() {
         start_single_service "account"  
         sleep 5
         start_single_service "message"
+        sleep 5
+        start_single_service "monitor"
+        sleep 5
+        start_single_service "user"
+        sleep 5
+        start_single_service "task"
     else
         start_single_service "$service"
     fi

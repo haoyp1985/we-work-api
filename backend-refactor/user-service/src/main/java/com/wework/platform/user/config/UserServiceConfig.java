@@ -13,7 +13,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * @since 2.0.0
  */
 @Configuration
-@MapperScan("com.wework.platform.user.repository")
 public class UserServiceConfig {
     
     /**

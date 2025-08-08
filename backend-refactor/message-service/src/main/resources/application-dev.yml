@@ -1,0 +1,38 @@
+# message-service 开发环境配置
+spring:
+  # Redis配置 - 覆盖Nacos配置
+  redis:
+    host: localhost
+    port: 26379
+    database: 0
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+  
+  # 数据源配置 - 覆盖Nacos配置  
+  datasource:
+    url: jdbc:mysql://localhost:23306/wework_platform?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: wework
+    password: wework123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # Redisson配置（如果使用Redisson）
+  redisson:
+    config: |
+      singleServerConfig:
+        address: "redis://localhost:26379"
+        database: 0
+        connectionPoolSize: 64
+        connectionMinimumIdleSize: 10
+        timeout: 3000
+
+# 日志配置
+logging:
+  level:
+    com.wework.platform.message: debug
+    org.springframework.data.redis: debug
+    org.redisson: debug

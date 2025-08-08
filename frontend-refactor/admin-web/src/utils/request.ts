@@ -44,10 +44,17 @@ class HttpClient {
   private instance: AxiosInstance
   private baseURL: string
   private timeout: number
+  private bypassAuth: boolean
+  private devToken: string
 
   constructor() {
     this.baseURL = import.meta.env.VITE_API_BASE_URL || '/api'
     this.timeout = 30000
+    this.bypassAuth = import.meta.env.VITE_BYPASS_AUTH === 'true'
+    // 临时令牌（仅用于跳过认证时本地调试）
+    this.devToken =
+      import.meta.env.VITE_DEV_TOKEN ||
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkZXYtdXNlciIsInVzZXJuYW1lIjoiZGV2IiwidGVuYW50SWQiOiJ0ZW5hbnQtZGV2Iiwicm9sZXMiOltdLCJwZXJtaXNzaW9ucyI6W10sImV4cCI6MTk5OTk5OTk5OX0.h4TjH1o7U0w9w2wYp8d2cQhO0RrZ3U83g1e7J9J0ABc'
 
     this.instance = axios.create({
       baseURL: this.baseURL,
@@ -71,15 +78,23 @@ class HttpClient {
 
         // 添加认证 token
         if (!customConfig.skipAuth) {
-          const token = getToken()
-          if (token) {
-            config.headers.Authorization = `Bearer ${token}`
+          if (this.bypassAuth) {
+            // 跳过认证时，强制注入临时token
+            config.headers.Authorization = `Bearer ${this.devToken}`
+          } else {
+            const token = getToken()
+            if (token) {
+              config.headers.Authorization = `Bearer ${token}`
+            }
           }
         }
 
         // 添加租户信息
         const userStore = useUserStore()
-        if (userStore.userInfo?.tenantId) {
+        if (this.bypassAuth) {
+          // 跳过认证时，给定一个固定的开发租户ID
+          config.headers['X-Tenant-Id'] = import.meta.env.VITE_DEV_TENANT_ID || 'tenant-dev'
+        } else if (userStore.userInfo?.tenantId) {
           config.headers['X-Tenant-Id'] = userStore.userInfo.tenantId
         }
 
@@ -109,7 +124,7 @@ class HttpClient {
 
     // 响应拦截器
     this.instance.interceptors.response.use(
-      (response: AxiosResponse<ApiResult>) => {
+      (response: AxiosResponse<ApiResult>): any => {
         const config = response.config as InternalAxiosRequestConfig & RequestConfig
         const { data } = response
 
@@ -130,21 +145,28 @@ class HttpClient {
           // 特殊错误码处理
           switch (data.code) {
             case 401:
+              if (this.bypassAuth) {
+                // 开发模式直接吞掉401，返回一个成功的空数据
+                console.warn('[BYPASS_AUTH] 忽略401: ', errorMessage)
+                const patched = { ...data, success: true, code: 200 } as ApiResult
+                return patched
+              }
               this.handleUnauthorized(errorMessage).catch(() => {})
-              break
+              throw new Error(errorMessage)
             case 403:
               this.handleForbidden(errorMessage)
-              break
+              throw new Error(errorMessage)
             case 500:
               this.handleServerError(errorMessage)
-              break
+              throw new Error(errorMessage)
             default:
               if (!config.skipErrorHandler) {
                 ElMessage.error(errorMessage)
               }
+              throw new Error(errorMessage)
           }
 
-          return Promise.reject(new Error(errorMessage))
+          // 理论上已 return/throw，不会到达这里
         }
 
         return data

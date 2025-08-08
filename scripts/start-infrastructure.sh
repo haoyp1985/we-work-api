@@ -41,7 +41,7 @@ docker compose -p $PROJECT_NAME pull
 
 # 启动核心数据库服务
 echo "🗄️  启动数据库服务..."
-docker compose -p $PROJECT_NAME up -d mysql redis influxdb
+docker compose -p $PROJECT_NAME up -d mysql postgresql redis influxdb
 
 # 等待数据库启动
 echo "⏳ 等待数据库启动..."
@@ -83,6 +83,7 @@ echo "🎉 基础设施启动完成！"
 echo ""
 echo "📋 服务访问地址："
 echo "   MySQL:        localhost:23306 (用户: wework, 密码: wework123456)"
+echo "   PostgreSQL:   localhost:25432 (用户: wework, 密码: wework123456)"
 echo "   Redis:        localhost:26379"
 echo "   RocketMQ:     http://localhost:29877 (RocketMQ控制台)"
 echo "   InfluxDB:     http://localhost:28086 (用户: admin, 密码: wework123456)"

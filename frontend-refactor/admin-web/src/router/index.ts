@@ -234,6 +234,36 @@ const staticRoutes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: "/monitoring",
+    component: () => import("@/layout/index.vue"),
+    meta: {
+      title: "监控大屏",
+      icon: "monitor",
+      order: 4,
+      requiresAuth: true,
+    },
+    children: [
+      {
+        path: "dashboard",
+        name: "MonitoringDashboard",
+        component: () => import("@/views/monitoring/MonitoringDashboard.vue"),
+        meta: {
+          title: "监控大屏",
+          permissions: ["monitor:read"],
+        },
+      },
+      {
+        path: "alerts",
+        name: "MonitoringAlertCenter",
+        component: () => import("@/views/monitoring/AlertCenter.vue"),
+        meta: {
+          title: "告警中心",
+          permissions: ["monitor:read"],
+        },
+      },
+    ],
+  },
+  {
     path: "/conversation",
     component: () => import("@/layout/index.vue"),
     meta: {

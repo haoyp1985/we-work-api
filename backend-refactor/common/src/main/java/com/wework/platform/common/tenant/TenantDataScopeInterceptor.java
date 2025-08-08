@@ -33,7 +33,7 @@ public class TenantDataScopeInterceptor implements Interceptor {
      * 需要进行租户隔离的表名模式
      */
     private static final Pattern TENANT_TABLE_PATTERN = Pattern.compile(
-        ".*(wework_accounts|account_status_history|account_alerts|tenant_usage|account_monitor_rules).*",
+        ".*(saas_users|saas_roles|saas_permissions|saas_role_permissions|saas_user_roles|wework_accounts|account_status_history|account_alerts|tenant_usage|account_monitor_rules).*",
         Pattern.CASE_INSENSITIVE
     );
 
@@ -119,20 +119,23 @@ public class TenantDataScopeInterceptor implements Interceptor {
         
         // 跳过系统表查询
         if (SKIP_TENANT_SQL_PATTERN.matcher(lowerCaseSql).find()) {
+            log.debug("跳过系统表查询: {}", sql);
             return false;
         }
 
         // 检查是否包含需要租户隔离的表
         if (!TENANT_TABLE_PATTERN.matcher(lowerCaseSql).find()) {
+            log.debug("不需要租户隔离的表: {}", sql);
             return false;
         }
 
         // 检查是否已经包含tenant_id条件
         if (lowerCaseSql.contains("tenant_id")) {
-            log.debug("SQL已包含tenant_id条件，跳过自动添加");
+            log.debug("SQL已包含tenant_id条件，跳过自动添加: {}", sql);
             return false;
         }
 
+        log.debug("需要添加租户过滤条件: {}", sql);
         return true;
     }
 
@@ -165,30 +168,39 @@ public class TenantDataScopeInterceptor implements Interceptor {
      * 为SELECT语句添加租户过滤条件
      */
     private String addTenantFilterToSelect(String sql, String tenantId) {
-        // 简单的WHERE条件添加逻辑
-        if (sql.toLowerCase().contains(" where ")) {
+        String lowerCaseSql = sql.toLowerCase();
+        
+        // 处理子查询
+        if (lowerCaseSql.contains("(select")) {
+            log.debug("SQL包含子查询，跳过租户过滤");
+            return sql;
+        }
+        
+        // 找到FROM子句后的位置
+        int fromIndex = lowerCaseSql.indexOf(" from ");
+        if (fromIndex == -1) {
+            return sql;
+        }
+        
+        // 查找GROUP BY, ORDER BY, LIMIT等子句
+        String[] endClauses = {" group by ", " order by ", " limit ", " having "};
+        int insertIndex = sql.length();
+        
+        for (String clause : endClauses) {
+            int clauseIndex = lowerCaseSql.indexOf(clause);
+            if (clauseIndex != -1 && clauseIndex < insertIndex) {
+                insertIndex = clauseIndex;
+            }
+        }
+        
+        // 检查是否已有WHERE子句
+        int whereIndex = lowerCaseSql.indexOf(" where ");
+        if (whereIndex != -1 && whereIndex < insertIndex) {
             // 已有WHERE条件，添加AND
-            return sql + " AND tenant_id = '" + tenantId + "'";
+            return sql.substring(0, whereIndex + 7) + "tenant_id = '" + tenantId + "'::uuid AND " + sql.substring(whereIndex + 7, insertIndex) + sql.substring(insertIndex);
         } else {
             // 没有WHERE条件，添加WHERE
-            // 找到FROM子句后的位置
-            int fromIndex = sql.toLowerCase().indexOf(" from ");
-            if (fromIndex == -1) {
-                return sql;
-            }
-            
-            // 查找GROUP BY, ORDER BY, LIMIT等子句
-            String[] endClauses = {" group by ", " order by ", " limit ", " having "};
-            int insertIndex = sql.length();
-            
-            for (String clause : endClauses) {
-                int clauseIndex = sql.toLowerCase().indexOf(clause);
-                if (clauseIndex != -1 && clauseIndex < insertIndex) {
-                    insertIndex = clauseIndex;
-                }
-            }
-            
-            return sql.substring(0, insertIndex) + " WHERE tenant_id = '" + tenantId + "'" + sql.substring(insertIndex);
+            return sql.substring(0, insertIndex) + " WHERE tenant_id = '" + tenantId + "'::uuid" + sql.substring(insertIndex);
         }
     }
 
@@ -197,9 +209,9 @@ public class TenantDataScopeInterceptor implements Interceptor {
      */
     private String addTenantFilterToUpdate(String sql, String tenantId) {
         if (sql.toLowerCase().contains(" where ")) {
-            return sql + " AND tenant_id = '" + tenantId + "'";
+            return sql + " AND tenant_id = '" + tenantId + "'::uuid";
         } else {
-            return sql + " WHERE tenant_id = '" + tenantId + "'";
+            return sql + " WHERE tenant_id = '" + tenantId + "'::uuid";
         }
     }
 
@@ -208,9 +220,9 @@ public class TenantDataScopeInterceptor implements Interceptor {
      */
     private String addTenantFilterToDelete(String sql, String tenantId) {
         if (sql.toLowerCase().contains(" where ")) {
-            return sql + " AND tenant_id = '" + tenantId + "'";
+            return sql + " AND tenant_id = '" + tenantId + "'::uuid";
         } else {
-            return sql + " WHERE tenant_id = '" + tenantId + "'";
+            return sql + " WHERE tenant_id = '" + tenantId + "'::uuid";
         }
     }
 

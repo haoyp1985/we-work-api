@@ -2,36 +2,106 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.wework.platform.user.repository.PermissionRepository">
 
-    <!-- findAll -->
+    <!-- 查询所有权限 -->
     <select id="findAll" resultType="com.wework.platform.user.entity.Permission">
-        SELECT * FROM permissions WHERE deleted_at IS NULL ORDER BY sort_order ASC, created_at DESC
+        SELECT * FROM saas_permissions 
+        WHERE deleted_at IS NULL 
+        ORDER BY sort_order ASC, created_at DESC
     </select>
 
-    <!-- findRootPermissions -->
+    <!-- 查询根权限 -->
     <select id="findRootPermissions" resultType="com.wework.platform.user.entity.Permission">
-        SELECT * FROM permissions WHERE parent_id IS NULL AND deleted_at IS NULL ORDER BY sort_order ASC
+        SELECT * FROM saas_permissions 
+        WHERE parent_id IS NULL AND deleted_at IS NULL 
+        ORDER BY sort_order ASC
     </select>
 
-    <!-- CONCAT -->
-    <select id="CONCAT" resultType="com.wework.platform.user.entity.Permission">
-        """
+    <!-- 查询权限树 -->
+    <select id="findPermissionTree" resultType="com.wework.platform.user.entity.Permission">
         WITH RECURSIVE permission_tree AS (
-        -- 根节点
-        SELECT id, permission_code, permission_name, permission_type, parent_id,
-        path, component, icon, sort_order, created_at, updated_at,
-        0 as level, CAST(permission_code AS CHAR(1000
+            -- 根节点
+            SELECT id, permission_code, permission_name, permission_type, parent_id,
+                   path, component, icon, sort_order, created_at, updated_at,
+                   0 as level, CAST(permission_code AS VARCHAR(1000)) as path_code
+            FROM saas_permissions 
+            WHERE parent_id IS NULL AND deleted_at IS NULL
+            
+            UNION ALL
+            
+            -- 子节点
+            SELECT p.id, p.permission_code, p.permission_name, p.permission_type, p.parent_id,
+                   p.path, p.component, p.icon, p.sort_order, p.created_at, p.updated_at,
+                   pt.level + 1, CONCAT(pt.path_code, ':', p.permission_code)
+            FROM saas_permissions p
+            INNER JOIN permission_tree pt ON p.parent_id = pt.id
+            WHERE p.deleted_at IS NULL
+        )
+        SELECT * FROM permission_tree 
+        ORDER BY path_code, sort_order ASC
     </select>
 
-    <!-- countByPermissionCode -->
+    <!-- 根据权限代码统计数量 -->
     <select id="countByPermissionCode" resultType="long">
-        """
-        SELECT COUNT(*
+        SELECT COUNT(*) FROM saas_permissions 
+        WHERE permission_code = #{permissionCode} 
+        AND tenant_id = #{tenantId} 
+        AND deleted_at IS NULL
+        <if test="excludePermissionId != null">
+            AND id != #{excludePermissionId}
+        </if>
     </select>
 
-    <!-- countPermissionRoles -->
+    <!-- 统计权限关联的角色数量 -->
     <select id="countPermissionRoles" resultType="long">
-        """
-        SELECT COUNT(*
+        SELECT COUNT(*) FROM saas_role_permissions 
+        WHERE permission_id = #{permissionId} 
+        AND deleted_at IS NULL
     </select>
+
+    <!-- 根据角色ID查询权限 -->
+    <select id="findByRoleId" resultType="com.wework.platform.user.entity.Permission">
+        SELECT p.* FROM saas_permissions p
+        INNER JOIN saas_role_permissions rp ON p.id = rp.permission_id
+        WHERE rp.role_id = #{roleId} 
+        AND p.deleted_at IS NULL 
+        AND rp.deleted_at IS NULL
+        ORDER BY p.sort_order ASC
+    </select>
+
+    <!-- 根据租户ID查询权限 -->
+    <select id="findByTenantId" resultType="com.wework.platform.user.entity.Permission">
+        SELECT * FROM saas_permissions 
+        WHERE tenant_id = #{tenantId} 
+        AND deleted_at IS NULL
+        ORDER BY sort_order ASC, created_at DESC
+    </select>
+
+    <!-- 根据权限类型查询 -->
+    <select id="findByPermissionType" resultType="com.wework.platform.user.entity.Permission">
+        SELECT * FROM saas_permissions 
+        WHERE permission_type = #{permissionType} 
+        AND tenant_id = #{tenantId} 
+        AND deleted_at IS NULL
+        ORDER BY sort_order ASC
+    </select>
+
+    <!-- 批量插入角色权限关联 -->
+    <insert id="batchInsertRolePermissions" parameterType="java.util.List">
+        INSERT INTO saas_role_permissions (id, role_id, permission_id, created_at, updated_at, created_by, updated_by)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id}, #{item.roleId}, #{item.permissionId}, 
+             #{item.createdAt}, #{item.updatedAt}, #{item.createdBy}, #{item.updatedBy})
+        </foreach>
+        ON CONFLICT (role_id, permission_id) DO UPDATE SET
+        updated_at = EXCLUDED.updated_at,
+        updated_by = EXCLUDED.updated_by
+    </insert>
+
+    <!-- 删除角色权限关联 -->
+    <delete id="deleteRolePermissions">
+        DELETE FROM saas_role_permissions 
+        WHERE role_id = #{roleId}
+    </delete>
 
 </mapper>
