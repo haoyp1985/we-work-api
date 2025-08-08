@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.*;
 import com.wework.platform.common.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import java.time.LocalDateTime;
 
 /**
  * 用户实体
@@ -47,9 +48,9 @@ public class User extends BaseEntity {
     private String realName;
 
     /**
-     * 昵称
+     * 昵称（当前库无该列，避免映射）
      */
-    @TableField("nickname")
+    @TableField(exist = false)
     private String nickname;
 
     /**
@@ -67,7 +68,7 @@ public class User extends BaseEntity {
     /**
      * 头像URL
      */
-    @TableField("avatar")
+    @TableField("avatar_url")
     private String avatar;
 
     /**
@@ -85,8 +86,8 @@ public class User extends BaseEntity {
     /**
      * 最后登录时间
      */
-    @TableField("last_login_time")
-    private Long lastLoginTime;
+    @TableField("last_login_at")
+    private LocalDateTime lastLoginTime;
 
     /**
      * 最后登录IP
@@ -97,14 +98,13 @@ public class User extends BaseEntity {
     /**
      * 登录失败次数
      */
-    @TableField("failed_login_count")
+    @TableField("failed_login_attempts")
     private Integer failedLoginCount;
 
     /**
      * 账号锁定到期时间
      */
     @TableField("locked_until")
-    private Long lockedUntil;
+    private LocalDateTime lockedUntil;
 
-    // 软删除统一由 BaseEntity.deletedAt 管理
 }

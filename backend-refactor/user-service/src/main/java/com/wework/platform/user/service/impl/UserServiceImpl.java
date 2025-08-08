@@ -20,9 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -99,8 +97,7 @@ public class UserServiceImpl implements UserService {
         userInfo.setTenantId(user.getTenantId());
         userInfo.setRoles(roles);
         userInfo.setPermissions(permissions);
-        userInfo.setLastLoginTime(user.getLastLoginTime() != null ? 
-                LocalDateTime.ofInstant(Instant.ofEpochMilli(user.getLastLoginTime()), ZoneId.systemDefault()) : null);
+        userInfo.setLastLoginTime(user.getLastLoginTime());
 
         response.setUserInfo(userInfo);
 
@@ -434,7 +431,7 @@ public class UserServiceImpl implements UserService {
     private void updateLoginInfo(String userId, String clientIp) {
         User user = userRepository.selectById(userId);
         if (user != null) {
-            user.setLastLoginTime(System.currentTimeMillis());
+            user.setLastLoginTime(LocalDateTime.now());
             user.setLastLoginIp(clientIp);
             user.setUpdatedAt(LocalDateTime.now());
             userRepository.updateById(user);
