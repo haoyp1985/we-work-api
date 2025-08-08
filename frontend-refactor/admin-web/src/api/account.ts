@@ -27,7 +27,7 @@ export const accountApi = {
   getAccountList(
     params: AccountSearchForm,
   ): Promise<ApiResponse<PageResult<WeWorkAccount>>> {
-    return request.get("/accounts", { params });
+    return request.get("/accounts", params);
   },
   /**
    * 获取状态日志（分页）
@@ -39,21 +39,21 @@ export const accountApi = {
     pageNum?: number;
     pageSize?: number;
   }): Promise<ApiResponse<PageResult<any>>> {
-    return request.get("/status-logs", { params });
+    return request.get("/status-logs", params);
   },
   /**
    * 获取某账号最近状态日志
    */
   getStatusLogsByAccountId(accountId: string, limit = 50): Promise<ApiResponse<any[]>> {
-    return request.get(`/status-logs/account/${accountId}`, { params: { limit } });
+    return request.get(`/status-logs/account/${accountId}`, { limit });
   },
   /** 状态变更统计 */
   getStatusChangeStatistics(params: { accountId?: string; startTime?: number; endTime?: number }): Promise<ApiResponse<any>> {
-    return request.get("/status-logs/statistics", { params });
+    return request.get("/status-logs/statistics", params);
   },
   /** 状态趋势 */
   getStatusTrends(params: { accountId?: string; startTime: number; endTime: number; interval?: string }): Promise<ApiResponse<any[]>> {
-    return request.get("/status-logs/trends", { params });
+    return request.get("/status-logs/trends", params);
   },
 
   /**
