@@ -1,0 +1,7 @@
+server:
+  port: 23456
+spring:
+  application:
+    name: mock-lonestar-service
+
+
