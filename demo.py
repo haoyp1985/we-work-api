@@ -1163,6 +1163,48 @@ class WeWorkAPIDemo:
         会尝试多个常见端点与传输方式（multipart/json），提高兼容性。
         """
         import os
+        from urllib.parse import urlparse
+
+        # 判断是否为URL（云存储文档: /cloud/cdn_c2c_upload 需要传 url）
+        parsed = urlparse(file_path or "")
+        if parsed.scheme in ("http", "https") and parsed.netloc:
+            ext = os.path.splitext(parsed.path)[1].lower().strip('.')
+            image_ext = {"jpg","jpeg","png","bmp","webp"}
+            video_ext = {"mp4","mov","avi","mkv","flv","wmv"}
+            if ext in image_ext:
+                file_type = 1
+            elif ext in video_ext:
+                file_type = 4
+            else:
+                file_type = 5
+
+            try:
+                payload = {
+                    "guid": self.guid or "",
+                    "file_type": file_type,
+                    "url": file_path
+                }
+                result = self.api_request("/cloud/cdn_c2c_upload", payload, method='POST')
+                if self.is_success_response(result):
+                    data_obj = result.get('data') if isinstance(result, dict) else None
+                    if isinstance(data_obj, dict):
+                        return {
+                            'file_id': data_obj.get('file_id') or data_obj.get('id') or data_obj.get('fileId'),
+                            'size': data_obj.get('size', 0),
+                            'md5': data_obj.get('md5', ''),
+                            'aes_key': data_obj.get('aes_key') or data_obj.get('aesKey') or ''
+                        }
+                    return {
+                        'file_id': (result.get('file_id') if isinstance(result, dict) else None),
+                        'size': 0,
+                        'md5': '',
+                        'aes_key': ''
+                    }
+            except Exception as e:
+                logger.warning(f"/cloud/cdn_c2c_upload 上传失败: {e}")
+            # 若URL方式失败，继续走本地兼容流程（下面）
+
+        # 本地文件流程
         if not os.path.isfile(file_path):
             logger.error(f"❌ 文件不存在: {file_path}")
             return None
