@@ -1234,9 +1234,14 @@ class WeWorkAPIDemo:
                 }
                 result = self.api_request("/cloud/cdn_c2c_upload", payload, method='POST')
                 if self.is_success_response(result):
-                    normalized = self._normalize_c2c_response(result, defaults={'size': 0, 'md5': '', 'aes_key': ''})
-                    if normalized:
-                        return normalized
+                    data_obj = result.get('data') if isinstance(result, dict) else None
+                    if isinstance(data_obj, dict):
+                        return {
+                            'file_id': data_obj.get('file_id'),
+                            'size': data_obj.get('file_size', 0),
+                            'md5': data_obj.get('file_md5', ''),
+                            'aes_key': data_obj.get('aes_key', ''),
+                        }
             except Exception as e:
                 logger.warning(f"/cloud/cdn_c2c_upload 上传失败: {e}")
             # 若URL方式失败，继续走本地兼容流程（下面）
@@ -1274,9 +1279,14 @@ class WeWorkAPIDemo:
                 }
                 result = self.api_request("/cloud/cdn_c2c_upload", payload, method='POST')
                 if self.is_success_response(result):
-                    normalized = self._normalize_c2c_response(result, defaults={'size': size, 'md5': md5_val, 'aes_key': ''})
-                    if normalized:
-                        return normalized
+                    data_obj = result.get('data') if isinstance(result, dict) else None
+                    if isinstance(data_obj, dict):
+                        return {
+                            'file_id': data_obj.get('file_id'),
+                            'size': data_obj.get('file_size', size),
+                            'md5': data_obj.get('file_md5', md5_val),
+                            'aes_key': data_obj.get('aes_key', ''),
+                        }
             except Exception as e:
                 logger.warning(f"/cloud/cdn_c2c_upload 失败，回退本地直传: {e}")
 
@@ -1300,9 +1310,14 @@ class WeWorkAPIDemo:
             # 云存储优先
             result = self.api_request("/cloud/c2c_upload", payload, method='POST')
             if self.is_success_response(result):
-                normalized = self._normalize_c2c_response(result, defaults={'size': size, 'md5': md5_val, 'aes_key': ''})
-                if normalized:
-                    return normalized
+                data_obj = result.get('data') if isinstance(result, dict) else None
+                if isinstance(data_obj, dict):
+                    return {
+                        'file_id': data_obj.get('file_id'),
+                        'size': data_obj.get('size', size),
+                        'md5': data_obj.get('md5', md5_val),
+                        'aes_key': data_obj.get('aes_key', ''),
+                    }
         except Exception as e:
             logger.warning(f"/cloud/c2c_upload 上传失败: {e}")
 
@@ -1315,9 +1330,14 @@ class WeWorkAPIDemo:
             }
             result = self.api_request("/cdn/c2c_upload", payload, method='POST')
             if self.is_success_response(result):
-                normalized = self._normalize_c2c_response(result, defaults={'size': size, 'md5': md5_val, 'aes_key': ''})
-                if normalized:
-                    return normalized
+                data_obj = result.get('data') if isinstance(result, dict) else None
+                if isinstance(data_obj, dict):
+                    return {
+                        'file_id': data_obj.get('file_id'),
+                        'size': data_obj.get('size', size),
+                        'md5': data_obj.get('md5', md5_val),
+                        'aes_key': data_obj.get('aes_key', ''),
+                    }
         except Exception as e:
             logger.warning(f"/cdn/c2c_upload 上传失败: {e}")
 
