@@ -14,6 +14,7 @@ import threading
 import logging
 import qrcode
 import io
+import os
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -38,6 +39,13 @@ class WeWorkAPIDemo:
         # 创建Flask应用处理回调
         self.app = Flask(__name__)
         self.setup_webhook_routes()
+
+        # MinIO 对象存储配置（用于先上传文件再走云存储 c2c cdn 上传）
+        self.minio_enabled = True
+        self.minio_endpoint = os.getenv("MINIO_ENDPOINT", "http://192.168.14.220:29002")
+        self.minio_access_key = os.getenv("MINIO_ACCESS_KEY", "wework")
+        self.minio_secret_key = os.getenv("MINIO_SECRET_KEY", "wework123456")
+        self.minio_bucket = os.getenv("MINIO_BUCKET", "wework-demo")
 
     def api_request(self, endpoint, data, method='POST'):
         """
@@ -112,11 +120,7 @@ class WeWorkAPIDemo:
         
         # 尝试多个可能的API端点和方法
         endpoints_to_try = [
-            ("/client/all_clients", "GET"),
-            ("/client/all_clients", "POST"),
-            ("/client/get_clients", "POST"),
-            ("/clients", "GET"),
-            ("/client/list", "GET"),
+            ("/client/all_clients", "POST")
         ]
         
         for endpoint, method in endpoints_to_try:
@@ -1088,6 +1092,362 @@ class WeWorkAPIDemo:
             logger.error(f"❌ 群@消息发送失败: {error_msg}")
             return False
 
+    def send_voice_message(self, conversation_id, file_id, size=0, voice_time=0, aes_key="", md5=""):
+        """
+        发送语音消息
+
+        Args:
+            conversation_id: 会话ID (私聊: S:xxxx, 群聊: R:xxxx)
+            file_id: 语音文件ID（由上传接口返回或平台约定的资源ID）
+            size: 文件大小(字节)
+            voice_time: 语音时长(秒)
+            aes_key: AES密钥（若平台需要）
+            md5: 文件MD5（若平台需要）
+
+        Returns:
+            bool: 是否成功
+        """
+        logger.info("=== 发送语音消息 ===")
+
+        # 基础校验
+        if not self.guid:
+            logger.warning("⚠️ 未选择实例，无法发送语音消息")
+            print("💡 请先在主菜单选择 '2. 🎯 选择/创建实例'")
+            return False
+
+        if not self.is_logged_in:
+            if self.guid:
+                status_info = self.get_client_status(self.guid)
+                if status_info.get("status") == 2:
+                    self.is_logged_in = True
+                    logger.info("✅ 检测到实例已在线，更新登录状态")
+                else:
+                    logger.error("❌ 实例未登录")
+                    return False
+            else:
+                logger.error("❌ 请先登录")
+                return False
+
+        if not conversation_id:
+            logger.error("❌ conversation_id 不能为空")
+            return False
+        if not file_id:
+            logger.error("❌ file_id 不能为空")
+            return False
+
+        payload = {
+            "guid": self.guid,
+            "conversation_id": conversation_id,
+            "file_id": file_id,
+            "size": int(size) if size else 0,
+            "voice_time": int(voice_time) if voice_time else 0,
+            "aes_key": aes_key or "",
+            "md5": md5 or ""
+        }
+
+        logger.info(f"📤 语音入参: {payload}")
+        result = self.api_request("/msg/send_voice", payload)
+
+        if self.is_success_response(result):
+            logger.info("✅ 语音消息发送成功")
+            return True
+        else:
+            logger.error(f"❌ 语音消息发送失败: {result}")
+            return False
+
+    def _compute_md5(self, file_path):
+        """计算文件MD5"""
+        import hashlib
+        md5_obj = hashlib.md5()
+        with open(file_path, 'rb') as f:
+            for chunk in iter(lambda: f.read(8192), b''):
+                md5_obj.update(chunk)
+        return md5_obj.hexdigest()
+
+    def _normalize_c2c_response(self, result, defaults=None):
+        """
+        归一化 C2C 上传返回，抽取 file_id/size/md5/aes_key。
+
+        支持多种字段命名：
+        - file_id: file_id, id, fileId, fid
+        - size: size, file_size, content_length, length
+        - md5: md5, file_md5, hash
+        - aes_key: aes_key, aesKey, aeskey, aes
+        """
+        defaults = defaults or {}
+        if not isinstance(result, dict):
+            return None
+
+        data_obj = result.get('data') if isinstance(result.get('data'), dict) else result
+
+        def pick(d: dict, keys, default=None):
+            for k in keys:
+                if k in d and d.get(k) is not None:
+                    return d.get(k)
+            return default
+
+        file_id = pick(data_obj, ['file_id', 'id', 'fileId', 'fid'])
+        size = pick(data_obj, ['size', 'file_size', 'content_length', 'length'], defaults.get('size', 0))
+        md5 = pick(data_obj, ['md5', 'file_md5', 'hash'], defaults.get('md5', ''))
+        aes_key = pick(data_obj, ['aes_key', 'aesKey', 'aeskey', 'aes'], defaults.get('aes_key', ''))
+
+        if file_id:
+            try:
+                size = int(size) if size is not None else 0
+            except Exception:
+                size = defaults.get('size', 0)
+            return {
+                'file_id': file_id,
+                'size': size,
+                'md5': md5 or defaults.get('md5', ''),
+                'aes_key': aes_key or defaults.get('aes_key', ''),
+            }
+        return None
+
+    def upload_c2c_file(self, file_path, conversation_id=""):
+        """
+        将本地文件通过C2C上传，返回 {file_id, size, md5, aes_key}
+
+        会尝试多个常见端点与传输方式（multipart/json），提高兼容性。
+        """
+        import os
+        from urllib.parse import urlparse
+
+        # 判断是否为URL（云存储文档: /cloud/cdn_c2c_upload 需要传 url）
+        parsed = urlparse(file_path or "")
+        if parsed.scheme in ("http", "https") and parsed.netloc:
+            ext = os.path.splitext(parsed.path)[1].lower().strip('.')
+            image_ext = {"jpg","jpeg","png","bmp","webp"}
+            video_ext = {"mp4","mov","avi","mkv","flv","wmv"}
+            if ext in image_ext:
+                file_type = 1
+            elif ext in video_ext:
+                file_type = 4
+            else:
+                file_type = 5
+
+            try:
+                payload = {
+                    "guid": self.guid or "",
+                    "file_type": file_type,
+                    "url": file_path
+                }
+                result = self.api_request("/cloud/cdn_c2c_upload", payload, method='POST')
+                if self.is_success_response(result):
+                    data_obj = result.get('data') if isinstance(result, dict) else None
+                    if isinstance(data_obj, dict):
+                        return {
+                            'file_id': data_obj.get('file_id'),
+                            'size': data_obj.get('file_size', 0),
+                            'md5': data_obj.get('file_md5', ''),
+                            'aes_key': data_obj.get('aes_key', ''),
+                        }
+            except Exception as e:
+                logger.warning(f"/cloud/cdn_c2c_upload 上传失败: {e}")
+            # 若URL方式失败，继续走本地兼容流程（下面）
+
+        # 本地文件流程
+        if not os.path.isfile(file_path):
+            logger.error(f"❌ 文件不存在: {file_path}")
+            return None
+
+        size = os.path.getsize(file_path) or 0
+        md5_val = self._compute_md5(file_path)
+
+        # 优先尝试：上传到 MinIO 生成URL → /cloud/cdn_c2c_upload(url)
+        obj_url = None
+        if self.minio_enabled:
+            try:
+                obj_url = self.upload_to_minio(file_path)
+            except Exception as e:
+                logger.warning(f"MinIO 上传失败，将回退本地直传流程: {e}")
+        if obj_url:
+            ext = os.path.splitext(file_path)[1].lower().strip('.')
+            image_ext = {"jpg","jpeg","png","bmp","webp"}
+            video_ext = {"mp4","mov","avi","mkv","flv","wmv"}
+            if ext in image_ext:
+                file_type = 1
+            elif ext in video_ext:
+                file_type = 4
+            else:
+                file_type = 5
+            try:
+                payload = {
+                    "guid": self.guid or "",
+                    "file_type": file_type,
+                    "url": obj_url
+                }
+                result = self.api_request("/cloud/cdn_c2c_upload", payload, method='POST')
+                if self.is_success_response(result):
+                    data_obj = result.get('data') if isinstance(result, dict) else None
+                    if isinstance(data_obj, dict):
+                        return {
+                            'file_id': data_obj.get('file_id'),
+                            'size': data_obj.get('file_size', size),
+                            'md5': data_obj.get('file_md5', md5_val),
+                            'aes_key': data_obj.get('aes_key', ''),
+                        }
+            except Exception as e:
+                logger.warning(f"/cloud/cdn_c2c_upload 失败，回退本地直传: {e}")
+
+        # 先按“云存储”优先使用 /cloud/c2c_upload（JSON），file_type: 图片=1, 视频=4, 文件&GIF=5
+        ext = os.path.splitext(file_path)[1].lower().strip('.')
+        image_ext = {"jpg","jpeg","png","bmp","webp"}
+        video_ext = {"mp4","mov","avi","mkv","flv","wmv"}
+        if ext in image_ext:
+            file_type = 1
+        elif ext in video_ext:
+            file_type = 4
+        else:
+            file_type = 5
+
+        try:
+            payload = {
+                "guid": self.guid or "",
+                "file_type": file_type,
+                "file_path": file_path
+            }
+            # 云存储优先
+            result = self.api_request("/cloud/c2c_upload", payload, method='POST')
+            if self.is_success_response(result):
+                data_obj = result.get('data') if isinstance(result, dict) else None
+                if isinstance(data_obj, dict):
+                    return {
+                        'file_id': data_obj.get('file_id'),
+                        'size': data_obj.get('size', size),
+                        'md5': data_obj.get('md5', md5_val),
+                        'aes_key': data_obj.get('aes_key', ''),
+                    }
+        except Exception as e:
+            logger.warning(f"/cloud/c2c_upload 上传失败: {e}")
+
+        # 回退到 /cdn/c2c_upload（JSON）
+        try:
+            payload = {
+                "guid": self.guid or "",
+                "file_type": file_type,
+                "file_path": file_path
+            }
+            result = self.api_request("/cdn/c2c_upload", payload, method='POST')
+            if self.is_success_response(result):
+                data_obj = result.get('data') if isinstance(result, dict) else None
+                if isinstance(data_obj, dict):
+                    return {
+                        'file_id': data_obj.get('file_id'),
+                        'size': data_obj.get('size', size),
+                        'md5': data_obj.get('md5', md5_val),
+                        'aes_key': data_obj.get('aes_key', ''),
+                    }
+        except Exception as e:
+            logger.warning(f"/cdn/c2c_upload 上传失败: {e}")
+
+        # 可能的端点（根据经验做回退）
+        endpoints_to_try = [
+            "/cdn/upload_c2c",
+            "/cloud/upload_c2c",
+            "/file/upload_c2c",
+            "/upload/c2c",
+        ]
+
+        # 1) 优先尝试 multipart/form-data
+        for ep in endpoints_to_try:
+            try:
+                url = f"{self.api_base_url}{ep}"
+                logger.info(f"尝试C2C上传(multipart): POST {ep}")
+                files = {
+                    'file': (os.path.basename(file_path), open(file_path, 'rb'))
+                }
+                data = {
+                    'guid': self.guid or '',
+                    'conversation_id': conversation_id or ''
+                }
+                resp = self.session.post(url, data=data, files=files, timeout=120)
+                try:
+                    result = resp.json()
+                except Exception:
+                    result = { 'status_code': resp.status_code, 'text': resp.text[:200] }
+                logger.info(f"C2C上传响应: {result}")
+
+                if self.is_success_response(result):
+                    normalized = self._normalize_c2c_response(result, defaults={'size': size, 'md5': md5_val, 'aes_key': ''})
+                    if normalized:
+                        return normalized
+            except Exception as e:
+                logger.warning(f"multipart上传失败: {e}")
+
+        # 2) 退化到 application/json base64 方式
+        import base64
+        with open(file_path, 'rb') as f:
+            b64 = base64.b64encode(f.read()).decode('utf-8')
+        for ep in endpoints_to_try:
+            try:
+                logger.info(f"尝试C2C上传(JSON base64): POST {ep}")
+                payload = {
+                    'guid': self.guid or '',
+                    'conversation_id': conversation_id or '',
+                    'file_name': os.path.basename(file_path),
+                    'file_size': size,
+                    'file_md5': md5_val,
+                    'file_content': b64,
+                }
+                result = self.api_request(ep, payload, method='POST')
+                if self.is_success_response(result):
+                    normalized = self._normalize_c2c_response(result, defaults={'size': size, 'md5': md5_val, 'aes_key': ''})
+                    if normalized:
+                        return normalized
+            except Exception as e:
+                logger.warning(f"JSON base64上传失败: {e}")
+
+        logger.error("❌ C2C上传失败，所有端点均不可用")
+        return None
+
+    def upload_to_minio(self, file_path, object_name=None):
+        """
+        上传本地文件到 MinIO 并返回可访问的对象 URL。
+        需要安装 boto3: pip install boto3
+        """
+        try:
+            import boto3
+            from botocore.client import Config
+            from botocore.exceptions import ClientError
+        except Exception as e:
+            logger.error("未安装 boto3，无法执行 MinIO 上传。请运行: pip install boto3")
+            raise e
+
+        if not object_name:
+            object_name = os.path.basename(file_path)
+
+        s3 = boto3.client(
+            's3',
+            endpoint_url=self.minio_endpoint,
+            aws_access_key_id=self.minio_access_key,
+            aws_secret_access_key=self.minio_secret_key,
+            region_name='us-east-1',
+            config=Config(signature_version='s3v4')
+        )
+
+        # 确保桶存在
+        try:
+            s3.head_bucket(Bucket=self.minio_bucket)
+        except ClientError:
+            try:
+                s3.create_bucket(Bucket=self.minio_bucket)
+                logger.info(f"✅ 已创建 MinIO 桶: {self.minio_bucket}")
+            except Exception as e:
+                logger.error(f"❌ 创建 MinIO 桶失败: {e}")
+                raise e
+
+        # 上传文件
+        try:
+            s3.upload_file(file_path, self.minio_bucket, object_name)
+            logger.info(f"✅ 已上传到 MinIO: {self.minio_bucket}/{object_name}")
+        except Exception as e:
+            logger.error(f"❌ 上传至 MinIO 失败: {e}")
+            raise e
+
+        # 返回可直接访问的 URL（Path-Style）
+        url = f"{self.minio_endpoint.rstrip('/')}/{self.minio_bucket}/{object_name}"
+        return url
     def setup_webhook_routes(self):
         """
         设置回调路由
@@ -1431,6 +1791,31 @@ class WeWorkAPIDemo:
         webhook_thread.start()
         logger.info("🌐 回调服务器已启动在 http://localhost:15000")
 
+    def update_cdn_rule(self):
+        """
+        手工更新CDN信息（建议每6小时调用一次）
+
+        Returns:
+            bool: 是否成功
+        """
+        logger.info("=== 手工更新CDN信息 ===")
+        if not self.guid:
+            logger.error("❌ 未选择实例，无法更新CDN信息")
+            print("💡 请先在主菜单选择 '2. 🎯 选择/创建实例'")
+            return False
+
+        payload = {"guid": self.guid}
+        result = self.api_request("/cloud/update_cdn_rule", payload, method='POST')
+
+        if self.is_success_response(result):
+            logger.info("✅ CDN信息更新成功")
+            print("✅ CDN信息更新成功（建议每6小时调用一次）")
+            return True
+        else:
+            logger.error(f"❌ CDN信息更新失败: {result}")
+            print("❌ CDN信息更新失败，请稍后重试")
+            return False
+
     def wait_for_login(self, timeout=300):
         """
         等待登录完成
@@ -1512,10 +1897,27 @@ def main():
     print("💡 如遇API问题，请使用'API端点调试'功能检查")
     print("=" * 50)
     
-    # 可以修改API服务器地址
-    api_url = input("🌐 API服务器地址 (默认 http://192.168.3.122:23456): ").strip()
-    if not api_url:
-        api_url = "http://192.168.3.122:23456"
+    # 可以修改API服务器地址（增加URL校验与自动修正）
+    def sanitize_api_url(user_input: str, default_url: str) -> str:
+        from urllib.parse import urlparse
+        s = (user_input or "").strip()
+        if not s:
+            return default_url
+        # 误触发输入如“1”等非URL，回退默认
+        if s.isdigit():
+            logger.warning("检测到非URL输入，回退默认API地址")
+            return default_url
+        # 自动补全协议
+        if not (s.startswith("http://") or s.startswith("https://")):
+            s = "http://" + s
+        p = urlparse(s)
+        if not p.scheme or not p.netloc:
+            logger.warning("输入URL不合法，回退默认API地址")
+            return default_url
+        return s
+
+    user_input_api = input("🌐 API服务器地址 (默认 http://192.168.3.122:23456): ").strip()
+    api_url = sanitize_api_url(user_input_api, "http://192.168.3.122:23456")
     
     demo = WeWorkAPIDemo(api_url)
     
@@ -1625,44 +2027,70 @@ def main():
             print("❌ 无效选择")
             return
             
-        # 检查是否为群聊，提供@消息选项
+        # 选择消息类型
         is_group = conversation_id.startswith("R:")
-        message_type = "普通消息"
-        at_list = None
-        
+        print("\n🧭 选择消息类型")
+        print("1. 💬 文本消息")
         if is_group:
-            print(f"\n🏷️ 检测到群聊，可以发送@消息")
-            print("1. 💬 普通消息")
-            print("2. 🏷️ @特定人员（需要用户ID）")
-            print("3. 📢 @全部人")
-            
-            at_choice = input("\n💡 请选择消息类型 (1-3): ").strip()
-            
-            if at_choice == "2":
-                message_type = "@特定人员"
+            print("2. 🏷️ 群@消息")
+            print("3. 🎙️ 语音消息")
+            type_choice = input("\n💡 请选择 (1-3): ").strip()
+        else:
+            print("2. 🎙️ 语音消息")
+            type_choice = input("\n💡 请选择 (1-2): ").strip()
+
+        success = False
+        if type_choice == "1":
+            # 文本
+            content = input("\n💬 请输入文本内容: ").strip()
+            if not content:
+                print("❌ 文本内容不能为空")
+                return
+            success = demo.send_text_message(conversation_id, content)
+        elif type_choice == "2" and is_group:
+            # 群@消息
+            print("\n@ 选项: 1=@特定人员  2=@全部人")
+            at_mode = input("请选择 @ 模式 (1-2): ").strip()
+            if at_mode == "1":
                 user_ids = input("请输入要@的用户ID (多个用逗号分隔): ").strip()
-                if user_ids:
-                    at_list = [uid.strip() for uid in user_ids.split(",")]
-                else:
+                if not user_ids:
                     print("❌ 用户ID不能为空")
                     return
-            elif at_choice == "3":
-                message_type = "@全部人"
+                at_list = [uid.strip() for uid in user_ids.split(",")]
+            else:
                 at_list = [0]
-        
-        # 输入消息内容
-        content = input(f"\n💬 请输入消息内容 ({message_type}): ").strip()
-        if not content:
-            print("❌ 消息内容不能为空")
-            return
-            
-        print(f"\n📤 正在发送{message_type}到: {conversation_id}")
-        
-        # 根据消息类型选择接口
-        if at_list is not None:
+            content = input("\n💬 请输入群消息内容: ").strip()
+            if not content:
+                print("❌ 消息内容不能为空")
+                return
             success = demo.send_room_at_message(conversation_id, content, at_list)
         else:
-            success = demo.send_text_message(conversation_id, content)
+            # 语音（始终先上传以获取 file_id）
+            print("\n🎙️ 发送语音消息参数")
+            resource = input("请输入资源路径(本地绝对路径或http/https URL): ").strip()
+            if not resource:
+                print("❌ 资源路径不能为空")
+                return
+            upload_info = demo.upload_c2c_file(resource, conversation_id)
+            if not upload_info or not upload_info.get('file_id'):
+                print("❌ 文件上传失败，无法获取 file_id")
+                return
+            file_id = upload_info.get('file_id')
+            # 兼容两类返回字段：cdn_c2c_upload(file_size,file_md5) 与 c2c_upload(size,md5)
+            size = int((upload_info.get('size') or upload_info.get('file_size') or 0))
+            aes_key = upload_info.get('aes_key') or ""
+            md5 = upload_info.get('md5') or upload_info.get('file_md5') or ""
+            print(f"✅ 上传成功，file_id={file_id}")
+            logger.info(f"📦 上传返回映射: size={size}, md5={md5}, aes_key={aes_key}")
+
+            voice_time_in = input("voice_time(秒，可选，默认0): ").strip()
+            try:
+                voice_time = int(voice_time_in) if voice_time_in else 0
+            except ValueError:
+                print("❌ voice_time 必须为数字")
+                return
+
+            success = demo.send_voice_message(conversation_id, file_id, size, voice_time, aes_key, md5)
         
         if success:
             print("✅ 消息发送成功！")
@@ -1681,11 +2109,12 @@ def main():
             print("4. 💬 发送消息")
             print("5. 📊 状态检查")
             print("6. 🔧 API端点调试")
-            print("7. 🚪 退出程序")
+            print("7. 🔄 更新CDN信息")
+            print("8. 🚪 退出程序")
             print("=" * 50)
-            
-            choice = input("💡 请选择功能 (1-7): ").strip()
-            
+
+            choice = input("💡 请选择功能 (1-8): ").strip()
+
             if choice == '1':
                 demo.list_instances_interactive()
             elif choice == '2':
@@ -1702,11 +2131,13 @@ def main():
             elif choice == '6':
                 demo.debug_api_endpoints()
             elif choice == '7':
+                demo.update_cdn_rule()
+            elif choice == '8':
                 print("👋 程序退出")
                 break
             else:
-                print("❓ 无效选择，请输入 1-7")
-                
+                print("❓ 无效选择，请输入 1-8")
+
         except KeyboardInterrupt:
             print("\n👋 程序退出")
             break
