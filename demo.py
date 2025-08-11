@@ -1088,6 +1088,68 @@ class WeWorkAPIDemo:
             logger.error(f"❌ 群@消息发送失败: {error_msg}")
             return False
 
+    def send_voice_message(self, conversation_id, file_id, size=0, voice_time=0, aes_key="", md5=""):
+        """
+        发送语音消息
+
+        Args:
+            conversation_id: 会话ID (私聊: S:xxxx, 群聊: R:xxxx)
+            file_id: 语音文件ID（由上传接口返回或平台约定的资源ID）
+            size: 文件大小(字节)
+            voice_time: 语音时长(秒)
+            aes_key: AES密钥（若平台需要）
+            md5: 文件MD5（若平台需要）
+
+        Returns:
+            bool: 是否成功
+        """
+        logger.info("=== 发送语音消息 ===")
+
+        # 基础校验
+        if not self.guid:
+            logger.warning("⚠️ 未选择实例，无法发送语音消息")
+            print("💡 请先在主菜单选择 '2. 🎯 选择/创建实例'")
+            return False
+
+        if not self.is_logged_in:
+            if self.guid:
+                status_info = self.get_client_status(self.guid)
+                if status_info.get("status") == 2:
+                    self.is_logged_in = True
+                    logger.info("✅ 检测到实例已在线，更新登录状态")
+                else:
+                    logger.error("❌ 实例未登录")
+                    return False
+            else:
+                logger.error("❌ 请先登录")
+                return False
+
+        if not conversation_id:
+            logger.error("❌ conversation_id 不能为空")
+            return False
+        if not file_id:
+            logger.error("❌ file_id 不能为空")
+            return False
+
+        payload = {
+            "guid": self.guid,
+            "conversation_id": conversation_id,
+            "file_id": file_id,
+            "size": int(size) if size else 0,
+            "voice_time": int(voice_time) if voice_time else 0,
+            "aes_key": aes_key or "",
+            "md5": md5 or ""
+        }
+
+        logger.info(f"📤 语音入参: {payload}")
+        result = self.api_request("/msg/send_voice", payload)
+
+        if self.is_success_response(result):
+            logger.info("✅ 语音消息发送成功")
+            return True
+        else:
+            logger.error(f"❌ 语音消息发送失败: {result}")
+            return False
     def setup_webhook_routes(self):
         """
         设置回调路由
@@ -1625,44 +1687,61 @@ def main():
             print("❌ 无效选择")
             return
             
-        # 检查是否为群聊，提供@消息选项
+        # 选择消息类型
         is_group = conversation_id.startswith("R:")
-        message_type = "普通消息"
-        at_list = None
-        
+        print("\n🧭 选择消息类型")
+        print("1. 💬 文本消息")
         if is_group:
-            print(f"\n🏷️ 检测到群聊，可以发送@消息")
-            print("1. 💬 普通消息")
-            print("2. 🏷️ @特定人员（需要用户ID）")
-            print("3. 📢 @全部人")
-            
-            at_choice = input("\n💡 请选择消息类型 (1-3): ").strip()
-            
-            if at_choice == "2":
-                message_type = "@特定人员"
+            print("2. 🏷️ 群@消息")
+            print("3. 🎙️ 语音消息")
+            type_choice = input("\n💡 请选择 (1-3): ").strip()
+        else:
+            print("2. 🎙️ 语音消息")
+            type_choice = input("\n💡 请选择 (1-2): ").strip()
+
+        success = False
+        if type_choice == "1":
+            # 文本
+            content = input("\n💬 请输入文本内容: ").strip()
+            if not content:
+                print("❌ 文本内容不能为空")
+                return
+            success = demo.send_text_message(conversation_id, content)
+        elif type_choice == "2" and is_group:
+            # 群@消息
+            print("\n@ 选项: 1=@特定人员  2=@全部人")
+            at_mode = input("请选择 @ 模式 (1-2): ").strip()
+            if at_mode == "1":
                 user_ids = input("请输入要@的用户ID (多个用逗号分隔): ").strip()
-                if user_ids:
-                    at_list = [uid.strip() for uid in user_ids.split(",")]
-                else:
+                if not user_ids:
                     print("❌ 用户ID不能为空")
                     return
-            elif at_choice == "3":
-                message_type = "@全部人"
+                at_list = [uid.strip() for uid in user_ids.split(",")]
+            else:
                 at_list = [0]
-        
-        # 输入消息内容
-        content = input(f"\n💬 请输入消息内容 ({message_type}): ").strip()
-        if not content:
-            print("❌ 消息内容不能为空")
-            return
-            
-        print(f"\n📤 正在发送{message_type}到: {conversation_id}")
-        
-        # 根据消息类型选择接口
-        if at_list is not None:
+            content = input("\n💬 请输入群消息内容: ").strip()
+            if not content:
+                print("❌ 消息内容不能为空")
+                return
             success = demo.send_room_at_message(conversation_id, content, at_list)
         else:
-            success = demo.send_text_message(conversation_id, content)
+            # 语音
+            print("\n🎙️ 发送语音消息参数")
+            file_id = input("file_id (必填): ").strip()
+            if not file_id:
+                print("❌ file_id 不能为空")
+                return
+            size_in = input("size(字节，可选，默认0): ").strip()
+            voice_time_in = input("voice_time(秒，可选，默认0): ").strip()
+            aes_key = input("aes_key(可选): ").strip()
+            md5 = input("md5(可选): ").strip()
+            try:
+                size = int(size_in) if size_in else 0
+                voice_time = int(voice_time_in) if voice_time_in else 0
+            except ValueError:
+                print("❌ size/voice_time 必须为数字")
+                return
+            success = demo.send_voice_message(conversation_id, file_id, size, voice_time, aes_key, md5)
         
         if success:
             print("✅ 消息发送成功！")
