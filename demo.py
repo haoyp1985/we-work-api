@@ -1170,7 +1170,7 @@ class WeWorkAPIDemo:
         size = os.path.getsize(file_path) or 0
         md5_val = self._compute_md5(file_path)
 
-        # 先按文档优先使用 /cdn/c2c_upload（JSON），file_type: 图片=1, 视频=4, 文件&GIF=5
+        # 先按“云存储”优先使用 /cloud/c2c_upload（JSON），file_type: 图片=1, 视频=4, 文件&GIF=5
         ext = os.path.splitext(file_path)[1].lower().strip('.')
         image_ext = {"jpg","jpeg","png","bmp","webp"}
         video_ext = {"mp4","mov","avi","mkv","flv","wmv"}
@@ -1187,7 +1187,8 @@ class WeWorkAPIDemo:
                 "file_type": file_type,
                 "file_path": file_path
             }
-            result = self.api_request("/cdn/c2c_upload", payload, method='POST')
+            # 云存储优先
+            result = self.api_request("/cloud/c2c_upload", payload, method='POST')
             if self.is_success_response(result):
                 data_obj = result.get('data') if isinstance(result, dict) else None
                 if isinstance(data_obj, dict):
@@ -1198,6 +1199,32 @@ class WeWorkAPIDemo:
                         'aes_key': data_obj.get('aes_key') or data_obj.get('aesKey') or ''
                     }
                 # 扁平格式兜底
+                return {
+                    'file_id': (result.get('file_id') if isinstance(result, dict) else None),
+                    'size': size,
+                    'md5': md5_val,
+                    'aes_key': ''
+                }
+        except Exception as e:
+            logger.warning(f"/cloud/c2c_upload 上传失败: {e}")
+
+        # 回退到 /cdn/c2c_upload（JSON）
+        try:
+            payload = {
+                "guid": self.guid or "",
+                "file_type": file_type,
+                "file_path": file_path
+            }
+            result = self.api_request("/cdn/c2c_upload", payload, method='POST')
+            if self.is_success_response(result):
+                data_obj = result.get('data') if isinstance(result, dict) else None
+                if isinstance(data_obj, dict):
+                    return {
+                        'file_id': data_obj.get('file_id') or data_obj.get('id') or data_obj.get('fileId'),
+                        'size': data_obj.get('size', size),
+                        'md5': data_obj.get('md5', md5_val),
+                        'aes_key': data_obj.get('aes_key') or data_obj.get('aesKey') or ''
+                    }
                 return {
                     'file_id': (result.get('file_id') if isinstance(result, dict) else None),
                     'size': size,
