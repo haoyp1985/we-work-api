@@ -1150,6 +1150,113 @@ class WeWorkAPIDemo:
         else:
             logger.error(f"❌ 语音消息发送失败: {result}")
             return False
+
+    def _compute_md5(self, file_path):
+        """计算文件MD5"""
+        import hashlib
+        md5_obj = hashlib.md5()
+        with open(file_path, 'rb') as f:
+            for chunk in iter(lambda: f.read(8192), b''):
+                md5_obj.update(chunk)
+        return md5_obj.hexdigest()
+
+    def upload_c2c_file(self, file_path, conversation_id=""):
+        """
+        将本地文件通过C2C上传，返回 {file_id, size, md5, aes_key}
+
+        会尝试多个常见端点与传输方式（multipart/json），提高兼容性。
+        """
+        import os
+        if not os.path.isfile(file_path):
+            logger.error(f"❌ 文件不存在: {file_path}")
+            return None
+
+        size = os.path.getsize(file_path) or 0
+        md5_val = self._compute_md5(file_path)
+
+        # 可能的端点（根据文档命名与经验）
+        endpoints_to_try = [
+            "/cdn/upload_c2c",
+            "/cloud/upload_c2c",
+            "/file/upload_c2c",
+            "/upload/c2c",
+        ]
+
+        # 1) 优先尝试 multipart/form-data
+        for ep in endpoints_to_try:
+            try:
+                url = f"{self.api_base_url}{ep}"
+                logger.info(f"尝试C2C上传(multipart): POST {ep}")
+                files = {
+                    'file': (os.path.basename(file_path), open(file_path, 'rb'))
+                }
+                data = {
+                    'guid': self.guid or '',
+                    'conversation_id': conversation_id or ''
+                }
+                resp = self.session.post(url, data=data, files=files, timeout=120)
+                try:
+                    result = resp.json()
+                except Exception:
+                    result = { 'status_code': resp.status_code, 'text': resp.text[:200] }
+                logger.info(f"C2C上传响应: {result}")
+
+                if self.is_success_response(result):
+                    # 常见返回：{'error_code':0,'data':{'file_id':'...','aes_key':'...','md5':'...','size':123}}
+                    data_obj = result.get('data') if isinstance(result, dict) else None
+                    if isinstance(data_obj, dict):
+                        return {
+                            'file_id': data_obj.get('file_id') or data_obj.get('id') or data_obj.get('fileId'),
+                            'size': data_obj.get('size', size),
+                            'md5': data_obj.get('md5', md5_val),
+                            'aes_key': data_obj.get('aes_key') or data_obj.get('aesKey') or ''
+                        }
+                    # 其他可能的扁平返回
+                    return {
+                        'file_id': result.get('file_id') or result.get('id'),
+                        'size': result.get('size', size),
+                        'md5': result.get('md5', md5_val),
+                        'aes_key': result.get('aes_key') or ''
+                    }
+            except Exception as e:
+                logger.warning(f"multipart上传失败: {e}")
+
+        # 2) 退化到 application/json base64 方式
+        import base64
+        with open(file_path, 'rb') as f:
+            b64 = base64.b64encode(f.read()).decode('utf-8')
+        for ep in endpoints_to_try:
+            try:
+                logger.info(f"尝试C2C上传(JSON base64): POST {ep}")
+                payload = {
+                    'guid': self.guid or '',
+                    'conversation_id': conversation_id or '',
+                    'file_name': os.path.basename(file_path),
+                    'file_size': size,
+                    'file_md5': md5_val,
+                    'file_content': b64,
+                }
+                result = self.api_request(ep, payload, method='POST')
+                if self.is_success_response(result):
+                    data_obj = result.get('data') if isinstance(result, dict) else None
+                    if isinstance(data_obj, dict):
+                        return {
+                            'file_id': data_obj.get('file_id') or data_obj.get('id') or data_obj.get('fileId'),
+                            'size': data_obj.get('size', size),
+                            'md5': data_obj.get('md5', md5_val),
+                            'aes_key': data_obj.get('aes_key') or data_obj.get('aesKey') or ''
+                        }
+                    return {
+                        'file_id': result.get('file_id') or result.get('id'),
+                        'size': result.get('size', size),
+                        'md5': result.get('md5', md5_val),
+                        'aes_key': result.get('aes_key') or ''
+                    }
+            except Exception as e:
+                logger.warning(f"JSON base64上传失败: {e}")
+
+        logger.error("❌ C2C上传失败，所有端点均不可用")
+        return None
     def setup_webhook_routes(self):
         """
         设置回调路由
@@ -1727,20 +1834,46 @@ def main():
         else:
             # 语音
             print("\n🎙️ 发送语音消息参数")
-            file_id = input("file_id (必填): ").strip()
-            if not file_id:
-                print("❌ file_id 不能为空")
-                return
-            size_in = input("size(字节，可选，默认0): ").strip()
+            use_local = input("是否从本地选择文件并上传获取file_id? (y/N): ").strip().lower() == 'y'
+            file_id = ""
+            size = 0
+            aes_key = ""
+            md5 = ""
+            if use_local:
+                path = input("请输入本地语音文件路径: ").strip()
+                if not path:
+                    print("❌ 文件路径不能为空")
+                    return
+                upload_info = demo.upload_c2c_file(path, conversation_id)
+                if not upload_info or not upload_info.get('file_id'):
+                    print("❌ 文件上传失败，无法获取file_id")
+                    return
+                file_id = upload_info.get('file_id')
+                size = int(upload_info.get('size') or 0)
+                aes_key = upload_info.get('aes_key') or ""
+                md5 = upload_info.get('md5') or ""
+                print(f"✅ 上传成功，file_id={file_id}")
+            else:
+                file_id = input("file_id (必填): ").strip()
+                if not file_id:
+                    print("❌ file_id 不能为空")
+                    return
+                size_in = input("size(字节，可选，默认0): ").strip()
+                aes_key = input("aes_key(可选): ").strip()
+                md5 = input("md5(可选): ").strip()
+                try:
+                    size = int(size_in) if size_in else 0
+                except ValueError:
+                    print("❌ size 必须为数字")
+                    return
+
             voice_time_in = input("voice_time(秒，可选，默认0): ").strip()
-            aes_key = input("aes_key(可选): ").strip()
-            md5 = input("md5(可选): ").strip()
             try:
-                size = int(size_in) if size_in else 0
                 voice_time = int(voice_time_in) if voice_time_in else 0
             except ValueError:
-                print("❌ size/voice_time 必须为数字")
+                print("❌ voice_time 必须为数字")
                 return
+
             success = demo.send_voice_message(conversation_id, file_id, size, voice_time, aes_key, md5)
         
         if success:
