@@ -1174,7 +1174,44 @@ class WeWorkAPIDemo:
         size = os.path.getsize(file_path) or 0
         md5_val = self._compute_md5(file_path)
 
-        # 可能的端点（根据文档命名与经验）
+        # 先按文档优先使用 /cdn/c2c_upload（JSON），file_type: 图片=1, 视频=4, 文件&GIF=5
+        ext = os.path.splitext(file_path)[1].lower().strip('.')
+        image_ext = {"jpg","jpeg","png","bmp","webp"}
+        video_ext = {"mp4","mov","avi","mkv","flv","wmv"}
+        if ext in image_ext:
+            file_type = 1
+        elif ext in video_ext:
+            file_type = 4
+        else:
+            file_type = 5
+
+        try:
+            payload = {
+                "guid": self.guid or "",
+                "file_type": file_type,
+                "file_path": file_path
+            }
+            result = self.api_request("/cdn/c2c_upload", payload, method='POST')
+            if self.is_success_response(result):
+                data_obj = result.get('data') if isinstance(result, dict) else None
+                if isinstance(data_obj, dict):
+                    return {
+                        'file_id': data_obj.get('file_id') or data_obj.get('id') or data_obj.get('fileId'),
+                        'size': data_obj.get('size', size),
+                        'md5': data_obj.get('md5', md5_val),
+                        'aes_key': data_obj.get('aes_key') or data_obj.get('aesKey') or ''
+                    }
+                # 扁平格式兜底
+                return {
+                    'file_id': (result.get('file_id') if isinstance(result, dict) else None),
+                    'size': size,
+                    'md5': md5_val,
+                    'aes_key': ''
+                }
+        except Exception as e:
+            logger.warning(f"/cdn/c2c_upload 上传失败: {e}")
+
+        # 可能的端点（根据经验做回退）
         endpoints_to_try = [
             "/cdn/upload_c2c",
             "/cloud/upload_c2c",
