@@ -1176,7 +1176,7 @@ class WeWorkAPIDemo:
             elif ext in video_ext:
                 file_type = 4
             else:
-                file_type = 5
+                file_type = 2
 
             try:
                 payload = {
@@ -1221,7 +1221,7 @@ class WeWorkAPIDemo:
         elif ext in video_ext:
             file_type = 4
         else:
-            file_type = 5
+            file_type = 2
 
         try:
             payload = {
@@ -1702,6 +1702,31 @@ class WeWorkAPIDemo:
         webhook_thread.start()
         logger.info("🌐 回调服务器已启动在 http://localhost:15000")
 
+    def update_cdn_rule(self):
+        """
+        手工更新CDN信息（建议每6小时调用一次）
+
+        Returns:
+            bool: 是否成功
+        """
+        logger.info("=== 手工更新CDN信息 ===")
+        if not self.guid:
+            logger.error("❌ 未选择实例，无法更新CDN信息")
+            print("💡 请先在主菜单选择 '2. 🎯 选择/创建实例'")
+            return False
+
+        payload = {"guid": self.guid}
+        result = self.api_request("/cloud/update_cdn_rule", payload, method='POST')
+
+        if self.is_success_response(result):
+            logger.info("✅ CDN信息更新成功")
+            print("✅ CDN信息更新成功（建议每6小时调用一次）")
+            return True
+        else:
+            logger.error(f"❌ CDN信息更新失败: {result}")
+            print("❌ CDN信息更新失败，请稍后重试")
+            return False
+
     def wait_for_login(self, timeout=300):
         """
         等待登录完成
@@ -1982,7 +2007,7 @@ def main():
             print("❌ 消息发送失败，请检查参数是否正确")
     
     # 提供实例管理和消息发送功能
-    while True:
+        while True:
         try:
             print("\n" + "=" * 50)
             print("🔧 企业微信API Demo - 主菜单")
@@ -1993,7 +2018,8 @@ def main():
             print("4. 💬 发送消息")
             print("5. 📊 状态检查")
             print("6. 🔧 API端点调试")
-            print("7. 🚪 退出程序")
+                print("7. 🔄 更新CDN信息")
+                print("8. 🚪 退出程序")
             print("=" * 50)
             
             choice = input("💡 请选择功能 (1-7): ").strip()
@@ -2013,7 +2039,9 @@ def main():
                 demo.check_current_status()
             elif choice == '6':
                 demo.debug_api_endpoints()
-            elif choice == '7':
+                elif choice == '7':
+                    demo.update_cdn_rule()
+                elif choice == '8':
                 print("👋 程序退出")
                 break
             else:
