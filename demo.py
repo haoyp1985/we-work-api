@@ -112,11 +112,7 @@ class WeWorkAPIDemo:
         
         # 尝试多个可能的API端点和方法
         endpoints_to_try = [
-            ("/client/all_clients", "GET"),
-            ("/client/all_clients", "POST"),
-            ("/client/get_clients", "POST"),
-            ("/clients", "GET"),
-            ("/client/list", "GET"),
+            ("/client/all_clients", "POST")
         ]
         
         for endpoint, method in endpoints_to_try:
@@ -1718,10 +1714,27 @@ def main():
     print("💡 如遇API问题，请使用'API端点调试'功能检查")
     print("=" * 50)
     
-    # 可以修改API服务器地址
-    api_url = input("🌐 API服务器地址 (默认 http://192.168.3.122:23456): ").strip()
-    if not api_url:
-        api_url = "http://192.168.3.122:23456"
+    # 可以修改API服务器地址（增加URL校验与自动修正）
+    def sanitize_api_url(user_input: str, default_url: str) -> str:
+        from urllib.parse import urlparse
+        s = (user_input or "").strip()
+        if not s:
+            return default_url
+        # 误触发输入如“1”等非URL，回退默认
+        if s.isdigit():
+            logger.warning("检测到非URL输入，回退默认API地址")
+            return default_url
+        # 自动补全协议
+        if not (s.startswith("http://") or s.startswith("https://")):
+            s = "http://" + s
+        p = urlparse(s)
+        if not p.scheme or not p.netloc:
+            logger.warning("输入URL不合法，回退默认API地址")
+            return default_url
+        return s
+
+    user_input_api = input("🌐 API服务器地址 (默认 http://192.168.3.122:23456): ").strip()
+    api_url = sanitize_api_url(user_input_api, "http://192.168.3.122:23456")
     
     demo = WeWorkAPIDemo(api_url)
     
