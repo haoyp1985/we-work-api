@@ -2007,7 +2007,7 @@ def main():
             print("❌ 消息发送失败，请检查参数是否正确")
     
     # 提供实例管理和消息发送功能
-        while True:
+    while True:
         try:
             print("\n" + "=" * 50)
             print("🔧 企业微信API Demo - 主菜单")
@@ -2018,12 +2018,12 @@ def main():
             print("4. 💬 发送消息")
             print("5. 📊 状态检查")
             print("6. 🔧 API端点调试")
-                print("7. 🔄 更新CDN信息")
-                print("8. 🚪 退出程序")
+            print("7. 🔄 更新CDN信息")
+            print("8. 🚪 退出程序")
             print("=" * 50)
-            
-            choice = input("💡 请选择功能 (1-7): ").strip()
-            
+
+            choice = input("💡 请选择功能 (1-8): ").strip()
+
             if choice == '1':
                 demo.list_instances_interactive()
             elif choice == '2':
@@ -2039,14 +2039,14 @@ def main():
                 demo.check_current_status()
             elif choice == '6':
                 demo.debug_api_endpoints()
-                elif choice == '7':
-                    demo.update_cdn_rule()
-                elif choice == '8':
+            elif choice == '7':
+                demo.update_cdn_rule()
+            elif choice == '8':
                 print("👋 程序退出")
                 break
             else:
-                print("❓ 无效选择，请输入 1-7")
-                
+                print("❓ 无效选择，请输入 1-8")
+
         except KeyboardInterrupt:
             print("\n👋 程序退出")
             break
