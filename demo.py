@@ -1951,40 +1951,21 @@ def main():
                 return
             success = demo.send_room_at_message(conversation_id, content, at_list)
         else:
-            # 语音
+            # 语音（始终先上传以获取 file_id）
             print("\n🎙️ 发送语音消息参数")
-            use_local = input("是否从本地选择文件并上传获取file_id? (y/N): ").strip().lower() == 'y'
-            file_id = ""
-            size = 0
-            aes_key = ""
-            md5 = ""
-            if use_local:
-                path = input("请输入本地语音文件路径: ").strip()
-                if not path:
-                    print("❌ 文件路径不能为空")
-                    return
-                upload_info = demo.upload_c2c_file(path, conversation_id)
-                if not upload_info or not upload_info.get('file_id'):
-                    print("❌ 文件上传失败，无法获取file_id")
-                    return
-                file_id = upload_info.get('file_id')
-                size = int(upload_info.get('size') or 0)
-                aes_key = upload_info.get('aes_key') or ""
-                md5 = upload_info.get('md5') or ""
-                print(f"✅ 上传成功，file_id={file_id}")
-            else:
-                file_id = input("file_id (必填): ").strip()
-                if not file_id:
-                    print("❌ file_id 不能为空")
-                    return
-                size_in = input("size(字节，可选，默认0): ").strip()
-                aes_key = input("aes_key(可选): ").strip()
-                md5 = input("md5(可选): ").strip()
-                try:
-                    size = int(size_in) if size_in else 0
-                except ValueError:
-                    print("❌ size 必须为数字")
-                    return
+            resource = input("请输入资源路径(本地绝对路径或http/https URL): ").strip()
+            if not resource:
+                print("❌ 资源路径不能为空")
+                return
+            upload_info = demo.upload_c2c_file(resource, conversation_id)
+            if not upload_info or not upload_info.get('file_id'):
+                print("❌ 文件上传失败，无法获取 file_id")
+                return
+            file_id = upload_info.get('file_id')
+            size = int(upload_info.get('size') or 0)
+            aes_key = upload_info.get('aes_key') or ""
+            md5 = upload_info.get('md5') or ""
+            print(f"✅ 上传成功，file_id={file_id}")
 
             voice_time_in = input("voice_time(秒，可选，默认0): ").strip()
             try:
