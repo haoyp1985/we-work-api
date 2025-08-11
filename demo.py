@@ -2076,10 +2076,12 @@ def main():
                 print("❌ 文件上传失败，无法获取 file_id")
                 return
             file_id = upload_info.get('file_id')
-            size = int(upload_info.get('file_size') or 0)
+            # 兼容两类返回字段：cdn_c2c_upload(file_size,file_md5) 与 c2c_upload(size,md5)
+            size = int((upload_info.get('size') or upload_info.get('file_size') or 0))
             aes_key = upload_info.get('aes_key') or ""
-            md5 = upload_info.get('file_md5') or ""
+            md5 = upload_info.get('md5') or upload_info.get('file_md5') or ""
             print(f"✅ 上传成功，file_id={file_id}")
+            logger.info(f"📦 上传返回映射: size={size}, md5={md5}, aes_key={aes_key}")
 
             voice_time_in = input("voice_time(秒，可选，默认0): ").strip()
             try:
