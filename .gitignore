@@ -174,3 +174,7 @@ monitoring/data/
 # Build artifacts
 **/target/
 
+# Ignore local lonestar binaries and large artifacts
+infrastructure/docker/lonestar/
+__pycache__/
+企微协议-广州孤星/
