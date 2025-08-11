@@ -14,6 +14,7 @@ import threading
 import logging
 import qrcode
 import io
+import os
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -38,6 +39,13 @@ class WeWorkAPIDemo:
         # 创建Flask应用处理回调
         self.app = Flask(__name__)
         self.setup_webhook_routes()
+
+        # MinIO 对象存储配置（用于先上传文件再走云存储 c2c cdn 上传）
+        self.minio_enabled = True
+        self.minio_endpoint = os.getenv("MINIO_ENDPOINT", "http://localhost:29002")
+        self.minio_access_key = os.getenv("MINIO_ACCESS_KEY", "wework")
+        self.minio_secret_key = os.getenv("MINIO_SECRET_KEY", "wework123456")
+        self.minio_bucket = os.getenv("MINIO_BUCKET", "wework-demo")
 
     def api_request(self, endpoint, data, method='POST'):
         """
@@ -1212,6 +1220,48 @@ class WeWorkAPIDemo:
         size = os.path.getsize(file_path) or 0
         md5_val = self._compute_md5(file_path)
 
+        # 优先尝试：上传到 MinIO 生成URL → /cloud/cdn_c2c_upload(url)
+        obj_url = None
+        if self.minio_enabled:
+            try:
+                obj_url = self.upload_to_minio(file_path)
+            except Exception as e:
+                logger.warning(f"MinIO 上传失败，将回退本地直传流程: {e}")
+        if obj_url:
+            ext = os.path.splitext(file_path)[1].lower().strip('.')
+            image_ext = {"jpg","jpeg","png","bmp","webp"}
+            video_ext = {"mp4","mov","avi","mkv","flv","wmv"}
+            if ext in image_ext:
+                file_type = 1
+            elif ext in video_ext:
+                file_type = 4
+            else:
+                file_type = 2
+            try:
+                payload = {
+                    "guid": self.guid or "",
+                    "file_type": file_type,
+                    "url": obj_url
+                }
+                result = self.api_request("/cloud/cdn_c2c_upload", payload, method='POST')
+                if self.is_success_response(result):
+                    data_obj = result.get('data') if isinstance(result, dict) else None
+                    if isinstance(data_obj, dict):
+                        return {
+                            'file_id': data_obj.get('file_id') or data_obj.get('id') or data_obj.get('fileId'),
+                            'size': data_obj.get('size', size),
+                            'md5': data_obj.get('md5', md5_val),
+                            'aes_key': data_obj.get('aes_key') or data_obj.get('aesKey') or ''
+                        }
+                    return {
+                        'file_id': (result.get('file_id') if isinstance(result, dict) else None),
+                        'size': size,
+                        'md5': md5_val,
+                        'aes_key': ''
+                    }
+            except Exception as e:
+                logger.warning(f"/cloud/cdn_c2c_upload 失败，回退本地直传: {e}")
+
         # 先按“云存储”优先使用 /cloud/c2c_upload（JSON），file_type: 图片=1, 视频=4, 文件&GIF=5
         ext = os.path.splitext(file_path)[1].lower().strip('.')
         image_ext = {"jpg","jpeg","png","bmp","webp"}
@@ -1359,6 +1409,54 @@ class WeWorkAPIDemo:
 
         logger.error("❌ C2C上传失败，所有端点均不可用")
         return None
+
+    def upload_to_minio(self, file_path, object_name=None):
+        """
+        上传本地文件到 MinIO 并返回可访问的对象 URL。
+        需要安装 boto3: pip install boto3
+        """
+        try:
+            import boto3
+            from botocore.client import Config
+            from botocore.exceptions import ClientError
+        except Exception as e:
+            logger.error("未安装 boto3，无法执行 MinIO 上传。请运行: pip install boto3")
+            raise e
+
+        if not object_name:
+            object_name = os.path.basename(file_path)
+
+        s3 = boto3.client(
+            's3',
+            endpoint_url=self.minio_endpoint,
+            aws_access_key_id=self.minio_access_key,
+            aws_secret_access_key=self.minio_secret_key,
+            region_name='us-east-1',
+            config=Config(signature_version='s3v4')
+        )
+
+        # 确保桶存在
+        try:
+            s3.head_bucket(Bucket=self.minio_bucket)
+        except ClientError:
+            try:
+                s3.create_bucket(Bucket=self.minio_bucket)
+                logger.info(f"✅ 已创建 MinIO 桶: {self.minio_bucket}")
+            except Exception as e:
+                logger.error(f"❌ 创建 MinIO 桶失败: {e}")
+                raise e
+
+        # 上传文件
+        try:
+            s3.upload_file(file_path, self.minio_bucket, object_name)
+            logger.info(f"✅ 已上传到 MinIO: {self.minio_bucket}/{object_name}")
+        except Exception as e:
+            logger.error(f"❌ 上传至 MinIO 失败: {e}")
+            raise e
+
+        # 返回可直接访问的 URL（Path-Style）
+        url = f"{self.minio_endpoint.rstrip('/')}/{self.minio_bucket}/{object_name}"
+        return url
     def setup_webhook_routes(self):
         """
         设置回调路由
